@@ -13,3 +13,11 @@ comes from a stored engine run. Screenshots: `docs/screenshots/report_p2_demo_*.
 | G5 Baseline vs optimized | Toggle between selected and baseline, and a side-by-side view (one camera, one colour scale over both, probe on either half, `report.html#split`); comparison table with changes and pass/fail | Translucent overlay, test photos and curves |
 | G6 Agent timeline | Steps with outcome and detail from the study log | Live streaming, time travel, replay |
 | I1 Report | Self-contained interactive HTML with spec card, trust panel, assumptions | PDF, Arabic, run history browser, hash-chained audit log |
+
+## Hands-on workbench (`python -m structura.app`)
+
+A local page (127.0.0.1:8765, Python standard library only) for using the engine by hand, with no AI in the loop:
+pick a brief from `docs/examples`, move the parameter sliders, press Evaluate (or tick "evaluate when a slider is
+released"). The real pipeline runs (build, gate, mesh, CalculiX; about 4 s for the bracket at 4 mm) and the page shows
+the field in 3D with load and support markers, the metrics and every requirement with pass/fail. A gate or mesh
+failure is shown with its reason. `#run` evaluates once on load. Screenshot: `docs/screenshots/workbench.png`.
