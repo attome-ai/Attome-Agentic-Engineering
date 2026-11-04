@@ -151,10 +151,12 @@ FemResult fem_static(const Mesh& m, const Material& mat, const LoadCase& lc) {
     out.disp[ids[i]] = d;
     out.max_disp_mm = std::max(out.max_disp_mm, std::sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]));
   }
-  // stress recovery: sigma = D B u at every element node, averaged over the elements sharing the node
-  const double nat[10][4] = {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}, {.5, .5, 0, 0},
-                             {0, .5, .5, 0}, {.5, 0, .5, 0}, {.5, 0, 0, .5}, {0, .5, 0, .5}, {0, 0, .5, .5}};
-  std::unordered_map<int, std::pair<double, int>> acc;
+  // Stress recovery as CalculiX does it for C3D10: sigma = D B u at the four integration points, extrapolated linearly to
+  // the corners, mid-side nodes the mean of their two corners, the tensor averaged over the elements sharing a node, then
+  // von Mises. Evaluating at the nodes directly spikes in distorted curved elements (a factor of two near small fillets).
+  const double ga = 0.1381966011250105, gb = 0.5854101966249685;  // barycentric coordinates of the four-point rule
+  const int kEdge[6][2] = {{0, 1}, {1, 2}, {2, 0}, {0, 3}, {1, 3}, {2, 3}};
+  std::unordered_map<int, std::pair<Eigen::Matrix<double, 6, 1>, int>> acc;
   for (auto& t : m.tets) {
     Eigen::Matrix<double, 10, 3> X;
     Eigen::Matrix<double, 30, 1> ue;
@@ -166,9 +168,12 @@ FemResult fem_static(const Mesh& m, const Material& mat, const LoadCase& lc) {
         ue(3 * i + k) = d[k];
       }
     }
-    for (int a = 0; a < 10; ++a) {
+    Eigen::Matrix<double, 6, 1> gp[4], sum = Eigen::Matrix<double, 6, 1>::Zero();
+    for (int a = 0; a < 4; ++a) {
+      double L[4] = {ga, ga, ga, ga};
+      L[a] = gb;
       double g[10][4];
-      dN_dL(nat[a], g);
+      dN_dL(L, g);
       Eigen::Matrix<double, 10, 3> dNdxi;
       for (int i = 0; i < 10; ++i) {
         dNdxi(i, 0) = g[i][1] - g[i][0];
@@ -176,7 +181,6 @@ FemResult fem_static(const Mesh& m, const Material& mat, const LoadCase& lc) {
         dNdxi(i, 2) = g[i][3] - g[i][0];
       }
       Eigen::Matrix3d J = dNdxi.transpose() * X;
-      if (J.determinant() <= 0) continue;
       Eigen::Matrix<double, 10, 3> dNdx = (J.inverse() * dNdxi.transpose()).transpose();
       B.setZero();
       for (int i = 0; i < 10; ++i) {
@@ -186,16 +190,22 @@ FemResult fem_static(const Mesh& m, const Material& mat, const LoadCase& lc) {
         B(4, 3 * i + 1) = nz; B(4, 3 * i + 2) = ny;
         B(5, 3 * i) = nz; B(5, 3 * i + 2) = nx;
       }
-      Eigen::Matrix<double, 6, 1> s = D * B * ue;  // xx yy zz xy yz zx
-      double vm = std::sqrt(0.5 * ((s(0) - s(1)) * (s(0) - s(1)) + (s(1) - s(2)) * (s(1) - s(2)) + (s(2) - s(0)) * (s(2) - s(0))) +
-                            3 * (s(3) * s(3) + s(4) * s(4) + s(5) * s(5)));
-      auto& slot = acc[t[1 + a]];
-      slot.first += vm;
-      slot.second += 1;
+      gp[a] = D * B * ue;  // xx yy zz xy yz zx
+      sum += gp[a];
+    }
+    Eigen::Matrix<double, 6, 1> corner[4];
+    for (int a = 0; a < 4; ++a) corner[a] = (gp[a] - ga * sum) / (gb - ga);  // inverse of the linear map corners -> points
+    for (int a = 0; a < 10; ++a) {
+      Eigen::Matrix<double, 6, 1> v = a < 4 ? corner[a] : Eigen::Matrix<double, 6, 1>(0.5 * (corner[kEdge[a - 4][0]] + corner[kEdge[a - 4][1]]));
+      auto [it, added] = acc.try_emplace(t[1 + a], Eigen::Matrix<double, 6, 1>::Zero(), 0);
+      it->second.first += v;
+      it->second.second += 1;
     }
   }
   for (auto& [n, v] : acc) {
-    double vm = v.first / v.second;
+    const Eigen::Matrix<double, 6, 1> st = v.first / v.second;
+    const double vm = std::sqrt(0.5 * ((st(0) - st(1)) * (st(0) - st(1)) + (st(1) - st(2)) * (st(1) - st(2)) + (st(2) - st(0)) * (st(2) - st(0))) +
+                                3 * (st(3) * st(3) + st(4) * st(4) + st(5) * st(5)));
     out.von_mises[n] = vm;
     out.max_von_mises_MPa = std::max(out.max_von_mises_MPa, vm);
   }

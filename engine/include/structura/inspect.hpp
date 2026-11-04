@@ -18,4 +18,12 @@ nlohmann::json inspect_shape(const TopoDS_Shape& shape);
 nlohmann::json draft_family(const std::string& name, const std::string& step_path, const nlohmann::json& inspection,
                             const TopoDS_Shape& shape);
 
+// The design of a family closest to the part, and whether it is close enough to stand in for it (overlap by volume).
+struct FitOptions {
+  int samples = 150, rounds = 6;
+  double min_iou = 0.95;
+  unsigned seed = 1;
+};
+nlohmann::json fit_family(const TopoDS_Shape& part, const std::string& family, const FitOptions& o = {});
+
 }  // namespace structura

@@ -46,6 +46,7 @@ add_library(structura STATIC
   src/manufacture.cpp
   src/orientation.cpp
   src/inspect.cpp
+  src/fit_family.cpp
 )
 set_target_properties(structura PROPERTIES OUTPUT_NAME structura_core)
 target_include_directories(structura PUBLIC include ${OpenCASCADE_INCLUDE_DIR})

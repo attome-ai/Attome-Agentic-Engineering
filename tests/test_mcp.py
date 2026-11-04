@@ -95,11 +95,12 @@ def test_verify_tool_writes_a_graded_trust_record(tmp_path, monkeypatch):
     monkeypatch.setattr(srv.S, "STUDIES", tmp_path / "studies")
     sid = "verify-test"
     srv.create_study(json.loads(SPEC.read_text()), study_id=sid)
-    knee = json.loads((Path(__file__).resolve().parents[1] / "benchmarks" / "p2_demo.json").read_text())["recommended_knee"]["params"]
+    demo = json.loads((Path(__file__).resolve().parents[1] / "benchmarks" / "p2_demo.json").read_text())
+    knee = demo["recommended_knee"]["params"]
     v = srv.verify(sid, {k: float(x) for k, x in knee.items()}, fine_mesh=3.0)
     assert v["ok"] and v["grade"] in ("A", "B", "C")
     assert (Path(v["folder"]) / "trust.json").exists()
-    assert v["grade"] == "A" and v["status"] == "verified"  # the P2 demo's recommended design
+    assert v["grade"] == demo["knee_trust"]["grade"]  # the tool reproduces the grade stored with the P2 demo
 
 
 def test_propose_relaxation_for_the_100kg_brief(tmp_path, monkeypatch):

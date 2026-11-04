@@ -579,6 +579,15 @@ def build_report(study_id: str, baseline: dict | None = None) -> dict:
     return _ok(file=str(out), size_mb=round(out.stat().st_size / 1e6, 1))
 
 
+@mcp.tool(description="Check whether an uploaded STEP part matches a part family: the family's closest design and its overlap with the part (intersection over union; 0.95 or more "
+                      "counts as a fit). A fit means the family's parameters can be optimized instead of cutting pockets into the solid. Example: fit_part_to_family('part.step', 'bracket').")
+def fit_part_to_family(step_path: str, family: str) -> dict:
+    try:
+        return _ok(**engine.call("fit", step=step_path, family=family, timeout=900))
+    except engine.EngineError as e:
+        return _err(e.kind, str(e))
+
+
 @mcp.tool(description="Choose the print direction for a design: each of the six axis directions with its tension across the layers (printed parts are weakest there) and "
                       "support volume, the recommended one and why. Set the spec's print_direction to it before a final verify. Example: choose_print_direction('s1', {'thickness': 8, ...}).")
 def choose_print_direction(study_id: str, params: dict) -> dict:

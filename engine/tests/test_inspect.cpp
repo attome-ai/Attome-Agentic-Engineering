@@ -99,3 +99,18 @@ TEST_CASE("A3-T3: a fillet split into quarter-turn segments by ribs is not a hol
   for (auto& h : r["holes"]) CHECK(h["diameter_mm"].get<double>() == doctest::Approx(6.6));
   CHECK(r["internal_fillets"].size() >= 1);
 }
+
+TEST_CASE("A3-T4: an uploaded part is fitted to the family it came from, and not to another") {
+  Values truth = {{"thickness", 9}, {"plate_width", 60}, {"rib_count", 2}, {"rib_thickness", 6}, {"fillet_radius", 4}};
+  CompiledPart part = compile_graph(load_family("bracket"), truth);
+  nlohmann::json r = fit_family(part.shape, "bracket");
+  MESSAGE(r.dump());
+  CHECK(r["fits"] == true);
+  CHECK(r["iou"].get<double>() > 0.95);
+  CHECK(r["params"]["plate_width"].get<double>() == doctest::Approx(60).epsilon(0.05));
+  CHECK(r["params"]["thickness"].get<double>() == doctest::Approx(9).epsilon(0.1));
+  CHECK(r["params"]["rib_count"].get<double>() == 2);
+  nlohmann::json other = fit_family(part.shape, "heatsink");
+  MESSAGE("heat sink overlap " << other["iou"].get<double>());
+  CHECK(other["fits"] == false);
+}

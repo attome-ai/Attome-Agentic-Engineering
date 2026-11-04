@@ -35,7 +35,7 @@ def run_one(b: dict, budget: int) -> dict:
             rec["stages"][name] = {"ok": True, "seconds": round(time.perf_counter() - t0, 1)}
             return r
         except Exception as e:  # noqa: BLE001
-            rec["stages"][name] = {"ok": False, "seconds": round(time.perf_counter() - t0, 1), "error": str(e)[:300]}
+            rec["stages"][name] = {"ok": False, "seconds": round(time.perf_counter() - t0, 1), "error": str(e)[-1200:]}
             raise
 
     try:

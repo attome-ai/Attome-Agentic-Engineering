@@ -329,6 +329,11 @@ int run(const Args& a) {
     std::cout << out.dump(2) << "\n";
     return 0;
   }
+  if (a.cmd == "fit") {  // A3: the closest design of a family to an uploaded part, and whether it fits
+    if (!a.opt.count("step") || !a.opt.count("family")) throw std::runtime_error("fit needs --step FILE --family NAME");
+    std::cout << fit_family(read_step(fs::absolute(a.opt.at("step")).string()), a.opt.at("family")).dump(2) << "\n";
+    return 0;
+  }
   if (a.cmd == "families") {
     json out = json::array();
     for (auto& e : fs::recursive_directory_iterator(families_dir()))  // uploads/<name> included (A3)
