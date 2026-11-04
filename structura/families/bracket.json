@@ -1,7 +1,7 @@
 {
   "name": "bracket",
   "version": "1",
-  "doc": "Wall-mounted shelf bracket: a vertical wall plate with two M6 clearance holes, a horizontal arm, an inner-corner fillet and triangular ribs under the arm. The load acts on the arm's end face; the bracket is bolted through the mounting holes.",
+  "doc": "Wall-mounted shelf bracket: a vertical wall plate with two M6 clearance holes in a row below the ribs, a horizontal arm, an inner-corner fillet and triangular ribs under the arm. The load acts on the arm's end face; the bracket is bolted through the mounting holes.",
   "parameters": {
     "thickness":     {"unit": "mm", "low": 3,   "high": 12, "default": 6,  "doc": "wall plate and arm thickness"},
     "plate_width":   {"unit": "mm", "low": 30,  "high": 80, "default": 50, "doc": "width of wall plate and arm (y)"},
@@ -19,13 +19,13 @@
                 "region": ["thickness - 0.01", -1, "100 - thickness - 0.01", "thickness + 0.01", "plate_width + 1", "100 - thickness + 0.01"]}},
     {"id": "rib", "type": "rib", "doc": "first rib; leg_a along the arm, leg_b down the wall",
      "params": {"x": "thickness", "y": "plate_width / (rib_count + 1) - rib_thickness / 2", "z": "100 - thickness",
-                "leg_a": "0.8 * (120 - thickness)", "leg_a_dir": "x", "leg_b": "0.8 * (100 - thickness)", "leg_b_dir": "-z",
+                "leg_a": "0.8 * (120 - thickness)", "leg_a_dir": "x", "leg_b": "0.7 * (100 - thickness)", "leg_b_dir": "-z",
                 "thickness": "rib_thickness"}},
     {"id": "ribs", "type": "linear_pattern", "doc": "remaining ribs, evenly spaced across the width",
      "params": {"target": "rib", "count": "rib_count", "dy": "plate_width / (rib_count + 1)"}},
-    {"id": "mount", "type": "hole_pattern", "doc": "two M6 clearance holes through the wall plate",
-     "params": {"x": -0.5, "y": "plate_width / 2", "z": 25, "diameter": 6.6, "depth": "thickness + 1", "axis": "x",
-                "n1": 1, "d1": 0, "n2": 2, "d2": 50}}
+    {"id": "mount", "type": "hole_pattern", "doc": "two M6 clearance holes in a row below the ribs, so bolts and ribs never collide",
+     "params": {"x": -0.5, "y": "plate_width / 4", "z": 12, "diameter": 6.6, "depth": "thickness + 1", "axis": "x",
+                "n1": 2, "d1": "plate_width / 2", "n2": 1, "d2": 0}}
   ],
   "faces": {
     "mount_holes": {"kind": "cylinder", "axis": "x", "radius": 3.3, "doc": "bolt bores; supports act here"},
