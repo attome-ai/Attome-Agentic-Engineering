@@ -1,0 +1,14 @@
+{
+  "doc": "E4: the model for each agent step, in order of fallback. 'basis' says why; a route not yet measured says so. Fill prices from your own provider contract: with no price, studies report tokens and no cost. Read by structura/agent/routing.py.",
+  "token_cap_per_study": 400000,
+  "prices_usd_per_million_tokens": {},
+  "routes": {
+    "plan": {"models": ["claude-opus-5-5", "claude-sonnet-5-5"], "basis": "planned by the feature plan; not yet measured per step"},
+    "spec_extraction": {"models": ["claude-opus-5-5", "claude-sonnet-5-5"], "basis": "claude-opus-5-5 measured 95.0% of fields and 100% of units on the 50-brief benchmark (benchmarks/brief_bench_opus55_session.json); no other model measured"},
+    "compose": {"models": ["claude-opus-5-5", "claude-sonnet-5-5"], "basis": "planned by the feature plan; not yet measured per step"},
+    "repair": {"models": ["claude-sonnet-5-5", "claude-opus-5-5"], "basis": "planned by the feature plan; not yet measured per step"},
+    "log_parsing": {"models": ["claude-haiku-5-5", "claude-sonnet-5-5"], "basis": "planned by the feature plan; not yet measured per step"},
+    "report_drafting": {"models": ["claude-sonnet-5-5", "claude-opus-5-5"], "basis": "planned by the feature plan; not yet measured per step"},
+    "explanation": {"models": ["claude-opus-5-5", "claude-sonnet-5-5"], "basis": "planned by the feature plan; not yet measured per step"}
+  }
+}

@@ -22,6 +22,7 @@ from structura import engine
 from structura.agent import loads as L
 from structura.agent import playbooks as PB
 from structura.agent import questions as Q
+from structura.agent import routing
 from structura.agent import studies as S
 from structura.optimize import decide, pareto, portfolio
 
@@ -576,6 +577,24 @@ def build_report(study_id: str, baseline: dict | None = None) -> dict:
                 {k: float(v) for k, v in baseline.items()} if baseline else None, trust_dir, study_id)
     S.log(study_id, "report", "ok", file=str(out))
     return _ok(file=str(out), size_mb=round(out.stat().st_size / 1e6, 1))
+
+
+@mcp.tool(description="Which model to use for an agent step (plan, spec_extraction, compose, repair, log_parsing, report_drafting, explanation), given how many "
+                      "provider calls for this step have failed. Two failures move the step to the next model on its route; returns exhausted when none is left.")
+def model_route(step: str, failures: int = 0) -> dict:
+    try:
+        return _ok(**routing.route(step, failures))
+    except KeyError as e:
+        return _err("route", str(e))
+
+
+@mcp.tool(description="Record the tokens one model call used, so the study reports them per step (and cost, only when prices are stated in data/model_routes.json). "
+                      "Example: record_usage('s1', 'compose', 'claude-opus-5-5', 3200, 900). Returns the study's totals and whether it is over its token cap.")
+def record_usage(study_id: str, step: str, model: str, input_tokens: int, output_tokens: int, seconds: float | None = None) -> dict:
+    try:
+        return _ok(**routing.record_usage(study_id, step, model, input_tokens, output_tokens, seconds))
+    except ValueError as e:
+        return _err("usage", str(e))
 
 
 # ------------------------------------------------------------------ resources and prompts

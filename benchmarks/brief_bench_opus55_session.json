@@ -1,0 +1,170 @@
+{
+  "predictions": "runs\\brief_bench\\opus55_session",
+  "fields_correct": "475 of 500 (95.0%)",
+  "stated_fields_correct": "186 of 210 (88.6%)",
+  "units_correct": "70 of 70 (100.0%)",
+  "per_field": {
+    "family": "50 of 50",
+    "material": "50 of 50",
+    "load_N": "49 of 50",
+    "sf": "50 of 50",
+    "disp_mm": "50 of 50",
+    "power_W": "50 of 50",
+    "t_max_C": "50 of 50",
+    "fan_m_s": "50 of 50",
+    "objective": "31 of 50",
+    "process": "45 of 50"
+  },
+  "misses": [
+    {
+      "id": "en02",
+      "field": "objective",
+      "gold": "min_mass",
+      "pred": null
+    },
+    {
+      "id": "en02",
+      "field": "process",
+      "gold": "fdm",
+      "pred": null
+    },
+    {
+      "id": "en03",
+      "field": "objective",
+      "gold": "min_mass",
+      "pred": null
+    },
+    {
+      "id": "en07",
+      "field": "objective",
+      "gold": "min_mass",
+      "pred": null
+    },
+    {
+      "id": "en07",
+      "field": "process",
+      "gold": "fdm",
+      "pred": null
+    },
+    {
+      "id": "en08",
+      "field": "objective",
+      "gold": "min_mass",
+      "pred": null
+    },
+    {
+      "id": "en10",
+      "field": "objective",
+      "gold": "min_mass",
+      "pred": null
+    },
+    {
+      "id": "en13",
+      "field": "process",
+      "gold": "fdm",
+      "pred": null
+    },
+    {
+      "id": "en14",
+      "field": "objective",
+      "gold": "min_mass",
+      "pred": null
+    },
+    {
+      "id": "en15",
+      "field": "objective",
+      "gold": "min_mass",
+      "pred": null
+    },
+    {
+      "id": "en15",
+      "field": "process",
+      "gold": "fdm",
+      "pred": null
+    },
+    {
+      "id": "en18",
+      "field": "objective",
+      "gold": "min_mass",
+      "pred": null
+    },
+    {
+      "id": "en22",
+      "field": "objective",
+      "gold": "min_mass",
+      "pred": null
+    },
+    {
+      "id": "en24",
+      "field": "objective",
+      "gold": "min_mass",
+      "pred": null
+    },
+    {
+      "id": "en30",
+      "field": "load_N",
+      "gold": null,
+      "pred": 882.9
+    },
+    {
+      "id": "ar02",
+      "field": "objective",
+      "gold": "min_mass",
+      "pred": null
+    },
+    {
+      "id": "ar03",
+      "field": "objective",
+      "gold": "min_mass",
+      "pred": null
+    },
+    {
+      "id": "ar04",
+      "field": "objective",
+      "gold": "min_mass",
+      "pred": null
+    },
+    {
+      "id": "ar07",
+      "field": "objective",
+      "gold": "min_mass",
+      "pred": null
+    },
+    {
+      "id": "ar09",
+      "field": "objective",
+      "gold": "min_mass",
+      "pred": null
+    },
+    {
+      "id": "ar10",
+      "field": "objective",
+      "gold": "min_mass",
+      "pred": null
+    },
+    {
+      "id": "ar15",
+      "field": "objective",
+      "gold": "min_mass",
+      "pred": null
+    },
+    {
+      "id": "mx01",
+      "field": "objective",
+      "gold": "min_mass",
+      "pred": null
+    },
+    {
+      "id": "mx03",
+      "field": "objective",
+      "gold": "min_mass",
+      "pred": null
+    },
+    {
+      "id": "mx03",
+      "field": "process",
+      "gold": "fdm",
+      "pred": null
+    }
+  ]
+}
