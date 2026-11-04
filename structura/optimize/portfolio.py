@@ -111,6 +111,8 @@ def run(spec_path: str | Path, budget: int, seed: int = 0, method: str | None = 
         mesh_size: float | None = None, threads: int = 1, n_jobs: int = 4, on_trial=None) -> optuna.Study:
     """on_trial(feasible: bool) is called after every finished evaluation (progress reporting without touching storage)."""
     spec = load_spec(spec_path)
+    if not spec.free:
+        raise ValueError("the spec has no free parameters: it describes one fixed design to analyse, not a search")
     chosen, reason = (method, "method set by the caller") if method else choose(spec, budget, measure_eval_seconds(spec, mesh_size))
     study_dir = Path(study_dir or Path("runs") / f"{spec.id}-{chosen}-{seed}")
     study_dir.mkdir(parents=True, exist_ok=True)

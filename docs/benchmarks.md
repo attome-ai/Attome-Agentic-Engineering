@@ -250,3 +250,19 @@ functions, 200 evaluations (`benchmarks/demo_rehearsals.json`):
 Recommended: 231.4 g, safety factor 2.22, grade A, FDM. NSGA-II runs in parallel, so a live run is not
 bit-identical to the stored P2 run (234.1 g); both meet the brief with grade A. On a 4-core laptop the optimization
 will take longer: rehearse there and lower --budget if needed (D8: report the budget used).
+
+## Uploaded STEP part analysed as-is (A3)
+
+`structura inspect --step part.step --family-out families/uploads/NAME.json` on the recommended bracket exported as
+STEP (`runs/p2_demo/opt/report_bundles/trial_183/design/part.step`): two 6.6 mm bolt holes along x found as a
+pattern of 2, the wall face (-x at 0) and the arm faces among the mating candidates; the arm-end face (692 mm^2) named
+by the user. Analysed with the 20 kg load case and no free parameters, at 3 mm:
+
+| Path | Mass | Safety factor | Max displacement |
+|---|---|---|---|
+| Native family (`bracket`, trial 183 parameters) | 234.143 g | 2.0642 | 0.77616 mm |
+| Uploaded STEP (`import_step`, faces from inspect) | 234.143 g | 2.0642 | 0.77616 mm |
+
+Identical to the last digit shown: importing, face selection and the solve lose nothing. The import pins the file's
+SHA-256, so a changed file is refused rather than served from the cache. Redesigning an uploaded part (template fit,
+or operations inside its envelope) is the next step; today an uploaded part is analysed and becomes the baseline.

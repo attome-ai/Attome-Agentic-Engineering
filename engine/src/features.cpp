@@ -1,3 +1,6 @@
+#include <iterator>
+#include <fstream>
+#include <filesystem>
 // Geometry builders for the grammar's feature types. Lengths in mm, angles in degrees.
 #include <cmath>
 #include <numbers>
@@ -23,8 +26,11 @@
 #include <gp_Trsf.hxx>
 #include <gp_Vec.hxx>
 
+#include "structura/design.hpp"
 #include "structura/compile.hpp"
 #include "structura/occ.hpp"
+
+namespace fs = std::filesystem;
 
 namespace structura {
 namespace {
@@ -89,6 +95,16 @@ std::vector<Prim> build_primitives(const Resolved& r, const std::map<std::string
   const std::string& t = r.type->name;
   auto cut_op = [&] { return r.str.count("op") && r.s("op") == "cut"; };
 
+  if (t == "import_step") {
+    fs::path f(r.s("file"));
+    if (f.is_relative()) f = fs::path(STRUCTURA_ROOT) / f;
+    std::ifstream in(f, std::ios::binary);
+    if (!in) throw std::runtime_error("import_step: cannot read " + f.string());
+    std::string bytes((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    if (sha256_hex(bytes) != r.s("sha256"))
+      throw std::runtime_error("import_step: " + f.string() + " does not match its sha256 (the file changed since it was uploaded)");
+    return one(read_step(f.string()), false);
+  }
   if (t == "plate") return one(box(r.n("x"), r.n("y"), r.n("z"), r.n("length"), r.n("width"), r.n("thickness")), cut_op());
 
   if (t == "extrude_sketch") {

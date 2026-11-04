@@ -1,3 +1,4 @@
+#include <set>
 // B3-T1 (C++): every grammar feature compiles at the low and high corner of its bounds; invalid graphs fail before build.
 #include <doctest/doctest.h>
 
@@ -52,8 +53,11 @@ DesignGraph graph_for(const std::string& type) {
 }  // namespace
 
 TEST_CASE("B3-T1: every feature type has a fixture") {
-  for (auto& [name, _] : feature_types()) CHECK_MESSAGE(FIX.count(name), name);
-  CHECK(FIX.size() == feature_types().size());
+  // import_step has no numeric parameters to put at bound corners and needs a real file: covered by A3-T2 (test_inspect.cpp)
+  const std::set<std::string> covered_elsewhere = {"import_step"};
+  for (auto& [name, _] : feature_types())
+    if (!covered_elsewhere.count(name)) CHECK_MESSAGE(FIX.count(name), name);
+  CHECK(FIX.size() + covered_elsewhere.size() == feature_types().size());
 }
 
 TEST_CASE("B3-T1: every feature compiles at its bound corners") {

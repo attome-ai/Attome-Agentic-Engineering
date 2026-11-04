@@ -60,7 +60,7 @@ DesignSpec DesignSpec::from_json(const nlohmann::json& j) {
     if (s.fixed_params.count(k)) throw SpecError("parameter '" + k + "' is both fixed and free");
     s.free_params[k] = b;
   }
-  if (s.free_params.empty()) throw SpecError("spec has no free parameters to optimize");
+  // no free parameters is allowed: the spec then analyses one fixed design (an uploaded part as-is, A3); the optimizer refuses it
   s.material = j.value("material", std::string("PETG"));
   try {
     load_material(s.material);

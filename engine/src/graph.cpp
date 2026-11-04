@@ -76,6 +76,9 @@ std::map<std::string, FeatureType> build_registry() {
        {P("target", "ref", "id of an earlier feature"), P("count", "count", "total number including the original"),
         P("cx", "pos", "axis point x", 0.0), P("cy", "pos", "axis point y", 0.0), P("cz", "pos", "axis point z", 0.0),
         P("axis", "axis", "rotation axis", "z"), P("angle", "angle", "total angle; 360 spaces copies evenly", 360.0)}, false, true},
+      {"import_step", "Imports the solid of an uploaded STEP file (A3); sha256 pins the file content so a changed file never reuses "
+                      "results. Later features may add to or cut from it.",
+       {P("file", "file", "STEP file path, absolute or relative to the repository"), P("sha256", "hash", "SHA-256 of the file (hex)")}},
       {"sweep_path", "Circular profile swept along a polyline path.",
        {P("points", "points", "path points [[x, y, z], ...]"), P("radius", "length", "profile radius"),
         P("op", "op", "add or cut", OPADD)}},
@@ -298,6 +301,13 @@ std::vector<Resolved> DesignGraph::resolve(const Values& overrides) const {
           std::vector<double> q;
           for (auto& c : raw) q.push_back(check_kind("pos", eval_value(c, vals), w));
           r.vec[spec.name] = q;
+        } else if (spec.kind == "file") {
+          if (!raw.is_string() || raw.get<std::string>().empty()) throw GraphError(w + " must be a file path");
+          r.str[spec.name] = raw.get<std::string>();
+        } else if (spec.kind == "hash") {
+          static const std::regex hex("^[0-9a-f]{64}$");
+          if (!raw.is_string() || !std::regex_match(raw.get<std::string>(), hex)) throw GraphError(w + " must be 64 lowercase hex digits");
+          r.str[spec.name] = raw.get<std::string>();
         } else if (spec.kind == "op") {
           if (!raw.is_string() || (raw != "add" && raw != "cut")) throw GraphError(w + " must be 'add' or 'cut'");
           r.str[spec.name] = raw.get<std::string>();

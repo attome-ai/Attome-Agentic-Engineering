@@ -34,7 +34,7 @@ def engine_build() -> str:
 def data_hash() -> str:
     """Hash of every part family, the materials table and the process/cost table: changing any of them invalidates the cache."""
     h = hashlib.sha256()
-    for p in sorted((ROOT / "families").glob("*.json")) + [ROOT / "data" / "materials.json", ROOT / "data" / "processes.json"]:
+    for p in sorted((ROOT / "families").rglob("*.json")) + [ROOT / "data" / "materials.json", ROOT / "data" / "processes.json"]:
         h.update(p.name.encode())
         h.update(p.read_bytes())
     return h.hexdigest()

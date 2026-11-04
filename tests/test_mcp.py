@@ -7,10 +7,11 @@ import anyio
 import mcp
 
 from structura.agent import mcp_server as srv
+ROOT = Path(__file__).resolve().parents[1]
 
 SPEC = Path(__file__).resolve().parents[1] / "docs" / "examples" / "bracket_20kg.json"
 TOOLS = {"build_report", "derive_load", "rank_questions", "propose_relaxation", "list_families", "describe_grammar", "plan_study", "create_study", "accept_spec", "check_feasibility",
-         "compose_design", "evaluate_design", "run_optimization", "get_job", "get_results", "steer", "explain", "verify", "manufacturing_advice"}
+         "compose_design", "evaluate_design", "run_optimization", "get_job", "get_results", "steer", "explain", "verify", "manufacturing_advice", "upload_part", "add_face"}
 
 
 def test_tools_over_the_protocol():
@@ -126,3 +127,38 @@ def test_manufacturing_advice(tmp_path, monkeypatch):
     assert r["fdm"]["cost"]["total"] > 0 and r["cnc"]["sharp_internal_corners"] > 0
     al = srv.manufacturing_advice(sid, {"thickness": 8}, material="AL6061T6")
     assert al["ok"] and "fdm" not in al and any(a["process"] == "fdm" and not a["fits"] for a in al["advice"])
+
+
+def test_upload_and_analyse_a_step_part(tmp_path, monkeypatch):
+    """A3: an uploaded STEP is inspected, its faces named, and analysed as-is through the normal study tools."""
+    from structura import engine
+    monkeypatch.setattr(srv.S, "STUDIES", tmp_path / "studies")
+    engine.call("build", family="bracket", out=str(tmp_path / "b"))  # default bracket as the "uploaded" file
+    name = "pytest_upload"
+    try:
+        up = srv.upload_part(str(tmp_path / "b" / "part.step"), name)
+        assert up["ok"] and up["valid"] and len(up["holes"]) == 2 and up["hole_patterns"][0]["count"] == 2
+        end = next(f for f in up["faces"] if f.get("selector", {}).get("normal") == "x" and abs(f["selector"]["at"] - 120) < 1e-6)
+        assert srv.add_face(up["family"], end["id"], "arm_end")["ok"]
+        hole_face = next(k for k in up["named_faces"] if k.startswith("holes_"))
+        spec = json.loads(SPEC.read_text())
+        spec.update(id="upload-test", family=up["family"], free_params={})
+        spec["load_cases"][0]["supports"] = [{"group": hole_face}]
+        spec["load_cases"][0]["loads"] = [{"group": "arm_end", "force": [0, 0, -196.2]}]
+        sid = "upload-test"
+        srv.create_study(spec, study_id=sid)
+        srv.accept_spec(sid, "owner")
+        r = srv.evaluate_design(sid, {})
+        assert r["ok"] and r["status"] == "ok" and r["metrics"]["mass_g"] > 0
+        job = srv.run_optimization(sid, budget=4)
+        if job.get("ok"):  # the job starts, then refuses a spec with nothing to optimize
+            import time
+            for _ in range(60):
+                j = srv.get_job(job["job_id"])
+                if j.get("state") != "running":
+                    break
+                time.sleep(0.5)
+            assert j["state"] == "error"
+    finally:
+        for p in (ROOT / "families" / "uploads").glob(f"{name}.*"):
+            p.unlink()

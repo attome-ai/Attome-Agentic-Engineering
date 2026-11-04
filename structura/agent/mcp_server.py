@@ -36,6 +36,7 @@ INSTRUCTIONS = """You are driving the Attome AE engineering engine. Workflow:
 6. verify the chosen design and report its trust grade; build_report and give the user the file.
 Never state a number the tools did not return. Never tune parameters yourself inside a loop: that is the optimizer's job."""
 
+ROOT = Path(__file__).resolve().parents[2]
 mcp = MCPServer(name="attome-ae", instructions=INSTRUCTIONS, version="0.1.0")
 _jobs: dict[str, dict] = {}
 
@@ -181,6 +182,55 @@ def propose_relaxation(study_id: str, mesh_size: float = 6.0, margin: float = 0.
     return _ok(feasible=False, proposed_spec_version=newp.name, changes=changes, needs_acceptance=True, load_options=load_options,
                alternatives=["reduce the load (see load_options)", "change the material (list it in data/materials.json)",
                              "widen the free-parameter bounds", "choose another part family"])
+
+
+# ------------------------------------------------------------------ uploaded parts (A3)
+@mcp.tool(description="Upload a STEP part to analyse or improve (A3). Stores it, detects its interfaces (holes and hole patterns, large planar "
+                      "faces, envelope) and writes a part family 'uploads/<name>' that imports it, with those faces named. Show the user the "
+                      "holes and faces, ask which carry the load and the supports and which interfaces must stay unchanged, add any face "
+                      "they name with add_face, then create a study on that family. With no free parameters the study analyses the part "
+                      "as-is (evaluate_design with params {}) and becomes the baseline of a redesign.")
+def upload_part(step_path: str, name: str) -> dict:
+    import re
+    import shutil
+    if not re.fullmatch(r"[a-z][a-z0-9_]{0,40}", name):
+        return _err("upload", "name must be lowercase letters, digits and _ (start with a letter)")
+    src = Path(step_path)
+    if not src.exists():
+        return _err("upload", f"no file at {step_path}")
+    up = ROOT / "families" / "uploads"
+    up.mkdir(parents=True, exist_ok=True)
+    dst = up / f"{name}.step"
+    shutil.copyfile(src, dst)
+    try:
+        r = engine.call("inspect", step=str(dst), **{"family-out": str(up / f"{name}.json"), "name": name})
+    except engine.EngineError as e:
+        return _err(e.kind, str(e))
+    fam = r["family"]
+    fam["features"][0]["params"]["file"] = f"families/uploads/{name}.step"  # repository-relative, portable
+    (up / f"{name}.json").write_text(json.dumps(fam, indent=2), encoding="utf-8")
+    return _ok(family=f"uploads/{name}", valid=r["valid"], solids=r["solids"], volume_mm3=r["volume_mm3"], envelope=r["envelope"],
+               holes=[{k: h[k] for k in ("diameter_mm", "axis", "centre", "depth_mm")} for h in r["holes"]], hole_patterns=r["hole_patterns"],
+               named_faces={k: v.get("doc") for k, v in fam["faces"].items()},
+               faces=[{k: f[k] for k in ("id", "type", "area_mm2", "centre") if k in f} | ({"selector": f["selector"]} if "selector" in f else {})
+                      for f in r["faces"]],
+               notes=r["notes"])
+
+
+@mcp.tool(description="Name one more face of an uploaded part family (for a load or support the user chose), by its face id from upload_part.")
+def add_face(family: str, face_id: int, name: str, doc: str = "") -> dict:
+    p = ROOT / "families" / f"{family}.json"
+    if not family.startswith("uploads/") or not p.exists():
+        return _err("upload", "only uploaded families can be edited")
+    fam = json.loads(p.read_text(encoding="utf-8"))
+    step = ROOT / fam["features"][0]["params"]["file"]
+    r = engine.call("inspect", step=str(step))
+    f = next((x for x in r["faces"] if x["id"] == face_id), None)
+    if f is None or "selector" not in f:
+        return _err("upload", f"face {face_id} does not exist or is not axis-aligned (no selector)")
+    fam["faces"][name] = {**f["selector"], "doc": doc or f"face {face_id}"}
+    p.write_text(json.dumps(fam, indent=2), encoding="utf-8")
+    return _ok(family=family, face=name, selector=f["selector"])
 
 
 # ------------------------------------------------------------------ geometry

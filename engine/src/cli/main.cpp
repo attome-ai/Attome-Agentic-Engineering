@@ -31,6 +31,7 @@
 #include "structura/export.hpp"
 #include "structura/fea.hpp"
 #include "structura/gate.hpp"
+#include "structura/inspect.hpp"
 #include "structura/manufacture.hpp"
 #include "structura/mesh.hpp"
 #include "structura/meshability.hpp"
@@ -259,6 +260,22 @@ int run(const Args& a) {
       json full = out;
       full["designs"] = rows;
       std::ofstream(a.opt.at("out")) << full.dump(1);
+    }
+    std::cout << out.dump(2) << "\n";
+    return 0;
+  }
+  if (a.cmd == "inspect") {  // A3: interfaces of an uploaded STEP part; --family-out writes a draft family that imports it
+    if (!a.opt.count("step")) throw std::runtime_error("inspect needs --step FILE");
+    std::string step = fs::absolute(a.opt.at("step")).string();
+    TopoDS_Shape shape = read_step(step);
+    json out = inspect_shape(shape);
+    if (a.opt.count("family-out")) {
+      std::string name = a.opt.count("name") ? a.opt.at("name") : fs::path(step).stem().string();
+      json fam = draft_family(name, step, out);
+      fs::create_directories(fs::absolute(a.opt.at("family-out")).parent_path());
+      std::ofstream(a.opt.at("family-out")) << fam.dump(2);
+      out["family_file"] = fs::absolute(a.opt.at("family-out")).string();
+      out["family"] = fam;
     }
     std::cout << out.dump(2) << "\n";
     return 0;

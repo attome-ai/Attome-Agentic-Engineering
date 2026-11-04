@@ -68,6 +68,20 @@ gp_Vec normal_at(const TopoDS_Face& f, const gp_Pnt& p) {
   return m > 1e-12 ? n / m : gp_Vec(0, 0, 0);
 }
 
+// true when the face's outward normal points towards the cylinder axis (a hole or an internal fillet); tested at a real
+// surface point, because the centre of mass of a full cylinder lies on its axis
+bool concave_cylinder(const TopoDS_Face& f, const gp_Cylinder& cy) {
+  double u0, u1, v0, v1;
+  BRepTools::UVBounds(f, u0, u1, v0, v1);
+  BRepGProp_Face prop(f);
+  gp_Pnt p;
+  gp_Vec n;
+  prop.Normal(0.5 * (u0 + u1), 0.5 * (v0 + v1), p, n);
+  gp_Vec ax(cy.Axis().Direction()), rv(cy.Axis().Location(), p);
+  rv -= ax * rv.Dot(ax);
+  return n.Dot(rv) < 0;
+}
+
 struct CornerScan {
   int sharp_internal_along_tool = 0;            // concave edges with no radius, parallel to an approach direction
   std::optional<double> min_internal_radius;    // smallest concave fillet radius parallel to an approach direction
@@ -88,12 +102,8 @@ CornerScan scan_corners(const TopoDS_Shape& shape, const std::vector<std::array<
     BRepAdaptor_Surface s(f);
     if (s.GetType() != GeomAbs_Cylinder) continue;
     gp_Cylinder c = s.Cylinder();
-    gp_Pnt p = centre(f);
-    gp_Vec n(normal(f));
     gp_Vec ax(c.Axis().Direction());
-    gp_Vec r(c.Axis().Location(), p);
-    r -= ax * r.Dot(ax);
-    if (n.Dot(r) >= 0) continue;  // convex (a rounded outside edge)
+    if (!concave_cylinder(f, c)) continue;  // convex (a rounded outside edge)
     if (!along_tool(ax)) continue;
     double span = s.LastUParameter() - s.FirstUParameter();
     if (span >= std::numbers::pi - 1e-2) {
