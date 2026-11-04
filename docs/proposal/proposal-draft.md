@@ -144,6 +144,9 @@ typed grammar and the gate, not from a better mesher.
 
 ### 4.3 End to end: the 20 kg bracket brief
 
+> **Under review (2026-11-04):** the 20 kg bracket result (234 g, safety factor 2.06, grade A) is not valid as stated. Its peak stress sits at the sharp junction of the rib tip and the arm, where stress does not converge: it rises from 12.1 MPa at 3 mm to 13.8 MPa at 2 mm (SF 1.82), and with realistic 1.5 mm fillets at that junction the first solve gives 16.7 MPa (SF 1.50). The convergence study behind grade A (3 / 4.5 / 6.75 mm) was too coarse to see it. Being fixed: filleted rib junctions in the bracket family, a stricter stress-convergence rule, and a re-run of the optimization.
+
+
 Source: `benchmarks/p2_demo.json`, `runs/p2_demo/`; command `python benchmarks/p2_demo.py`. About 4.5 minutes in
 total, 200 evaluations (NSGA-II, chosen from the measured 4.2 s per evaluation).
 

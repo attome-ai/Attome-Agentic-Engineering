@@ -30,6 +30,9 @@ h1{font-size:1.5rem;margin:.2rem 0}h2{font-size:1.1rem;margin:0 0 .6rem}h3{font-
 #legend .bar{flex:1;width:14px;border-radius:3px;margin:4px 0}
 #splitlabels{position:absolute;top:44px;left:0;right:0;display:flex;pointer-events:none}#splitlabels span{flex:1;text-align:center;font-size:.78rem;font-weight:600;color:var(--muted)}#splitlabels span+span{border-left:1px dashed var(--line)}
 #viewname{position:absolute;left:10px;bottom:10px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:3px 8px;font-size:.8rem}
+.tag3d{position:absolute;display:none;transform:translate(8px,-50%);background:var(--panel);border:1px solid var(--warn);color:var(--warn);border-radius:6px;padding:1px 6px;font-size:.75rem;pointer-events:none;white-space:nowrap}.tag3d.pin{border-color:var(--accent);color:var(--accent)}
+select{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:1px 4px}
+#gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}#gallery button{display:block;text-align:left;font:inherit;font-size:.8rem;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px;cursor:pointer}#gallery button:hover,#gallery button[aria-pressed="true"]{border-color:var(--accent)}#gallery img{display:block;width:100%;aspect-ratio:4/3;object-fit:contain}
 .controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:8px 0;font-size:.85rem}
 .seg button{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:4px 10px;cursor:pointer;font:inherit}
 .seg button:first-child{border-radius:6px 0 0 6px}.seg button:last-child{border-radius:0 6px 6px 0}
@@ -76,9 +79,13 @@ body.print .controls,body.print #probe{display:none!important}
         <button type="button" id="play" title="Animate the load being applied" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;padding:3px 10px;cursor:pointer;font:inherit">▶ load</button>
         <label><input type="checkbox" id="ghost" checked> undeformed ghost</label>
         <label><input type="checkbox" id="marks" checked> loads &amp; supports</label>
+        <label>Colour <select id="cmap"><option value="viridis">viridis</option><option value="cividis">cividis</option><option value="turbo">turbo</option></select></label>
+        <label><input type="checkbox" id="bands"> contour bands</label>
+        <label id="overlaylab"><input type="checkbox" id="overlay"> baseline overlay</label>
+        <label id="cliplab">Cut <select id="clipaxis"><option value="">off</option><option value="0">x</option><option value="1">y</option><option value="2">z</option></select> <input type="range" id="clip" min="0" max="1" step="0.005" value="0.5" disabled></label>
         <div class="seg" id="whichseg" role="group" aria-label="Design"><button data-w="sel" aria-pressed="true">Selected</button><button data-w="base" aria-pressed="false">Baseline</button><button data-w="split" aria-pressed="false">Side by side</button></div>
       </div>
-      <div id="viewer"><canvas id="cv"></canvas><div id="probe">hover the part to read values</div><div id="legend"></div><div id="viewname"></div><div id="splitlabels" style="display:none"><span>Baseline</span><span>Selected</span></div></div>
+      <div id="viewer"><canvas id="cv"></canvas><div id="probe">hover the part to read values</div><div id="peaktag" class="tag3d"></div><div id="pintag" class="tag3d pin"></div><div id="legend"></div><div id="viewname"></div><div id="splitlabels" style="display:none"><span>Baseline</span><span>Selected</span></div></div>
       <p id="viewnote" class="muted" style="font-size:.8rem;margin:.4rem 0 0">Drag to rotate, wheel to zoom, shift-drag to pan. Safety view: green above the required safety factor, amber within 10% of it, red below (local yield / von Mises).</p>
     </section>
     <section class="card">
@@ -99,7 +106,7 @@ body.print .controls,body.print #probe{display:none!important}
       <h2>Optimization history</h2>
       <svg id="history" viewBox="0 0 420 220" width="100%" role="img" aria-label="History chart"></svg>
       <p class="muted" style="font-size:.8rem;margin:.3rem 0 0" id="histnote"></p>
-      <h3>Agent timeline</h3>
+      <h3 style="display:flex;justify-content:space-between;align-items:center">Agent timeline <button type="button" id="tlplay" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;padding:1px 8px;cursor:pointer;font:inherit;font-weight:400">▶ step through</button></h3>
       <ul class="tl" id="timeline"></ul>
     </section>
   </div>
@@ -108,6 +115,30 @@ body.print .controls,body.print #probe{display:none!important}
     <h2>Every evaluated design: parameters and results</h2>
     <svg id="pcp" viewBox="0 0 900 300" width="100%" role="img" aria-label="Parallel coordinates of all evaluated designs" style="touch-action:none"></svg>
     <p class="muted" style="font-size:.8rem;margin:.3rem 0 0" id="pcpnote"></p>
+  </section>
+
+  <div class="grid" style="margin-top:14px">
+    <section class="card" id="sobolcard">
+      <h2>Which parameters matter</h2>
+      <svg id="sobol" viewBox="0 0 420 200" width="100%" role="img" aria-label="Sensitivity of each objective to each parameter"></svg>
+      <p class="muted" style="font-size:.8rem;margin:.3rem 0 0" id="sobolnote"></p>
+    </section>
+    <section class="card" id="replaycard">
+      <h2>Replay the search</h2>
+      <svg id="hv" viewBox="0 0 420 160" width="100%" role="img" aria-label="Search progress"></svg>
+      <div class="controls"><button type="button" id="replay" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;padding:3px 10px;cursor:pointer;font:inherit">▶ replay</button>
+        <input type="range" id="replayn" min="1" value="1" style="flex:1"><span id="replaylabel" class="muted"></span></div>
+    </section>
+  </div>
+
+  <section class="card" style="margin-top:14px" id="projcard">
+    <h2>Three objectives, two at a time</h2>
+    <div id="proj" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px"></div>
+  </section>
+
+  <section class="card" style="margin-top:14px" id="gallerycard">
+    <div class="row" style="justify-content:space-between"><h2 style="margin:0">Pareto designs</h2><label class="muted" style="font-size:.85rem">Sort by <select id="gallerysort"></select></label></div>
+    <div id="gallery" style="margin-top:8px"></div>
   </section>
 
   <section class="card" style="margin-top:14px" id="mfgcard">
@@ -271,20 +302,43 @@ let target = new THREE.Vector3(), radius = 300, theta = -0.9, phi = 1.05;
 function resize(){const w = box.clientWidth, h = box.clientHeight; renderer.setSize(w, h, false); camera.aspect = (split ? w / 2 : w) / h; camera.updateProjectionMatrix(); draw()}
 function placeCamera(){camera.position.set(target.x + radius*Math.sin(phi)*Math.cos(theta), target.y + radius*Math.sin(phi)*Math.sin(theta), target.z + radius*Math.cos(phi));
   camera.up.set(0,0,1); camera.lookAt(target)}
+function tagAt(el, p, text){
+  if (!p || split) {el.style.display = "none"; return}
+  const v = new THREE.Vector3(p[0], p[1], p[2]).project(camera);
+  el.style.display = "block"; el.style.left = ((v.x + 1)/2*box.clientWidth) + "px"; el.style.top = ((1 - v.y)/2*box.clientHeight) + "px"; el.textContent = text;
+}
+function drawTags(){
+  const k = current && decode(current.skin);
+  if (!k) return;
+  let best = -1, bv = -Infinity;
+  for (let i = 0; i < k.vm.length; i++) if (k.vm[i] > bv) {bv = k.vm[i]; best = i}
+  const clipped = clipPlane && best >= 0 && clipPlane.distanceToPoint(new THREE.Vector3(k.pos[3*best], k.pos[3*best+1], k.pos[3*best+2])) < 0;
+  const unit = current.skin.scalar ? current.skin.scalar.unit : "MPa";
+  tagAt($("#peaktag"), best >= 0 && !clipped && field !== "disp" ? [k.pos[3*best], k.pos[3*best+1], k.pos[3*best+2]] : null, `peak ${f3(bv)} ${unit}`);
+  if (pinned) {let n = -1, d0 = Infinity;
+    for (let i = 0; i < k.vm.length; i++) {const d = (k.pos[3*i]-pinned[0])**2 + (k.pos[3*i+1]-pinned[1])**2 + (k.pos[3*i+2]-pinned[2])**2; if (d < d0) {d0 = d; n = i}}
+    tagAt($("#pintag"), pinned, `pin ${f3(k.vm[n])} ${unit}`)} else $("#pintag").style.display = "none";
+}
 function draw(){
   placeCamera();
-  if (!split) {renderer.setScissorTest(false); const w = box.clientWidth, h = box.clientHeight; renderer.setViewport(0, 0, w, h); renderer.render(scene, camera); return}
+  if (!split) {renderer.setScissorTest(false); const w = box.clientWidth, h = box.clientHeight; renderer.setViewport(0, 0, w, h); renderer.render(scene, camera); camera.updateMatrixWorld(); drawTags(); return}
+  $("#peaktag").style.display = "none"; $("#pintag").style.display = "none";
   const w = box.clientWidth, h = box.clientHeight;
   renderer.setScissorTest(true);
   renderer.setViewport(0, 0, w / 2, h); renderer.setScissor(0, 0, w / 2, h); renderer.render(sceneB, camera);
   renderer.setViewport(w / 2, 0, w / 2, h); renderer.setScissor(w / 2, 0, w / 2, h); renderer.render(scene, camera);
   renderer.setScissorTest(false);
 }
-let drag = null;
-cv.addEventListener("pointerdown", e => {drag = {x:e.clientX, y:e.clientY, pan:e.shiftKey}; cv.setPointerCapture(e.pointerId)});
-cv.addEventListener("pointerup", () => drag = null);
+let drag = null, pinned = null, clipPlane = null, capMesh = null, overlayMesh = null;
+cv.addEventListener("pointerdown", e => {drag = {x:e.clientX, y:e.clientY, pan:e.shiftKey, moved:0}; cv.setPointerCapture(e.pointerId)});
+cv.addEventListener("pointerup", e => {
+  if (drag && drag.moved < 4 && mesh && !split) {  // a click, not a drag: pin this point, or clear the pin
+    const r = cv.getBoundingClientRect(); mouse.set((e.clientX-r.left)/r.width*2-1, -((e.clientY-r.top)/r.height)*2+1);
+    ray.setFromCamera(mouse, camera); const hit = ray.intersectObject(mesh)[0];
+    pinned = hit ? [hit.point.x, hit.point.y, hit.point.z] : null; drawTags()}
+  drag = null});
 cv.addEventListener("pointermove", e => {
-  if (drag) {const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY;
+  if (drag) {const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY; drag.moved += Math.abs(dx) + Math.abs(dy);
     if (drag.pan) {const s = radius/400; const right = new THREE.Vector3().subVectors(camera.position, target).cross(camera.up).normalize();
       target.addScaledVector(right, dx*s); target.z += dy*s} else {theta -= dx*0.008; phi = Math.min(3.1, Math.max(0.05, phi - dy*0.008))} draw(); return}
   probe(e)});
@@ -292,7 +346,12 @@ cv.addEventListener("wheel", e => {e.preventDefault(); radius *= Math.exp(e.delt
 new ResizeObserver(resize).observe(box);
 
 const VIRIDIS = [[68,1,84],[72,40,120],[62,74,137],[49,104,142],[38,130,142],[31,158,137],[53,183,121],[109,205,89],[180,222,44],[253,231,37]];
-function viridis(t){t = Math.min(1, Math.max(0, t)); const x = t*(VIRIDIS.length-1), i = Math.floor(x), f = x - i, a = VIRIDIS[i], b = VIRIDIS[Math.min(i+1, VIRIDIS.length-1)];
+const MAPS = {viridis: VIRIDIS,
+  cividis: [[0,34,78],[18,53,112],[60,77,110],[87,99,109],[110,120,112],[131,142,116],[155,165,110],[181,188,95],[211,211,72],[253,231,55]],
+  turbo: [[48,18,59],[70,107,227],[40,170,233],[26,228,182],[114,254,94],[200,239,52],[250,186,57],[246,108,25],[202,42,4],[122,4,3]]};
+let cmapName = "viridis", bandsOn = false;
+function viridis(t){t = Math.min(1, Math.max(0, t)); if (bandsOn) t = Math.min(0.999, Math.floor(t*10)/10 + 0.05);
+  const M = MAPS[cmapName], x = t*(M.length-1), i = Math.floor(x), f = x - i, a = M[i], b = M[Math.min(i+1, M.length-1)];
   return [(a[0]+(b[0]-a[0])*f)/255, (a[1]+(b[1]-a[1])*f)/255, (a[2]+(b[2]-a[2])*f)/255]}
 function safetyColor(sf, req){if (sf >= req*1.1) return [0.19,0.55,0.33]; if (sf >= req) return [0.85,0.6,0.2]; return [0.75,0.2,0.24]}
 
@@ -347,7 +406,7 @@ function colorize(){
   if (split && meshB) paint(meshB, D.baseline.skin);
   const lg = $("#legend");
   if (field === "safety") lg.innerHTML = `<div>SF</div><div class="bar" style="background:linear-gradient(#2f8c54 0 45%,#d99a33 45% 60%,#bf333d 60% 100%)"></div><div>&lt; ${req}</div>`;
-  else {const last = VIRIDIS.length - 1, stops = VIRIDIS.map((v, i) => `rgb(${VIRIDIS[last - i].join(",")}) ${(100*i/last).toFixed(1)}%`).join(",");
+  else {const M = MAPS[cmapName], last = M.length - 1, stops = M.map((v, i) => `rgb(${M[last - i].join(",")}) ${(100*i/last).toFixed(1)}%`).join(",");
     lg.innerHTML = `<div>${f3(hi)} ${unit}</div><div class="bar" style="background:linear-gradient(${stops})"></div><div>${f3(lo)}</div><div class="muted">${name}</div>`}
   draw();
 }
@@ -445,7 +504,7 @@ function pareto(){
     const hc = D.history.find(h => h.n === d.trial), cv0 = hc ? hc[ky] : null, fv = d.metrics[ky];
     if (cv0 != null && fv != null && Math.abs(Y(cv0) - Y(fv)) > 0.5) {  // search mesh -> fine mesh: how far the answer moved
       const x = X(d.metrics[kx]); s += `<g stroke="${cssv('--ink')}" stroke-width="1.2" opacity="0.7"><line x1="${x}" x2="${x}" y1="${Y(cv0)}" y2="${Y(fv)}"/><line x1="${x-4}" x2="${x+4}" y1="${Y(cv0)}" y2="${Y(cv0)}"/></g>`}
-    if (d.recommended && D.trust) s += `<text x="${X(d.metrics[kx]) - 14}" y="${Y(d.metrics[ky]) - 14}" text-anchor="end" font-size="12" font-weight="700" fill="${D.trust.grade === "A" ? cssv('--good') : cssv('--bad')}">grade ${esc(D.trust.grade)}</text>`;
+    if (d.recommended && D.trust) s += `<text x="${X(d.metrics[kx]) + (X(d.metrics[kx]) < 110 ? 14 : -14)}" y="${Y(d.metrics[ky]) - 14}" text-anchor="${X(d.metrics[kx]) < 110 ? "start" : "end"}" font-size="12" font-weight="700" fill="${D.trust.grade === "A" ? cssv('--good') : cssv('--bad')}">grade ${esc(D.trust.grade)}</text>`;
     const moved = cv0 != null && fv ? ` (search mesh ${f3(cv0)}, ${(100*(fv - cv0)/Math.abs(cv0)).toFixed(1)}% on the fine mesh)` : "";
     const sel = d === selected; s += `<g class="pt" data-t="${d.trial}"><circle cx="${X(d.metrics[kx])}" cy="${Y(d.metrics[ky])}" r="${sel ? 8 : 6}" fill="${cssv('--accent')}" stroke="${cssv('--panel')}" stroke-width="2"/>${d.recommended ? `<circle cx="${X(d.metrics[kx])}" cy="${Y(d.metrics[ky])}" r="12" fill="none" stroke="${cssv('--accent')}" stroke-width="1.5"/>` : ""}<title>${label(d)}: ${qv(d.metrics, OX)}, ${qv(d.metrics, OY)}${moved}</title></g>`;
   }
@@ -463,7 +522,8 @@ function compare(){
   const rows = Object.keys(units).filter(k => (b && b[k] != null) || (a && a[k] != null)).map(k => [k, qn(k) + (k === "max_von_mises_MPa" ? " (evaluation region)" : ""), units[k]]);
   $("#cmp").innerHTML = `<tr><th></th><th class="n">Baseline</th><th class="n">${esc(selected ? label(selected) : "")}</th><th class="n">Change</th></tr>` + rows.map(([k, n, u]) => {
     const va = a ? a[k] : null, vb = b ? b[k] : null, ch = va && vb != null ? 100*(vb - va)/Math.abs(va) : null;
-    return `<tr><td>${n}${u ? " (" + u + ")" : ""}</td><td class="n">${f3(va)}</td><td class="n">${f3(vb)}</td><td class="n">${ch == null ? "–" : (ch > 0 ? "+" : "") + ch.toFixed(0) + "%"}</td></tr>`}).join("") +
+    const tr = D.trust && selected && selected.recommended && (D.trust.requirements || []).find(x => x.quantity === k), bar = tr && tr.numerical_error > 0 ? ` ±${(100*tr.numerical_error).toFixed(1)}%` : "";
+    return `<tr><td>${n}${u ? " (" + u + ")" : ""}</td><td class="n">${f3(va)}</td><td class="n">${f3(vb)}${bar}</td><td class="n">${ch == null ? "–" : (ch > 0 ? "+" : "") + ch.toFixed(0) + "%"}</td></tr>`}).join("") +
     `<tr><td>Meets every requirement</td><td class="n">${D.baseline ? (D.baseline.feasible ? '<span class="pill pass">yes</span>' : '<span class="pill fail">no</span>') : "–"}</td><td class="n">${selected ? (selected.feasible ? '<span class="pill pass">yes</span>' : '<span class="pill fail">no</span>') : "–"}</td><td></td></tr>`;
 }
 
@@ -475,6 +535,7 @@ function trust(){
   <h3>Requirements with numerical error bars</h3><div class="tblw"><table><tr><th>Id</th><th>Quantity</th><th class="n">Value</th><th class="n">Limit</th><th class="n">Error</th><th>Result</th></tr>
   ${t.requirements.map(r => `<tr><td>${esc(r.id)}</td><td>${esc(r.quantity)}</td><td class="n">${f3(r.value)}</td><td class="n">${esc(r.op)} ${f3(r.limit)}</td><td class="n">±${(100*r.numerical_error).toFixed(1)}%</td><td><span class="pill ${cls(r.result)}">${esc(r.result)}</span></td></tr>`).join("")}</table></div>
   <h3>Independent checks</h3><ul class="plain">${t.independent_checks.map(c => `<li>${c.passed === true ? "✔" : c.passed === false ? "✖" : "–"} ${esc(c.check)} <span class="muted">${esc(c.detail || "")}</span></li>`).join("")}</ul>
+  ${t.peak_probe ? `<h3>Local refinement of the peak stress</h3><p style="margin:.2rem 0">Uniform mesh ${f3(t.peak_probe.uniform_mesh_peak_MPa)} MPa, refined to ${t.peak_probe.smallest_element_mm[0]} mm ${f3(t.peak_probe.refined_peak_MPa)} MPa, to ${t.peak_probe.smallest_element_mm[1]} mm ${f3(t.peak_probe.refined_twice_peak_MPa)} MPa. <span class="muted">${esc(t.peak_probe.meaning)}</span></p>` : ""}
   <p class="muted" style="font-size:.8rem">${esc(t.grade_rule)}</p>`;
 }
 function history(){
@@ -530,6 +591,8 @@ const AR = {
   "Id": "الرمز", "Requirement": "المتطلب", "Source": "المصدر", "Quantity": "الكمية", "Value": "القيمة", "Limit": "الحد",
   "Error": "الخطأ", "Result": "النتيجة", "Change": "التغيير", "Meets every requirement": "يحقق كل المتطلبات",
   "yes": "نعم", "no": "لا", "pass": "ناجح", "fail": "غير ناجح", "fits": "مناسب", "not proven": "غير مُثبت",
+  "Which parameters matter": "المعاملات المؤثرة", "Replay the search": "إعادة عرض البحث", "Pareto designs": "تصاميم باريتو",
+  "Three objectives, two at a time": "ثلاثة أهداف، كل اثنين معًا", "Colour": "اللون", "contour bands": "نطاقات كنتورية", "baseline overlay": "تراكب التصميم الأساسي", "Cut": "قطع", "off": "إيقاف", "Sort by": "ترتيب حسب", "▶ replay": "▶ إعادة العرض", "▶ step through": "▶ خطوة بخطوة",
   "Mass (g)": "الكتلة (غ)", "Max displacement (mm)": "أقصى إزاحة (مم)",
   "Peak von Mises (evaluation region) (MPa)": "أقصى إجهاد فون مايسز (منطقة التقييم) (ميغاباسكال)", "Peak temperature (degC)": "أعلى درجة حرارة (°م)", "Safety factor (1)": "معامل الأمان", "Temperature": "درجة الحرارة",
 };
@@ -552,6 +615,163 @@ $("#lang").addEventListener("click", () => {
   translate(document.body);
   if (arabic) mo.observe(document.body, {childList: true, subtree: true}); else mo.disconnect();
 });
+// ---------------------------------------------------------------- clip plane with the field on the cut face (G2)
+renderer.localClippingEnabled = true;
+function volumeOf(d){if (!d.volume) return null; if (d._vol) return d._vol;
+  return d._vol = {pos: b64f(d.volume.positions), tets: b64u(d.volume.tets), s: b64f(d.volume.scalar), unit: d.volume.unit}}
+function sliceCap(){
+  if (capMesh) {scene.remove(capMesh); capMesh.geometry.dispose(); capMesh = null}
+  const axis = $("#clipaxis").value, on = axis !== "" && mesh && !split && current;
+  $("#clip").disabled = axis === "";
+  const mats = [mesh && mesh.material, ghost && ghost.material];
+  if (!on) {clipPlane = null; for (const m of mats) if (m) {m.clippingPlanes = []; m.needsUpdate = true} draw(); return}
+  const a = +axis, bb = mesh.geometry.boundingBox || (mesh.geometry.computeBoundingBox(), mesh.geometry.boundingBox);
+  const lo = bb.min.getComponent(a), hi = bb.max.getComponent(a), at = lo + (hi - lo)*parseFloat($("#clip").value);
+  const n = new THREE.Vector3(); n.setComponent(a, -1);
+  clipPlane = new THREE.Plane(n, at);
+  for (const m of mats) if (m) {m.clippingPlanes = [clipPlane]; m.side = THREE.DoubleSide; m.needsUpdate = true}
+  const V = volumeOf(current);
+  if (V) {  // cut every tetrahedron with the plane; each section is a triangle or a quad with the field interpolated linearly
+    const P = [], C = [], T = V.tets, X = V.pos, S = V.s;
+    let vmin = Infinity, vmax = -Infinity; for (const v of S) {if (v < vmin) vmin = v; if (v > vmax) vmax = v}
+    const E = [[0,1],[0,2],[0,3],[1,2],[1,3],[2,3]];
+    for (let t = 0; t + 3 < T.length; t += 4) {
+      const pts = [];
+      for (const [i, j] of E) {const u = T[t+i], w = T[t+j], du = X[3*u+a] - at, dw = X[3*w+a] - at;
+        if ((du < 0) === (dw < 0)) continue;
+        const f = du/(du - dw);
+        pts.push([X[3*u]+f*(X[3*w]-X[3*u]), X[3*u+1]+f*(X[3*w+1]-X[3*u+1]), X[3*u+2]+f*(X[3*w+2]-X[3*u+2]), S[u]+f*(S[w]-S[u])])}
+      if (pts.length < 3) continue;
+      if (pts.length === 4) {const b = pts[2]; pts[2] = pts[3]; pts[3] = b}  // the edge order above crosses the quad
+      for (let k = 1; k + 1 < pts.length; k++) for (const q of [pts[0], pts[k], pts[k+1]]) {
+        P.push(q[0], q[1], q[2]); const rgb = viridis((q[3]-vmin)/(vmax-vmin || 1)); C.push(rgb[0], rgb[1], rgb[2])}
+    }
+    if (P.length) {const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); g.setAttribute("color", new THREE.Float32BufferAttribute(C, 3));
+      capMesh = new THREE.Mesh(g, new THREE.MeshBasicMaterial({vertexColors: true, side: THREE.DoubleSide})); scene.add(capMesh)}
+  }
+  draw();
+}
+$("#clipaxis").addEventListener("change", sliceCap); $("#clip").addEventListener("input", sliceCap);
+if (!D.designs.some(d => d.volume)) $("#cliplab").style.display = "none";
+$("#cmap").addEventListener("change", e => {cmapName = e.target.value; colorize(); if (clipPlane) sliceCap()});
+$("#bands").addEventListener("change", e => {bandsOn = e.target.checked; colorize(); if (clipPlane) sliceCap()});
+// baseline as a translucent overlay, so the removed material shows (G5)
+function setOverlay(){
+  if (overlayMesh) {scene.remove(overlayMesh); overlayMesh.geometry.dispose(); overlayMesh = null}
+  if ($("#overlay").checked && D.baseline && current !== D.baseline && !split) {
+    const k = decode(D.baseline.skin), g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(k.pos, 3)); g.setIndex(new THREE.BufferAttribute(k.idx, 1)); g.computeVertexNormals();
+    overlayMesh = new THREE.Mesh(g, new THREE.MeshLambertMaterial({color: 0xd9480f, transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide})); scene.add(overlayMesh)}
+  draw();
+}
+if (!D.baseline) $("#overlaylab").style.display = "none";
+$("#overlay").addEventListener("change", setOverlay);
+{const showBase = show; show = function(d, l){$("#clipaxis").value = ""; showBase(d, l); sliceCap(); setOverlay()}}
+// ---------------------------------------------------------------- sensitivity (D1, G3)
+(function(){
+  const S = D.sobol, card = $("#sobolcard");
+  if (!S || !S.indices || !Object.keys(S.indices).length) {card.style.display = "none"; return}
+  const qs = Object.keys(S.indices), ps = S.parameters, W = 420, rowH = 24, L = 110, top = 18, H = top + rowH*ps.length + 20, cols = [cssv('--accent'), cssv('--warn'), cssv('--good')];
+  $("#sobol").setAttribute("viewBox", `0 0 ${W} ${H}`);
+  let s = "", xmax = 1e-9; for (const q of qs) for (const p of ps) xmax = Math.max(xmax, S.indices[q][p].ST);
+  const X = v => L + Math.max(0, v)/xmax*(W - L - 20), h = (rowH - 6)/qs.length;
+  ps.forEach((p, i) => {const y = top + i*rowH, frozen = S.frozen && p in S.frozen;
+    s += `<text x="${L-6}" y="${y+12}" text-anchor="end">${esc(p.replace(/_/g," "))}${frozen ? " *" : ""}</text>`;
+    qs.forEach((q, j) => {s += `<rect x="${L}" y="${y+j*h}" width="${X(S.indices[q][p].ST)-L}" height="${h-1}" fill="${cols[j%3]}" rx="1"><title>${esc(p)}: total Sobol index for ${esc(qn(q))} ${S.indices[q][p].ST.toFixed(3)}</title></rect>`})});
+  qs.forEach((q, j) => {s += `<rect x="${L + j*110}" y="2" width="9" height="9" fill="${cols[j%3]}"/><text x="${L + j*110 + 13}" y="11">${esc(qn(q))}</text>`});
+  $("#sobol").innerHTML = s;
+  const fz = Object.keys(S.frozen || {});
+  $("#sobolnote").textContent = `Total Sobol index per parameter, from ${S.samples} coarse-mesh screening runs (a screening, not a verified result). ` + (fz.length ? `* negligible for every objective: ${fz.join(", ")}.` : "No parameter was negligible.");
+})();
+// ---------------------------------------------------------------- replay of the search (G3)
+(function(){
+  const h = D.history, svg = $("#hv"), sl = $("#replayn");
+  if (!h.length) {$("#replaycard").style.display = "none"; return}
+  sl.max = h.length; sl.value = h.length;
+  const W = 420, H = 160, L = 44, R = 12, T = 12, B = 22, kx = OX.quantity, sense = OX.sense;
+  const hv = D.hypervolume && D.hypervolume.length ? D.hypervolume : null, better = (a, b) => sense === "min" ? a < b : a > b;
+  const best = []; let cur = null;
+  h.forEach(p => {if (p.status === "ok" && p.feasible && p[kx] != null && (cur === null || better(p[kx], cur))) cur = p[kx]; best.push(cur)});
+  const series = hv || best, vals = series.filter(v => v != null), lo = Math.min(...vals), hi = Math.max(...vals);
+  const X = i => L + i/(h.length - 1 || 1)*(W - L - R), Y = v => H - B - (v - lo)/((hi - lo) || 1)*(H - T - B);
+  function render(n){
+    let s = `<line x1="${L}" y1="${H-B}" x2="${W-R}" y2="${H-B}" stroke="${cssv('--line')}"/>`, d = "";
+    for (let i = 0; i < n; i++) if (series[i] != null) d += `${X(i)},${Y(series[i])} `;
+    s += `<polyline points="${d}" fill="none" stroke="${cssv('--accent')}" stroke-width="1.8"/>`;
+    s += `<text x="${L}" y="${T}">${hv ? "Hypervolume" : "Best " + esc(qn(kx))}</text><text x="${L-4}" y="${H-B}" text-anchor="end">${f3(lo)}</text><text x="${L-4}" y="${T+10}" text-anchor="end">${f3(hi)}</text><text x="${W-R}" y="${H-6}" text-anchor="end">${h.length} evaluations</text>`;
+    svg.innerHTML = s;
+    $("#replaylabel").textContent = `after ${n}: best feasible ${best[n-1] == null ? "none yet" : f3(best[n-1]) + (OX.unit ? " " + OX.unit : "")}`;
+  }
+  sl.addEventListener("input", () => render(+sl.value)); render(h.length);
+  let timer = null;
+  $("#replay").addEventListener("click", e => {
+    if (timer) {clearInterval(timer); timer = null; e.target.textContent = "▶ replay"; return}
+    let n = 1; e.target.textContent = "■ stop"; const step = Math.max(1, Math.round(h.length/120));
+    timer = setInterval(() => {n = Math.min(h.length, n + step); sl.value = n; render(n); if (n >= h.length) {clearInterval(timer); timer = null; e.target.textContent = "▶ replay"}}, 50)});
+})();
+// ---------------------------------------------------------------- three objectives as linked projections (G4)
+(function(){
+  if (D.objectives.length < 3) {$("#projcard").style.display = "none"; return}
+  const ok = D.history.filter(p => p.status === "ok"), pairs = []; D.objectives.forEach((a, i) => D.objectives.forEach((b, j) => {if (i < j) pairs.push([a, b])}));
+  $("#proj").innerHTML = pairs.map(([a, b]) => {const W = 280, H = 210, L = 42, B = 30, T = 8, R = 8, xs = ok.map(p => p[a.quantity]), ys = ok.map(p => p[b.quantity]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    const X = v => L + (v-x0)/((x1-x0)||1)*(W-L-R), Y = v => H-B-(v-y0)/((y1-y0)||1)*(H-T-B);
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(qn(a.quantity))} against ${esc(qn(b.quantity))}">${ok.map(p => `<circle cx="${X(p[a.quantity])}" cy="${Y(p[b.quantity])}" r="2" fill="${p.feasible ? cssv('--muted') : cssv('--line')}"/>`).join("")}${D.designs.map(d => `<circle cx="${X(d.metrics[a.quantity])}" cy="${Y(d.metrics[b.quantity])}" r="${d.recommended ? 6 : 4}" fill="${cssv('--accent')}" stroke="${cssv('--panel')}"/>`).join("")}<text x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle">${esc(qn(a.quantity))}</text><text transform="rotate(-90)" x="${-(T+H-B)/2}" y="12" text-anchor="middle">${esc(qn(b.quantity))}</text></svg>`}).join("");
+})();
+// ---------------------------------------------------------------- gallery of Pareto designs (G3)
+(function(){
+  if (D.designs.length < 2 || location.hash === "#print") {$("#gallerycard").style.display = "none"; return}
+  const quantities = Object.keys(D.designs[0].metrics).filter(q => D.designs.every(d => d.metrics[q] != null));
+  $("#gallerysort").innerHTML = quantities.map(q => `<option value="${esc(q)}">${esc(qn(q))}</option>`).join("");
+  const keep = {w: box.clientWidth, h: box.clientHeight, cur: current, label: $("#viewname").textContent}, shots = new Map();
+  const Wt = 320, Ht = 240;
+  function shoot(d){
+    show(d, ""); renderer.setSize(Wt, Ht, false); camera.aspect = Wt/Ht; camera.updateProjectionMatrix(); placeCamera(); renderer.setViewport(0, 0, Wt, Ht); renderer.render(scene, camera);
+    shots.set(d, cv.toDataURL("image/png"));
+  }
+  D.designs.forEach(shoot);
+  if (keep.cur) show(keep.cur, keep.label); else resize();
+  function render(){
+    const q = $("#gallerysort").value, list = [...D.designs].sort((a, b) => a.metrics[q] - b.metrics[q]);
+    $("#gallery").innerHTML = list.map(d => `<button type="button" data-t="${d.trial}" aria-pressed="${d === selected}"><img alt="Design ${d.trial}" src="${shots.get(d)}"><b>${esc(label(d))}</b><br>${esc(D.objectives.map(o => qv(d.metrics, o)).join(" · "))}</button>`).join("");
+  }
+  $("#gallerysort").addEventListener("change", render);
+  $("#gallery").addEventListener("click", e => {const b = e.target.closest("button"); if (!b) return; selected = D.designs.find(d => String(d.trial) === b.dataset.t); which = "sel"; setSplit(false); show(selected, label(selected));
+    $("#whichseg").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x.dataset.w === which)); pareto(); compare(); render()});
+  render();
+})();
+// ---------------------------------------------------------------- step through the agent timeline (G6)
+(function(){
+  const items = [...document.querySelectorAll("#timeline li")], btn = $("#tlplay");
+  if (items.length < 2) {btn.style.display = "none"; return}
+  let timer = null;
+  btn.addEventListener("click", () => {
+    if (timer) {clearInterval(timer); timer = null; items.forEach(i => i.style.opacity = ""); btn.textContent = "▶ step through"; return}
+    let n = 0; items.forEach(i => i.style.opacity = "0.15"); btn.textContent = "■ stop";
+    timer = setInterval(() => {if (n < items.length) {items[n].style.opacity = ""; items[n].scrollIntoView({block: "nearest"}); n++} else {clearInterval(timer); timer = null; btn.textContent = "▶ step through"}}, 700)});
+})();
+// performance check (P4-x1): load time to the first rendered frame, then a 3 s orbit with the frame rate measured
+if (location.hash === "#perf") {
+  const tLoad = performance.now();
+  const tris = current ? decode(current.skin).idx.length / 3 : 0;
+  const box = document.createElement("div");
+  box.id = "perfout"; box.style.cssText = "position:fixed;left:12px;bottom:12px;z-index:9;background:#111;color:#0f0;font:14px monospace;padding:10px;border-radius:6px";
+  document.body.appendChild(box);
+  let n = 0, t0 = null, worst = 0, last = null;
+  const spin = now => {
+    if (t0 === null) {t0 = now; last = now}
+    worst = Math.max(worst, now - last); last = now;
+    theta += 0.02; draw(); n++;
+    {const g = renderer.getContext(), px = new Uint8Array(4); g.readPixels(0, 0, 1, 1, g.RGBA, g.UNSIGNED_BYTE, px)}  // wait for the GPU, or the rate only counts submissions
+    if (now - t0 < 3000) requestAnimationFrame(spin);
+    else {
+      const fps = n / ((now - t0) / 1000);
+      box.textContent = `PERF triangles=${tris} load_to_first_frame_ms=${tLoad.toFixed(0)} orbit_fps=${fps.toFixed(1)} worst_frame_ms=${worst.toFixed(1)}`;
+      document.title = box.textContent;
+    }
+  };
+  box.textContent = `PERF measuring... triangles=${tris} load_to_first_frame_ms=${tLoad.toFixed(0)}`;
+  requestAnimationFrame(spin);
+}
+if (location.hash === "#cut") {$("#clipaxis").value = "1"; sliceCap()}  // link straight to the cut view
 if (location.hash === "#ar") $("#lang").click();
 if (location.hash === "#mode") setTimeout(() => $("#modebtn").click(), 300);  // link straight to the vibration mode
 if (location.hash === "#split" && rec && D.baseline) $("#whichseg").querySelector('[data-w="split"]').click();  // link straight to the comparison

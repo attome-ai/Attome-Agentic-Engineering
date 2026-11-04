@@ -353,7 +353,16 @@ double von_mises(const std::vector<double>& s) {
 Result solve_static(const Mesh& m, const Material& mat, const LoadCase& lc, const std::string& workdir, const SolveOptions& o) {
   fs::create_directories(workdir);
   std::map<int, std::array<double, 3>> applied;
-  std::ofstream(fs::path(workdir) / "job.inp") << write_deck(m, mat, lc, &applied);
+  std::string deck = write_deck(m, mat, lc, &applied);
+  // the direct SPOOLES solver crashes or stalls beyond about a million unknowns (seen on filleted brackets at 3 mm):
+  // large models use CalculiX's iterative Cholesky solver instead; small ones keep the direct solver unchanged
+  std::string solver = o.solver.empty() ? (m.dof() > 600000 ? "ITERATIVE CHOLESKY" : "") : o.solver;
+  if (!solver.empty() && solver != "SPOOLES") {
+    const std::string step = "*STEP\n*STATIC\n";
+    auto at = deck.find(step);
+    if (at != std::string::npos) deck.replace(at, step.size(), "*STEP\n*STATIC,SOLVER=" + solver + "\n");
+  }
+  std::ofstream(fs::path(workdir) / "job.inp") << deck;
   std::string t = std::to_string(o.threads);
   ProcessResult pr = run_process({find_exe("ccx"), "-i", "job"}, workdir, o.timeout_s,
                                  {{"OMP_NUM_THREADS", t}, {"CCX_NPROC_EQUATION_SOLVER", t}, {"CCX_NPROC_STIFFNESS", t}});

@@ -38,7 +38,9 @@ def _bundle(spec, params: dict, mesh: float, folder: Path) -> dict:
     skin = json.loads((folder / f"result_{case}" / "skin.json").read_text())
     mode_file = folder / f"result_{case}" / "mode1.json"
     mode = json.loads(mode_file.read_text()) if mode_file.exists() else None  # vibration mode 1 (G2), when the spec asked for it
-    return {"metrics": ev["metrics"], "feasible": ev["feasible"], "checks": ev["checks"], "hash": ev["hash"], "skin": skin, "mode": mode}
+    volume_file = folder / f"result_{case}" / "volume.json"
+    volume = json.loads(volume_file.read_text()) if volume_file.exists() else None  # corner nodes and field for the clip plane (G2)
+    return {"metrics": ev["metrics"], "feasible": ev["feasible"], "checks": ev["checks"], "hash": ev["hash"], "skin": skin, "mode": mode, "volume": volume}
 
 
 def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None, trust_dir: str | None = None,
@@ -46,7 +48,8 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
     spec = load_spec(spec_path)
     card = engine.call("spec", spec=str(spec_path))
     study = _load_study(Path(study_dir))
-    cache = Path(study_dir) / "report_bundles"
+    # bundles depend on the mesh size: keep one folder per size (the 3 mm folder keeps its old name)
+    cache = Path(study_dir) / "report_bundles" if abs(mesh - 3.0) < 1e-9 else Path(study_dir) / f"report_bundles_{mesh:g}mm"
     front = pareto.front(study)
     rec = decide.recommend(study)
     trust = None
@@ -71,6 +74,7 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
     base = None
     if baseline:
         base = {"trial": "baseline", "params": baseline, **_bundle(spec, baseline, mesh, cache / "baseline")}
+        base["volume"] = None  # large, and the cut view is for the recommended design
     hist = []
     for t in sorted(study.get_trials(deepcopy=False), key=lambda t: t.number):
         m = t.user_attrs.get("metrics") or {}
@@ -81,6 +85,12 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
         for e in S.timeline(study_id):
             detail = {k: v for k, v in e.items() if k not in ("time", "t", "step", "outcome", "prev", "hash")}
             timeline.append({"time": e["time"], "step": e["step"], "outcome": e["outcome"], "detail": json.dumps(detail)[:160]})
+        from structura.agent import routing
+        use = routing.study_cost(study_id)
+        if use["by_step"]:
+            cost = "no price stated" if use["cost_usd"] is None else f"{use['cost_usd']} USD"
+            timeline.append({"time": "", "step": "model use", "outcome": f"{use['input_tokens']} tokens in, {use['output_tokens']} out, cost: {cost}",
+                             "detail": "; ".join(f"{k}: {v['calls']} calls, {v['input_tokens'] + v['output_tokens']} tokens ({', '.join(v['models'])})" for k, v in use["by_step"].items())})
         chain = S.verify_log(study_id)
         timeline.append({"time": "", "step": "audit log", "outcome": "chain verified" if chain["ok"] else "CHAIN BROKEN",
                          "detail": (f"{chain['entries']} entries, head {chain.get('head', '')[:12]}" if chain["ok"]
@@ -93,6 +103,13 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
             timeline.append({"time": "", "step": "trust", "outcome": f"grade {trust.get('grade')}", "detail": "; ".join(trust.get("reasons", []))})
     manufacturing = None
     rec_design = next((d for d in designs if d["recommended"]), designs[0] if designs else None)
+    for d in designs:  # the volume field is large: keep it for the recommended design and the baseline only
+        if d is not rec_design:
+            d["volume"] = None
+    ref = pareto.reference_point(study)
+    hv = pareto.hypervolume_history(study, ref) if ref is not None else None
+    sobol_file = Path(study_dir) / "sobol.json"
+    sobol = json.loads(sobol_file.read_text()) if sobol_file.exists() else None
     if rec_design:
         raw_spec = json.loads(Path(spec_path).read_text(encoding="utf-8"))
         try:
@@ -110,7 +127,7 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
     data = {"title": f"{card['id']}: {spec.objectives[0][0]} vs {spec.objectives[1][0]}" if len(spec.objectives) > 1 else card["id"],
             "brief": card.get("brief") or json.loads(Path(spec_path).read_text()).get("brief", ""),
             "spec": {"id": card["id"], "version": card["version"], "hash": card["hash"], "requirements": card["requirements"]},
-            "required_sf": req_sf, "objectives": objectives, "designs": designs, "manufacturing": manufacturing, "baseline": base, "history": hist, "trust": trust, "timeline": timeline,
+            "required_sf": req_sf, "objectives": objectives, "designs": designs, "manufacturing": manufacturing, "baseline": base, "history": hist, "hypervolume": hv, "sobol": sobol, "trust": trust, "timeline": timeline,
             "generated": datetime.now(timezone.utc).isoformat(timespec="seconds")}
     html = TEMPLATE.read_text(encoding="utf-8")
     html = html.replace("__THREE__", THREE.read_text(encoding="utf-8")).replace("__DATA__", json.dumps(data).replace("</", "<\\/"))
@@ -146,9 +163,15 @@ def main():
     ap.add_argument("--trust")
     ap.add_argument("--study-id")
     ap.add_argument("--pdf", action="store_true", help="also print the report to PDF (needs Chrome or Edge)")
+    ap.add_argument("--sobol", action="store_true", help="run the Sobol screening first and show it (about 110 coarse evaluations)")
+    ap.add_argument("--mesh", type=float, default=3.0, help="mesh size (mm) of the designs shown")
     a = ap.parse_args()
     base = {k: float(v) for k, v in (x.split("=") for x in a.baseline)} if a.baseline else None
-    p = build(a.spec, a.study, a.out, base, a.trust, a.study_id)
+    if a.sobol and not (Path(a.study) / "sobol.json").exists():
+        from structura.optimize import screening
+        spec = load_spec(a.spec)
+        (Path(a.study) / "sobol.json").write_text(json.dumps(screening.sobol(spec, mesh_size=max(a.mesh * 2, 6.0)), indent=2))
+    p = build(a.spec, a.study, a.out, base, a.trust, a.study_id, mesh=a.mesh)
     print(f"wrote {p} ({p.stat().st_size / 1e6:.1f} MB)")
     if a.pdf:
         q = to_pdf(p)

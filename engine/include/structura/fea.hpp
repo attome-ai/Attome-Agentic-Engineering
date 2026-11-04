@@ -97,6 +97,7 @@ struct SolveOptions {
   // Saint-Venant: stress within this distance (mm) of a load or support face is a modelling artefact of how the
   // load/support is applied; max_von_mises_MPa excludes it, max_von_mises_raw_MPa keeps the raw peak. 0 = no exclusion.
   double exclude_near_bc_mm = 0;
+  std::string solver;  // "" = automatic (SPOOLES, or ITERATIVE CHOLESKY above 600,000 unknowns); or a CalculiX solver name
 };
 std::string write_deck(const Mesh& m, const Material& mat, const LoadCase& lc, std::map<int, std::array<double, 3>>* applied = nullptr);
 Result solve_static(const Mesh& m, const Material& mat, const LoadCase& lc, const std::string& workdir, const SolveOptions& o = {});
