@@ -40,7 +40,7 @@ def ids(spec):
 DONE = [
     "Every design step of the feature is built, or moved to a later phase with a written reason",
     "Tests cover the feature's behaviour, including the failure paths (bad geometry, mesh failure, solver error)",
-    "Runs on the Windows demo laptop from a clean environment created from environment.yml",
+    "Runs on the Windows demo machine from a clean environment created from environment.yml",
     "The validation suite (F2) is still green after the change",
     "Units are recorded with every number, and nothing is shown as verified unless its check ran",
     "Visible in the dashboard where the feature has output a user can see",
@@ -51,7 +51,7 @@ DONE = [
 PHASES = [
     dict(
         key="P0", title="Set up and measure (4–9 Nov)",
-        goal="A clean, reproducible environment on the demo laptop, the repository layout, and real solver timings before any feature work.",
+        goal="A clean, reproducible environment on the demo machine, the repository layout, and real solver timings before any feature work.",
         why="Every later number in the proposal depends on the toolchain working on Windows and on measured runtimes, not estimates.",
         demo="One command recreates the environment; a script solves NAFEMS LE10 at three mesh densities and prints error against −5.38 MPa and runtime.",
         risks=[
@@ -148,7 +148,7 @@ PHASES = [
         lanes=[("Viewer", "G1 G2"), ("Explorers", "G3 G4 G5 G6")],
         exit=[
             "A person who has not seen the project can explain the chosen design's trade-off from the dashboard alone",
-            "Viewer loads a 200k-triangle field in under one second and orbits at 60 frames per second on the demo laptop",
+            "Viewer loads a 200k-triangle field in under one second and orbits at 60 frames per second on the demo machine",
         ],
     ),
     dict(
@@ -194,7 +194,7 @@ PHASES = [
         key="P7", title="Demo hardening (25 Jan – 3 Feb, demo 3 Feb)",
         goal="The live demo cannot fail: cached runs, offline fallback, rehearsed script and answers to likely questions.",
         why="Presentation is 10% of the score and a failed live run costs far more than that.",
-        demo="Full rehearsal on the demo laptop with Wi-Fi off, using cached results where the live LLM is unavailable.",
+        demo="Full rehearsal on the demo machine with Wi-Fi off, using cached results where the live LLM is unavailable.",
         risks=[
             "Venue network fails; the content-hash cache replays the scripted brief and the dashboard works offline.",
         ],

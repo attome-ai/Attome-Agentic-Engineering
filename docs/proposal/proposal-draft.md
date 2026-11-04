@@ -201,6 +201,14 @@ proposes what the user can change: the strongest design meets SF 2 at **33% of t
 material, the bounds or the family can change. It never returns a design that fails the brief. The corner check is
 also a tighter bound than the search: the optimizer, trading mass against the 250 g cap, never reached the 354 g corner.
 
+### 4.5b Improving an uploaded part
+
+Source: `benchmarks/a3_redesign_demo.json`. An over-built bracket arrives as a STEP file: analysed as-is (354.1 g,
+SF 3.20), its two bolt holes detected and frozen, a lightening pocket sized by the optimizer under the same 20 kg
+brief: **328.2 g (−7.3%)**, SF 2.32, 14 of 14 Pareto designs feasible on the finer mesh, trust grade **B** (the pocket
+corners make the safety factor converge non-monotonically; the record says so). The same STEP route reproduces the
+native model's result exactly (234.143 g, SF 2.0642), so importing a part loses nothing.
+
 ### 4.6 Choosing the optimizer by measured cost
 
 Source: `docs/benchmarks.md` (task D1-T3), `benchmarks/optimizer_compare_at40.json`.
@@ -230,12 +238,18 @@ an expensive-evaluation case.
 
 ### 5.1 Software (working today)
 
-- The interactive study reports for the bracket (`runs/p2_demo/report.html`, 9.6 MB) and the fan-cooled heat sink
-  (`runs/heatsink_fan_demo_300/report.html`, 11.7 MB) open offline in any browser. Each shows the stress or
-  temperature field, the clickable Pareto front, the trust record, the optimization history, the agent timeline and
-  how to make the part (FDM and CNC fit, time and cost). Screenshots: `docs/screenshots/`.
-- Claude drives the full flow through the MCP server registered in `.mcp.json`: list families, derive loads, rank
-  questions, create the study, accept the spec, check feasibility, run the optimization, verify, build the report.
+- **Interactive study reports** for the bracket (`runs/p2_demo/report.html`) and the fan-cooled heat sink
+  (`runs/heatsink_fan_demo_300/report.html`), offline in any browser: stress or temperature field in 3D with load and
+  support markers, baseline and recommended design side by side on one colour scale, a clickable Pareto front with
+  mesh-sensitivity bars and the trust grade, parallel coordinates of every evaluated design, the trust record, the
+  optimization history, the agent timeline and how to make the part (FDM and CNC fit, time, cost).
+- **Hands-on workbench** (`python -m structura.app`): sliders for any brief, the real engine solves in about 4 s,
+  and "Optimize this brief" streams every evaluation live onto the objective plot; click a point to see it in 3D.
+- **Claude drives everything through MCP** (`.mcp.json`, 25 tools): spec and feasibility, design composition in a
+  typed grammar with best-of-N ranking and a six-view visual review, uploaded STEP parts (analysed as-is, holes frozen,
+  redesigned), free-form CadQuery as a gated last resort, optimization, verification, manufacturing advice, reports.
+- **Rehearsed demo**: `scripts/demo.py` runs the scripted brief end to end in 7.6 minutes on the demo machine and
+  falls back to the precomputed report if anything fails (`benchmarks/demo_rehearsals.json`).
 
 ### 5.2 Physical test **[pending: H3]**
 
