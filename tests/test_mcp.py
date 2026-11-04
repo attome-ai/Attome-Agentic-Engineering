@@ -228,3 +228,21 @@ def test_render_views_returns_an_image():
             img = next(x for x in r.content if x.type == "image")
             assert img.mime_type == "image/png" and len(img.data) > 10000
     anyio.run(go)
+
+
+def test_results_name_the_conflict_when_nothing_is_feasible(tmp_path, monkeypatch):
+    """D9: with no feasible design, get_results returns the closest one and the requirements it misses."""
+    import time
+    monkeypatch.setattr(srv.S, "STUDIES", tmp_path / "studies")
+    sid = "conflict"
+    srv.create_study(json.loads((SPEC.parent / "bracket_100kg.json").read_text()), study_id=sid)
+    srv.accept_spec(sid, "owner")
+    job = srv.run_optimization(sid, budget=8, method="random", mesh_size=6)["job_id"]
+    for _ in range(240):
+        if srv.get_job(job).get("state") != "running":
+            break
+        time.sleep(0.5)
+    r = srv.get_results(sid)
+    assert r["ok"] and r["front"] == []
+    c = r["closest_infeasible"]
+    assert c and any(f["id"] == "R1" and f["quantity"] == "safety_factor" for f in c["fails"])

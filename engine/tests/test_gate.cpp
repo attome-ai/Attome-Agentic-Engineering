@@ -96,3 +96,14 @@ TEST_CASE("B4-T1: overhang reported as warning unless support-free is required")
   l.require_support_free = true;
   CHECK(!gate(t, l).ok);
 }
+
+TEST_CASE("B4-T4: a wall exactly at the minimum passes (floating-point tolerance)") {
+  // heat sink at its thinnest allowed fin: 1.2 mm measures as 1.1999999999999 mm and was rejected against a 1.2 mm minimum
+  CompiledPart part = compile_graph(load_family("heatsink"), {{"base_thickness", 2}, {"fin_count", 4}, {"fin_thickness", 1.2}, {"fin_height", 10}});
+  GateLimits lim;
+  lim.min_wall = 1.2;
+  GateResult r = gate(part.shape, lim);
+  CHECK(r.ok);
+  lim.min_wall = 1.25;  // a real shortfall still fails
+  CHECK_FALSE(gate(part.shape, lim).ok);
+}

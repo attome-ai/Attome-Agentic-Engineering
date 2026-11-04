@@ -311,13 +311,14 @@ nlohmann::json check_feasibility(const DesignSpec& spec, const EvalOptions& o) {
   nlohmann::json strong = evaluate_design(spec, most, oo);
   oo.workdir = o.workdir.empty() ? "" : (fs::path(o.workdir) / "least").string();
   nlohmann::json light = evaluate_design(spec, least, oo);
-  nlohmann::json problems = nlohmann::json::array();
+  nlohmann::json problems = nlohmann::json::array(), inconclusive = nlohmann::json::array();
   for (auto& r : spec.requirements) {
     bool mass_like = r.quantity == "mass_g" || r.quantity == "cost";
     const nlohmann::json& ev = mass_like ? light : strong;
-    if (ev.value("status", "") != "ok") {
-      problems.push_back({{"id", r.id}, {"reason", "the " + std::string(mass_like ? "least" : "most") +
-                                                     "-material corner could not be evaluated: " + ev.value("status", std::string("?"))}});
+    if (ev.value("status", "") != "ok") {  // a corner that cannot be built or solved proves nothing either way
+      inconclusive.push_back({{"id", r.id}, {"reason", "the " + std::string(mass_like ? "least" : "most") +
+                                                         "-material corner could not be evaluated (" + ev.value("status", std::string("?")) +
+                                                         "); the search decides this requirement"}});
       continue;
     }
     for (auto& c : ev["checks"])
@@ -328,7 +329,7 @@ nlohmann::json check_feasibility(const DesignSpec& spec, const EvalOptions& o) {
                                            fmt3(c["value"].get<double>()) + unit_suffix(r.quantity) + " against the requirement " + r.quantity + " " +
                                            r.op + " " + fmt3(r.value) + unit_suffix(r.quantity)}});
   }
-  return {{"feasible", problems.empty()}, {"problems", problems}, {"most_material", {{"params", most}, {"metrics", strong.value("metrics", nlohmann::json())}, {"status", strong.value("status", "")}}},
+  return {{"feasible", problems.empty()}, {"problems", problems}, {"inconclusive", inconclusive}, {"conclusive", inconclusive.empty()}, {"most_material", {{"params", most}, {"metrics", strong.value("metrics", nlohmann::json())}, {"status", strong.value("status", "")}}},
           {"least_material", {{"params", least}, {"metrics", light.value("metrics", nlohmann::json())}, {"status", light.value("status", "")}}},
           {"direction", direction}, {"method", "evaluate the most-material and least-material corners of the free parameters"}};
 }

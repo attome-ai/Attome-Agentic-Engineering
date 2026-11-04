@@ -173,7 +173,7 @@ GateResult gate(const TopoDS_Shape& shape, const GateLimits& lim) {
       double l = edge_length(e);
       r.min_edge_mm = r.min_edge_mm ? std::min(*r.min_edge_mm, l) : l;
     }
-    if (r.min_edge_mm && *r.min_edge_mm < lim.min_feature)
+    if (r.min_edge_mm && *r.min_edge_mm < lim.min_feature - 1e-6)  // tolerance: a size exactly at the limit is allowed
       r.reasons.push_back("edge of " + f2(*r.min_edge_mm) + " mm is shorter than the minimum feature size " + g(lim.min_feature) + " mm");
     for (auto& f : faces_of(shape)) {
       BRepAdaptor_Surface su(f);
@@ -193,7 +193,7 @@ GateResult gate(const TopoDS_Shape& shape, const GateLimits& lim) {
         r.reasons.push_back("hole of diameter " + f2(2 * cyl.Radius()) + " mm is below the minimum " + g(lim.min_hole_diameter) + " mm");
     }
     r.min_wall_mm = wall_thickness(shape, lim.wall_samples, lim.seed);
-    if (r.min_wall_mm && *r.min_wall_mm < lim.min_wall)
+    if (r.min_wall_mm && *r.min_wall_mm < lim.min_wall - 1e-6)  // tolerance: 1.2 mm measured as 1.1999999999 is 1.2 mm
       r.reasons.push_back("wall of " + f2(*r.min_wall_mm) + " mm is thinner than the minimum " + g(lim.min_wall) + " mm");
     r.overhang_area_mm2 = overhang_area(shape, lim.print_direction, lim.max_overhang_deg);
     if (*r.overhang_area_mm2 > 1e-6) {
