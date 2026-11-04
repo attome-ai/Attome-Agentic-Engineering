@@ -72,3 +72,23 @@ quadratic-tetrahedron solver (Eigen, SimplicialLDLT, single thread).
 | Time | 1.26 s (4 threads) | 0.16 s assemble + 2.14 s solve | |
 
 The agreement confirms the CalculiX deck writer, node ordering and result parsing independently of CalculiX.
+
+## Gate, repair and mesh sweep (task B4-T3)
+
+`structura meshsweep --family bracket --n 500 --seed 2 --size 4`, 2026-11-04, development machine, 433 s in total.
+
+| Stage | Result |
+|---|---|
+| Random in-bounds designs | 500 |
+| Pass the gate (after safe repair) | 499 (99.8%) |
+| Gate-passed designs that mesh | 499 of 499 (**100%**, target at least 99%) |
+| Mesh on the first ladder attempt (Delaunay) | 499 of 499 |
+| Designs needing repair to pass | 0 |
+
+The one rejected design has three 8.7 mm ribs in a 35 mm wide plate, leaving gaps of about 0.02 mm between ribs: a
+real defect, correctly refused. For comparison, Physics-in-the-Loop (arXiv 2605.19717) reports 76-88% meshing after
+96-97.5% code execution with free-form LLM CAD; the difference comes from the typed grammar and the gate.
+
+The mesh-ability model stays untrained (`data/meshability_bracket.json`): with no meshing failures there is nothing
+to learn, so it predicts every gated shape meshable and says so. It will train automatically when a family produces
+failures.

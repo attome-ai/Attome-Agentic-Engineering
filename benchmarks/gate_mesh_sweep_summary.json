@@ -1,0 +1,38 @@
+{
+  "family": "bracket",
+  "gate_pass": 499,
+  "gate_pass_to_first_attempt_success": 1.0,
+  "gate_pass_to_mesh_success": 1.0,
+  "mesh_size": 4.0,
+  "meshed": 499,
+  "meshed_first_attempt": 499,
+  "model": {
+    "b": 10.0,
+    "mean": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "note": "untrained: all 499 sweep designs meshed, every shape predicted meshable",
+    "precision_failure": 1.0,
+    "recall_failure": 1.0,
+    "scale": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "trained": false,
+    "w": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "n": 500,
+  "repaired_then_passed": 0,
+  "seconds": 433.0,
+  "seed": 2
+}

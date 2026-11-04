@@ -1,0 +1,25 @@
+{
+  "b": 10.0,
+  "mean": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "note": "untrained: all 499 sweep designs meshed, every shape predicted meshable",
+  "precision_failure": 1.0,
+  "recall_failure": 1.0,
+  "scale": [
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "trained": false,
+  "w": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ]
+}
