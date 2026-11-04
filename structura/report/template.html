@@ -396,11 +396,16 @@ function pareto(){
   const front = D.designs.filter(d => d.on_front).sort((a, b) => a.metrics[kx] - b.metrics[kx]);
   if (front.length > 1) s += `<polyline fill="none" stroke="${cssv('--accent')}" stroke-width="1.5" points="${front.map(d => X(d.metrics[kx])+','+Y(d.metrics[ky])).join(' ')}"/>`;
   for (const d of D.designs) {
-    const sel = d === selected; s += `<g class="pt" data-t="${d.trial}"><circle cx="${X(d.metrics[kx])}" cy="${Y(d.metrics[ky])}" r="${sel ? 8 : 6}" fill="${cssv('--accent')}" stroke="${cssv('--panel')}" stroke-width="2"/>${d.recommended ? `<circle cx="${X(d.metrics[kx])}" cy="${Y(d.metrics[ky])}" r="12" fill="none" stroke="${cssv('--accent')}" stroke-width="1.5"/>` : ""}<title>${label(d)}: ${qv(d.metrics, OX)}, ${qv(d.metrics, OY)}</title></g>`;
+    const hc = D.history.find(h => h.n === d.trial), cv0 = hc ? hc[ky] : null, fv = d.metrics[ky];
+    if (cv0 != null && fv != null && Math.abs(Y(cv0) - Y(fv)) > 0.5) {  // search mesh -> fine mesh: how far the answer moved
+      const x = X(d.metrics[kx]); s += `<g stroke="${cssv('--ink')}" stroke-width="1.2" opacity="0.7"><line x1="${x}" x2="${x}" y1="${Y(cv0)}" y2="${Y(fv)}"/><line x1="${x-4}" x2="${x+4}" y1="${Y(cv0)}" y2="${Y(cv0)}"/></g>`}
+    if (d.recommended && D.trust) s += `<text x="${X(d.metrics[kx]) - 14}" y="${Y(d.metrics[ky]) - 14}" text-anchor="end" font-size="12" font-weight="700" fill="${D.trust.grade === "A" ? cssv('--good') : cssv('--bad')}">grade ${esc(D.trust.grade)}</text>`;
+    const moved = cv0 != null && fv ? ` (search mesh ${f3(cv0)}, ${(100*(fv - cv0)/Math.abs(cv0)).toFixed(1)}% on the fine mesh)` : "";
+    const sel = d === selected; s += `<g class="pt" data-t="${d.trial}"><circle cx="${X(d.metrics[kx])}" cy="${Y(d.metrics[ky])}" r="${sel ? 8 : 6}" fill="${cssv('--accent')}" stroke="${cssv('--panel')}" stroke-width="2"/>${d.recommended ? `<circle cx="${X(d.metrics[kx])}" cy="${Y(d.metrics[ky])}" r="12" fill="none" stroke="${cssv('--accent')}" stroke-width="1.5"/>` : ""}<title>${label(d)}: ${qv(d.metrics, OX)}, ${qv(d.metrics, OY)}${moved}</title></g>`;
   }
   if (D.baseline) {const b = D.baseline.metrics; s += `<g class="pt" data-t="base"><rect x="${X(b[kx])-6}" y="${Y(b[ky])-6}" width="12" height="12" fill="${cssv('--bad')}"/><title>Baseline: ${qv(b, OX)}, ${qv(b, OY)}</title></g>`}
   svg.innerHTML = s;
-  $("#paretonote").textContent = `Green band: meets the requirement on the vertical axis. Dots: every evaluated design (grey feasible, light infeasible). Large dots: Pareto designs re-solved on the fine mesh; ring: recommended. Square: hand baseline.`;
+  $("#paretonote").textContent = `Green band: meets the requirement on the vertical axis. Short bars: how far each Pareto design's value moved from the search mesh to the fine mesh. Dots: every evaluated design (grey feasible, light infeasible). Large dots: Pareto designs re-solved on the fine mesh; ring: recommended. Square: hand baseline.`;
 }
 $("#pareto").addEventListener("click", e => {const g = e.target.closest(".pt"); if (!g) return;
   if (g.dataset.t === "base") {which = "base"; setSplit(false); show(D.baseline, "Baseline (hand design)")} else {selected = D.designs.find(d => String(d.trial) === g.dataset.t); if (which !== "split") which = "sel"; show(selected, label(selected))}
