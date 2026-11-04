@@ -337,3 +337,12 @@ changed spec and re-solves. 2026-11-04:
 The search itself is not replayed trial for trial: NSGA-II evaluates in parallel, so the order of finished trials
 varies between runs (the live rehearsal found 231.4 g where the stored run found 234.1 g; both grade A). What is
 delivered, a design with its verified numbers, reproduces exactly.
+
+## Offline readiness (P7-t1, static check; the network-off test is still to do)
+
+No network access in the engine, the Python layer, the reports or the workbench (search of `engine/src`, `structura/`,
+`scripts/` for HTTP clients and external URLs: none; three.js is embedded in each page, no web fonts or CDNs). What
+needs the internet: the AI agent (Claude runs in the cloud). So with the network off the demo can show the engine,
+the workbench, live optimization and the reports, and the agent part needs a connection or the recorded video.
+Test to run on the demo machine: turn Wi-Fi off, then `python scripts/demo.py preflight`, `python scripts/demo.py live
+--budget 60`, open `runs/p2_demo/report.html` and `python -m structura.app`.
