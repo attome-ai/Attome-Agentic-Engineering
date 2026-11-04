@@ -37,9 +37,43 @@ def log(study_id: str, step: str, outcome: str, **detail) -> None:
     """Append one step to the study's timeline (G6): what the agent did, when, and how it went."""
     d = folder(study_id)
     d.mkdir(parents=True, exist_ok=True)
-    entry = {"time": now(), "t": time.time(), "step": step, "outcome": outcome, **detail}
-    with _lock, open(d / "timeline.jsonl", "a", encoding="utf-8") as f:
-        f.write(json.dumps(entry, default=str) + "\n")
+    with _lock:
+        prev = "0" * 64
+        p = d / "timeline.jsonl"
+        if p.exists():
+            lines = [ln for ln in p.read_text(encoding="utf-8").splitlines() if ln.strip()]
+            if lines:
+                prev = json.loads(lines[-1]).get("hash", prev)
+        entry = {"time": now(), "t": time.time(), "step": step, "outcome": outcome, **detail, "prev": prev}
+        entry = json.loads(json.dumps(entry, default=str))  # hash exactly what is stored
+        entry["hash"] = _entry_hash(entry)
+        with open(p, "a", encoding="utf-8") as f:
+            f.write(json.dumps(entry) + "\n")
+
+
+def _entry_hash(entry: dict) -> str:
+    """SHA-256 of the entry without its own hash: chains the audit log (I1), so an edited or removed entry is detectable."""
+    import hashlib
+    body = {k: v for k, v in entry.items() if k != "hash"}
+    return hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()
+
+
+def verify_log(study_id: str) -> dict:
+    """Walk the chain: every entry's hash matches its content and points at the previous entry."""
+    p = folder(study_id) / "timeline.jsonl"
+    if not p.exists():
+        return {"ok": True, "entries": 0}
+    prev = "0" * 64
+    rows = [json.loads(ln) for ln in p.read_text(encoding="utf-8").splitlines() if ln.strip()]
+    for i, e in enumerate(rows):
+        if "hash" not in e:
+            return {"ok": False, "entries": len(rows), "broken_at": i, "reason": "entry without a hash (written before chaining)"}
+        if e.get("prev") != prev:
+            return {"ok": False, "entries": len(rows), "broken_at": i, "reason": "does not point at the previous entry (removed or reordered)"}
+        if _entry_hash(e) != e["hash"]:
+            return {"ok": False, "entries": len(rows), "broken_at": i, "reason": "content does not match its hash (edited)"}
+        prev = e["hash"]
+    return {"ok": True, "entries": len(rows), "head": prev}
 
 
 def timeline(study_id: str) -> list[dict]:

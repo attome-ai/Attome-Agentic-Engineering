@@ -44,3 +44,22 @@ def test_cache_serves_repeats(tmp_path, monkeypatch):
     assert time.perf_counter() - t0 < 0.1
     assert b.raw.get("from_cache") and a.objectives == b.objectives and a.violations == b.violations
     assert evaluate(spec, dict(p, thickness=7.5), mesh_size=6).raw.get("from_cache") is None
+
+
+def test_audit_log_is_hash_chained(tmp_path, monkeypatch):
+    """I1: an edited or removed timeline entry is detected."""
+    import json
+    from structura.agent import studies as S
+    monkeypatch.setattr(S, "STUDIES", tmp_path)
+    for i in range(4):
+        S.log("audit", "step", "ok", n=i)
+    assert S.verify_log("audit") == {"ok": True, "entries": 4, "head": S.timeline("audit")[-1]["hash"]}
+    p = S.folder("audit") / "timeline.jsonl"
+    lines = p.read_text(encoding="utf-8").splitlines()
+    edited = json.loads(lines[1]); edited["n"] = 99
+    p.write_text("\n".join([lines[0], json.dumps(edited)] + lines[2:]) + "\n", encoding="utf-8")
+    r = S.verify_log("audit")
+    assert not r["ok"] and r["broken_at"] == 1 and "edited" in r["reason"]
+    p.write_text("\n".join([lines[0]] + lines[2:]) + "\n", encoding="utf-8")  # entry removed
+    r = S.verify_log("audit")
+    assert not r["ok"] and r["broken_at"] == 1 and "previous" in r["reason"]

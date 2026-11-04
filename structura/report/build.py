@@ -77,8 +77,12 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
     if study_id:
         from structura.agent import studies as S
         for e in S.timeline(study_id):
-            detail = {k: v for k, v in e.items() if k not in ("time", "t", "step", "outcome")}
+            detail = {k: v for k, v in e.items() if k not in ("time", "t", "step", "outcome", "prev", "hash")}
             timeline.append({"time": e["time"], "step": e["step"], "outcome": e["outcome"], "detail": json.dumps(detail)[:160]})
+        chain = S.verify_log(study_id)
+        timeline.append({"time": "", "step": "audit log", "outcome": "chain verified" if chain["ok"] else "CHAIN BROKEN",
+                         "detail": (f"{chain['entries']} entries, head {chain.get('head', '')[:12]}" if chain["ok"]
+                                    else f"entry {chain.get('broken_at')}: {chain.get('reason')}")})
     else:
         timeline = [{"time": "", "step": "optimize", "outcome": f"{study.user_attrs.get('method', '?')}: {len(hist)} evaluations",
                      "detail": study.user_attrs.get("method_reason", "")},
