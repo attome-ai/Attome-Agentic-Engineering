@@ -510,9 +510,19 @@ def get_results(study_id: str) -> dict:
         return _err("results", "no optimization has run for this study yet")
     front = pareto.front(s)
     from structura.optimize.study import summary
+    closest = None
+    if not front:  # nothing meets every requirement: name the conflict instead of returning nothing
+        ok = [t for t in s.trials if t.user_attrs.get("status") == "ok" and t.user_attrs.get("violations")]
+        if ok:
+            t = min(ok, key=lambda t: sum(t.user_attrs["violations"]))
+            failed = [c for c in t.user_attrs.get("checks", []) if not c.get("passed")]
+            closest = {"trial": t.number, "params": t.params, "metrics": t.user_attrs.get("metrics"),
+                       "fails": [{k: c[k] for k in ("id", "quantity", "value", "op", "limit")} for c in failed],
+                       "hint": "the requirements conflict for this family: tell the user which ones and let them choose what to relax "
+                               "(a default the user never stated is the first candidate)"}
     return _ok(objectives=s.user_attrs.get("objectives"), method=s.user_attrs.get("method"),
                front=[{"trial": p.number, "params": p.params, "values": p.values} for p in front],
-               recommended=decide.recommend(s), summary=summary(s))
+               recommended=decide.recommend(s), closest_infeasible=closest, summary=summary(s))
 
 
 @mcp.tool(description="Steer the search toward a preference. Give `reference` (target value per objective, in the spec's objective order) or `preference` "

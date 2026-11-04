@@ -102,3 +102,14 @@ proves a design meets the brief; it does not prove the search found the best one
 **Decision.** A headline result (proposal, demo, report) states its budget and is re-run at double the budget; it is
 reported as converged only if the best objective changes by less than 2% between the two. Otherwise the larger run is
 reported and the check repeats. Runs: `benchmarks/heatsink_fan_demo*.json`.
+
+## D9. Defaults the user did not state are hard requirements only when they protect the user (2026-11-04)
+
+**Evidence.** In the ten-brief suite, "a bracket for a 30 kg shelf, PETG, lightest possible" found no feasible design:
+the spec carried the default 250 g mass cap, and every design strong enough for 30 kg is heavier. The brief never
+asked for a cap; "lightest possible" is already the objective. A default decided the outcome without the user knowing.
+
+**Decision.** Safety and serviceability defaults stay hard requirements (safety factor 2 on knocked-down strength,
+deflection limits), each labelled with its source. Defaults that only restate the objective (a mass cap for "as light
+as possible") are not added. When nothing is feasible, the agent's results name the closest design and the
+requirements it misses (`get_results.closest_infeasible`), so the user sees which requirements conflict.
