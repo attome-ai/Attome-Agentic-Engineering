@@ -36,7 +36,9 @@ def _bundle(spec, params: dict, mesh: float, folder: Path) -> dict:
     ev = json.loads(ev_path.read_text())
     case = next(iter(ev["load_cases"]))
     skin = json.loads((folder / f"result_{case}" / "skin.json").read_text())
-    return {"metrics": ev["metrics"], "feasible": ev["feasible"], "checks": ev["checks"], "hash": ev["hash"], "skin": skin}
+    mode_file = folder / f"result_{case}" / "mode1.json"
+    mode = json.loads(mode_file.read_text()) if mode_file.exists() else None  # vibration mode 1 (G2), when the spec asked for it
+    return {"metrics": ev["metrics"], "feasible": ev["feasible"], "checks": ev["checks"], "hash": ev["hash"], "skin": skin, "mode": mode}
 
 
 def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None, trust_dir: str | None = None,

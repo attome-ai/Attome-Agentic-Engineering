@@ -72,6 +72,7 @@ body.print .controls,body.print #probe{display:none!important}
           <button data-f="vm" aria-pressed="true">Von Mises</button><button data-f="disp" aria-pressed="false">Displacement</button><button data-f="safety" aria-pressed="false">Safety</button>
         </div>
         <label>Deformation × <input type="range" id="scale" min="0" max="1" step="0.01" value="0"> <span id="scaleval">0</span></label>
+        <button type="button" id="modebtn" style="display:none;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;padding:3px 10px;cursor:pointer;font:inherit"></button>
         <button type="button" id="play" title="Animate the load being applied" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;padding:3px 10px;cursor:pointer;font:inherit">▶ load</button>
         <label><input type="checkbox" id="ghost" checked> undeformed ghost</label>
         <label><input type="checkbox" id="marks" checked> loads &amp; supports</label>
@@ -313,6 +314,9 @@ function show(design, label){
   g.computeBoundingSphere(); target.copy(g.boundingSphere.center); radius = g.boundingSphere.radius * (split ? 5.6 : 3.2);  // a half-width view needs more distance
   const umax = Math.max(1e-9, design.skin.max_disp_mm), size = g.boundingSphere.radius;
   $("#scale").max = (0.15*size/umax).toFixed(2);
+  if (modeAnim) {cancelAnimationFrame(modeAnim); modeAnim = null}
+  $("#modebtn").style.display = design.mode && !split ? "" : "none";
+  if (design.mode) $("#modebtn").textContent = `〰 mode 1 · ${f3(design.mode.frequency_hz)} Hz`;
   const kinds = drawMarkers(design.skin, size);
   const thermal = !!design.skin.scalar;
   $("#viewnote").textContent = thermal ? "Drag to rotate, wheel to zoom, shift-drag to pan. Colour: temperature on the surface of the part (hover to read it)." : "Drag to rotate, wheel to zoom, shift-drag to pan. Safety view: green above the required safety factor, amber within 10% of it, red below (local yield / von Mises).";
@@ -380,6 +384,29 @@ $("#whichseg").addEventListener("click", e => {const b = e.target.closest("butto
   if (which === "base" && D.baseline) show(D.baseline, "Baseline (hand design)"); else show(selected, label(selected))});
 $("#scale").addEventListener("input", deform); $("#marks").addEventListener("change", e => {if (marks) {marks.visible = e.target.checked; draw()}});
 $("#ghost").addEventListener("change", deform);
+
+// vibration mode animation (G2): the part oscillates in its first mode shape, coloured by relative amplitude
+let modeAnim = null;
+function stopMode(){if (modeAnim) {cancelAnimationFrame(modeAnim); modeAnim = null; $("#modebtn").textContent = `〰 mode 1 · ${f3(current.mode.frequency_hz)} Hz`; colorize(); deform()}}
+$("#modebtn").addEventListener("click", () => {
+  if (!current || !current.mode) return;
+  if (modeAnim) {stopMode(); return}
+  if (playing) $("#play").click();
+  const k = decode(current.skin), md = current.mode._d || (current.mode._d = {disp: b64f(current.mode.disp), amp: b64f(current.mode.amplitude)});
+  const c = mesh.geometry.attributes.color.array, p = mesh.geometry.attributes.position.array;
+  for (let i = 0; i < md.amp.length; i++) {const rgb = viridis(md.amp[i]); c[3*i] = rgb[0]; c[3*i+1] = rgb[1]; c[3*i+2] = rgb[2]}
+  mesh.geometry.attributes.color.needsUpdate = true;
+  const last = VIRIDIS.length - 1, stops = VIRIDIS.map((v, i) => `rgb(${VIRIDIS[last - i].join(",")}) ${(100*i/last).toFixed(1)}%`).join(",");
+  $("#legend").innerHTML = `<div>1</div><div class="bar" style="background:linear-gradient(${stops})"></div><div>0</div><div class="muted">mode 1 amplitude (relative)</div>`;
+  const A = 0.08 * mesh.geometry.boundingSphere.radius, t0 = performance.now();
+  $("#modebtn").textContent = "■ stop mode";
+  const step = now => {
+    const w = Math.sin(2*Math.PI*(now - t0)/1400) * A;  // slowed down: the real motion is too fast to see
+    for (let i = 0; i < k.pos.length; i++) p[i] = k.pos[i] + w * md.disp[i];
+    mesh.geometry.attributes.position.needsUpdate = true; mesh.geometry.computeVertexNormals(); draw();
+    modeAnim = requestAnimationFrame(step)};
+  modeAnim = requestAnimationFrame(step);
+});
 // load-up animation (G2): ramp the deformation scale from zero to its maximum and back, eased
 let playing = null;
 $("#play").addEventListener("click", () => {
@@ -526,6 +553,7 @@ $("#lang").addEventListener("click", () => {
   if (arabic) mo.observe(document.body, {childList: true, subtree: true}); else mo.disconnect();
 });
 if (location.hash === "#ar") $("#lang").click();
+if (location.hash === "#mode") setTimeout(() => $("#modebtn").click(), 300);  // link straight to the vibration mode
 if (location.hash === "#split" && rec && D.baseline) $("#whichseg").querySelector('[data-w="split"]').click();  // link straight to the comparison
 </script>
 </body>

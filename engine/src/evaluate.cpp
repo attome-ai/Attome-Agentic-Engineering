@@ -186,6 +186,25 @@ nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params
         ModalResult mr = solve_modal(m, eff, lc.supports, 3, (fs::path(work) / ("modal_" + lc.name)).string(), so);
         met["first_frequency_hz"] = mr.frequencies_hz.at(0);
         cases[lc.name]["frequencies_hz"] = mr.frequencies_hz;
+        if (o.save_bundle && !mr.shapes.empty()) {  // mode 1 for the viewer's vibration animation (G2), normalized to 1 mm peak
+          Result rm;
+          double peak = 0;
+          for (auto& [n, u] : mr.shapes[0]) peak = std::max(peak, std::sqrt(u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
+          for (auto& [n, u] : mr.shapes[0]) {
+            std::array<double, 3> v = {u[0] / (peak > 0 ? peak : 1), u[1] / (peak > 0 ? peak : 1), u[2] / (peak > 0 ? peak : 1)};
+            rm.disp[n] = v;
+            rm.von_mises[n] = std::sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);  // relative amplitude, for colour
+          }
+          rm.max_disp_mm = 1;
+          rm.max_von_mises_MPa = 1;
+          std::string mp = (fs::path(work) / ("result_" + lc.name) / "mode1.json").string();
+          fs::create_directories(fs::path(mp).parent_path());
+          write_skin(m, rm, mp, 0);
+          std::ifstream min(mp);
+          nlohmann::json mj = nlohmann::json::parse(min);
+          min.close();
+          std::ofstream(mp) << nlohmann::json({{"frequency_hz", mr.frequencies_hz.at(0)}, {"disp", mj["disp"]}, {"amplitude", mj["von_mises"]}}).dump();
+        }
       }
       mt.by_case[lc.name] = met;
       if (o.save_bundle) {

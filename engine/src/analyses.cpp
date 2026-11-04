@@ -89,6 +89,12 @@ ModalResult solve_modal(const Mesh& m, const Material& mat, const std::vector<Su
   for (auto& row : dat_table(dat, "E I G E N V A L U E   O U T P U T"))
     if (row.size() >= 4) r.frequencies_hz.push_back(row[3]);  // mode, eigenvalue, rad/time, cycles/time
   if (r.frequencies_hz.empty()) throw std::runtime_error("no eigenvalue output in job.dat");
+  for (auto& blk : read_frd_blocks((fs::path(workdir) / "job.frd").string(), "DISP")) {
+    std::map<int, std::array<double, 3>> sh;
+    for (auto& [n, v] : blk)
+      if (v.size() >= 3) sh[n] = {v[0], v[1], v[2]};
+    r.shapes.push_back(std::move(sh));
+  }
   return r;
 }
 

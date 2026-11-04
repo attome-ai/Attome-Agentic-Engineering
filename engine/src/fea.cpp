@@ -226,6 +226,36 @@ std::map<int, std::vector<double>> read_frd_block(const std::string& path, const
   return out;
 }
 
+std::vector<std::map<int, std::vector<double>>> read_frd_blocks(const std::string& path, const std::string& name) {
+  std::ifstream in(path);
+  if (!in) throw std::runtime_error("cannot open " + path);
+  std::vector<std::map<int, std::vector<double>>> out;
+  std::map<int, std::vector<double>> cur;
+  bool inside = false;
+  std::string line;
+  while (std::getline(in, line)) {
+    if (line.rfind(" -4", 0) == 0) {
+      std::istringstream ss(line.substr(3));
+      std::string n;
+      ss >> n;
+      inside = n == name;
+      cur.clear();
+      continue;
+    }
+    if (!inside) continue;
+    if (line.rfind(" -1", 0) == 0) {
+      int node = std::stoi(line.substr(3, 10));
+      std::vector<double> v;
+      for (size_t pos = 13; pos + 12 <= line.size(); pos += 12) v.push_back(std::stod(line.substr(pos, 12)));
+      cur[node] = v;
+    } else if (line.rfind(" -3", 0) == 0) {
+      out.push_back(cur);
+      inside = false;
+    }
+  }
+  return out;
+}
+
 double von_mises(const std::vector<double>& s) {
   double a = s[0] - s[1], b = s[1] - s[2], c = s[2] - s[0];
   return std::sqrt(0.5 * (a * a + b * b + c * c) + 3 * (s[3] * s[3] + s[4] * s[4] + s[5] * s[5]));

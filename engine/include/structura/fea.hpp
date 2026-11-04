@@ -83,6 +83,7 @@ Result solve_static(const Mesh& m, const Material& mat, const LoadCase& lc, cons
 // ---------------------------------------------------------------- modal and buckling (C1, before 3 Feb)
 struct ModalResult {
   std::vector<double> frequencies_hz;
+  std::vector<std::map<int, std::array<double, 3>>> shapes;  // mode shape per frequency (node -> displacement, arbitrary scale)
   std::string solver_version;
   double runtime_s = 0;
 };
@@ -153,6 +154,8 @@ ThermalResult solve_thermal(const Mesh& m, const Material& mat, const ThermalCas
 
 // .frd reading: last block of a result type ("DISP", "STRESS") -> node -> values
 std::map<int, std::vector<double>> read_frd_block(const std::string& path, const std::string& name);
+// every block with that name, in file order (e.g. one DISP block per vibration mode)
+std::vector<std::map<int, std::vector<double>>> read_frd_blocks(const std::string& path, const std::string& name);
 double von_mises(const std::vector<double>& s);  // sxx syy szz sxy syz szx
 
 }  // namespace structura
