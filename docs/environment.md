@@ -60,3 +60,11 @@ Optuna 5.0 deprecates `constraints_func` on the samplers (`structura/optimize/st
 NSGA-II after-trial strategy still branches on `constraints_func is not None`, so it is not yet verified that the
 replacement alone drives feasibility-aware selection. Migrate only with an A/B run on the 20 kg bracket (same seed and
 budget) showing the same feasible front; until then the environment pins Optuna below 7.
+
+## Clean recreation test (P0-x0, 2026-11-04)
+
+`micromamba create -p <empty folder> -f environment.yml`, then imports and `tests/test_smoke.py` plus the MCP protocol
+tests run in that new environment. First attempt: the environment built, but `import mcp` failed: the MCP SDK and
+OpenCASCADE had been installed by hand or only as a dependency. Both are now listed (`mcp =2.3`, `occt =7.8.1`).
+Second attempt: created in 41 s from the local package cache, all imports pass, 5 of 5 tests pass. Tested as a fresh
+environment on the development account, not on a fresh Windows account; CMake and MSVC come from Visual Studio 2022.
