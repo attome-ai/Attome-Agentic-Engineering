@@ -9,7 +9,7 @@ import mcp
 from structura.agent import mcp_server as srv
 
 SPEC = Path(__file__).resolve().parents[1] / "docs" / "examples" / "bracket_20kg.json"
-TOOLS = {"list_families", "describe_grammar", "plan_study", "create_study", "accept_spec", "check_feasibility",
+TOOLS = {"build_report", "derive_load", "rank_questions", "propose_relaxation", "list_families", "describe_grammar", "plan_study", "create_study", "accept_spec", "check_feasibility",
          "compose_design", "evaluate_design", "run_optimization", "get_job", "get_results", "steer", "explain", "verify"}
 
 

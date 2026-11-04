@@ -33,7 +33,7 @@ INSTRUCTIONS = """You are driving the Attome AE engineering engine. Workflow:
 4. Ask the user to accept the spec card; call accept_spec only with their answer.
 5. run_optimization (it runs in the background); poll get_job; then get_results for the front and the recommended
    design; use steer when the user states a preference; explain to compare two designs.
-6. verify the chosen design and report its trust grade; export the bundle.
+6. verify the chosen design and report its trust grade; build_report and give the user the file.
 Never state a number the tools did not return. Never tune parameters yourself inside a loop: that is the optimizer's job."""
 
 mcp = MCPServer(name="attome-ae", instructions=INSTRUCTIONS, version="0.1.0")
@@ -304,6 +304,21 @@ def verify(study_id: str, params: dict, fine_mesh: float = 3.0) -> dict:
         return _err(e.kind, str(e))
     S.log(study_id, "verify", t.get("status"), grade=t.get("grade"), folder=str(out))
     return _ok(folder=str(out), **{k: t.get(k) for k in ("grade", "status", "reasons", "requirements", "independent_checks", "assumptions", "reproduce")})
+
+
+@mcp.tool(description="Write the interactive study report (one offline HTML file: 3D fields, Pareto explorer, comparison with the baseline, trust "
+                      "panel, history, timeline). Give the baseline design's parameters when there is one. Returns the file path to give the user.")
+def build_report(study_id: str, baseline: dict | None = None) -> dict:
+    from structura.report.build import build
+    d = S.folder(study_id)
+    if not (d / "opt" / "study.db").exists():
+        return _err("results", "run an optimization first")
+    verifies = sorted((d / "verify").glob("*/trust.json"), key=lambda p: p.stat().st_mtime) if (d / "verify").exists() else []
+    trust_dir = str(verifies[-1].parent) if verifies else None
+    out = build(str(S.latest_spec_path(study_id)), str(d / "opt"), str(d / "report.html"),
+                {k: float(v) for k, v in baseline.items()} if baseline else None, trust_dir, study_id)
+    S.log(study_id, "report", "ok", file=str(out))
+    return _ok(file=str(out), size_mb=round(out.stat().st_size / 1e6, 1))
 
 
 # ------------------------------------------------------------------ resources and prompts
