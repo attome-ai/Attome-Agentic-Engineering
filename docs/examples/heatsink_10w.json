@@ -1,0 +1,94 @@
+{
+  "id": "heatsink-10w",
+  "version": 1,
+  "brief": "A heat sink that keeps a 10 W module below 75 C in 35 C air, as light as possible, machined from aluminium.",
+  "family": "heatsink",
+  "free_params": {
+    "base_thickness": [
+      2,
+      8
+    ],
+    "fin_count": [
+      4,
+      16
+    ],
+    "fin_thickness": [
+      1.2,
+      3
+    ],
+    "fin_height": [
+      10,
+      40
+    ]
+  },
+  "material": "AL6061T6",
+  "apply_print_knockdown": false,
+  "thermal_cases": [
+    {
+      "name": "steady",
+      "source": "brief: 10 W module, 35 C air; assumed forced air at 25 W/m^2K, the low end of forced convection in gases (25-250 W/m^2K, Incropera et al., Fundamentals of Heat and Mass Transfer, Table 1.1); to be replaced by a fin-array correlation (C2)",
+      "fluxes": [
+        {
+          "group": "base_bottom",
+          "power": 10.0
+        }
+      ],
+      "films": [
+        {
+          "group": "exposed_top",
+          "h": 2.5e-05,
+          "sink": 35.0
+        },
+        {
+          "group": "exposed_px",
+          "h": 2.5e-05,
+          "sink": 35.0
+        },
+        {
+          "group": "exposed_nx",
+          "h": 2.5e-05,
+          "sink": 35.0
+        },
+        {
+          "group": "exposed_py",
+          "h": 2.5e-05,
+          "sink": 35.0
+        },
+        {
+          "group": "exposed_ny",
+          "h": 2.5e-05,
+          "sink": 35.0
+        }
+      ]
+    }
+  ],
+  "objectives": [
+    {
+      "quantity": "mass_g",
+      "sense": "min"
+    },
+    {
+      "quantity": "peak_temperature",
+      "sense": "min"
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R1",
+      "quantity": "peak_temperature",
+      "op": "<=",
+      "value": 75.0,
+      "source": "brief: keep the module below 75 C"
+    },
+    {
+      "id": "R2",
+      "quantity": "mass_g",
+      "op": "<=",
+      "value": 200.0,
+      "source": "default: mass cap; 'as light as possible' is the objective"
+    }
+  ],
+  "mesh": {
+    "size": 2.5
+  }
+}

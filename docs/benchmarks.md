@@ -143,3 +143,19 @@ knee design verified with three mesh levels. About 4.5 minutes in total on the d
 Front: 4 designs, 3 still feasible on the fine mesh, ranking unchanged. The honest framing: the baseline is not lighter
 than a safe design, it is unsafe; the optimizer finds the lightest design that is proven to meet the brief.
 Golden result regenerated for bracket v2 (geometry change, decision D6).
+
+## Thermal demo: heat sink for a 10 W module (`benchmarks/heatsink_demo.py`)
+
+Plate-fin heat sink family (base 60 x 60 mm, 4-16 fins), aluminium 6061-T6, 10 W into the base, 35 C air at an
+assumed 25 W/m^2K (low end of forced convection, Incropera Table 1.1), requirement peak temperature <= 75 C,
+objectives minimum mass and minimum peak temperature. 150 NSGA-II evaluations at 2.5 mm, front re-solved at 1.5 mm.
+
+| | Mass | Peak temperature | Result |
+|---|---|---|---|
+| Hand baseline (4 mm base, 8 fins 2 x 25 mm) | 103.7 g | 49.2 C | meets the requirement with a large margin |
+| Lightest optimized design (2.5 mm base, 4 fins 2.5 x 12 mm) | **44.3 g (-57%)** | 74.6 C | meets it, **trust grade A** |
+
+Front: 13 designs, all still feasible on the fine mesh. Default design's trust record: peak temperature numerical error
+0.002%, heat balance (heat convected out against 10 W in) 2e-8. About 4 minutes on the development machine.
+The fixed convection coefficient is an approximation stated in the trust record's assumptions; a fin-array correlation
+and later CFD (C5) replace it.

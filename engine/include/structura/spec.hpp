@@ -67,6 +67,7 @@ struct DesignSpec {
   bool apply_print_knockdown = true;
   std::array<double, 3> print_direction{0, 0, 1};
   std::vector<SpecLoadCase> load_cases;
+  std::vector<ThermalCase> thermal_cases;  // steady heat transfer (C2); at least one structural or thermal case
   std::vector<Objective> objectives;
   std::vector<Requirement> requirements;
   double mesh_size = 4.0;

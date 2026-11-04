@@ -130,7 +130,9 @@ ThermalCase ThermalCase::from_json(const nlohmann::json& j) {
 }
 
 nlohmann::json ThermalResult::summary() const {
-  return {{"t_max", t_max}, {"t_min", t_min}, {"solver_version", solver_version}, {"runtime_s", runtime_s},
+  double bal = heat_in_W > 0 ? std::fabs(heat_out_W - heat_in_W) / heat_in_W : -1;
+  return {{"t_max", t_max}, {"t_min", t_min}, {"heat_in_W", heat_in_W}, {"heat_out_W", heat_out_W}, {"heat_balance_error", bal},
+          {"solver_version", solver_version}, {"runtime_s", runtime_s},
           {"nodes", temperature.size()}, {"units", {{"temperature", "as given in the case (K or degC)"}, {"power", "W"}}}};
 }
 
@@ -173,6 +175,18 @@ ThermalResult solve_thermal(const Mesh& m, const Material& mat, const ThermalCas
     r.t_max = std::max(r.t_max, v[0]);
     r.t_min = std::min(r.t_min, v[0]);
   }
+  // energy balance: heat in through fluxes, heat out through films (quadratic triangles: corner weights 0, mid-sides 1/3)
+  for (auto& fx : tc.fluxes) {
+    double a = 0;
+    for (auto& tri : m.surfaces.at(fx.group)) a += tri_area(m.nodes, tri);
+    r.heat_in_W += fx.power > 0 ? fx.power : fx.q * a;
+  }
+  for (auto& f : tc.films)
+    for (auto& tri : m.surfaces.at(f.group)) {
+      double tavg = tri.size() >= 7 ? (r.temperature.at(tri[4]) + r.temperature.at(tri[5]) + r.temperature.at(tri[6])) / 3
+                                    : (r.temperature.at(tri[1]) + r.temperature.at(tri[2]) + r.temperature.at(tri[3])) / 3;
+      r.heat_out_W += f.h * (tavg - f.sink) * tri_area(m.nodes, tri);
+    }
   return r;
 }
 

@@ -337,8 +337,8 @@ std::vector<Resolved> DesignGraph::resolve(const Values& overrides) const {
     std::string w = "face '" + name + "'";
     try {
       if (sel.kind == "plane") {
-        if (!is_axis(sel.normal) || sel.at.is_null()) throw GraphError(w + ": a plane selector needs normal and at");
-        eval_value(sel.at, vals);
+        if (!is_axis(sel.normal)) throw GraphError(w + ": a plane selector needs a normal");
+        if (!sel.at.is_null()) eval_value(sel.at, vals);  // no "at": every planar face with this normal
       } else {
         if (!is_axis(sel.axis) || sel.radius.is_null()) throw GraphError(w + ": a cylinder selector needs axis and radius");
         eval_value(sel.radius, vals);

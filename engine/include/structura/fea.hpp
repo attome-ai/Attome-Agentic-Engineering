@@ -120,6 +120,7 @@ struct ThermalCase {
 struct ThermalResult {
   std::map<int, double> temperature;  // node -> temperature
   double t_max = 0, t_min = 0;
+  double heat_in_W = 0, heat_out_W = 0;  // power applied, and convected out through the films (energy balance check)
   std::string solver_version;
   double runtime_s = 0;
   nlohmann::json summary() const;

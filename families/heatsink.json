@@ -1,0 +1,107 @@
+{
+  "name": "heatsink",
+  "version": "1",
+  "doc": "Plate-fin heat sink: a square base with a row of straight fins along x. Heat enters through the base bottom; the other surfaces lose heat by convection.",
+  "parameters": {
+    "base_thickness": {
+      "unit": "mm",
+      "low": 2,
+      "high": 8,
+      "default": 4,
+      "doc": "base plate thickness"
+    },
+    "fin_count": {
+      "unit": "1",
+      "low": 4,
+      "high": 16,
+      "default": 8,
+      "integer": true,
+      "doc": "number of fins"
+    },
+    "fin_thickness": {
+      "unit": "mm",
+      "low": 1.2,
+      "high": 3,
+      "default": 2,
+      "doc": "fin thickness (y)"
+    },
+    "fin_height": {
+      "unit": "mm",
+      "low": 10,
+      "high": 40,
+      "default": 25,
+      "doc": "fin height above the base (z)"
+    }
+  },
+  "features": [
+    {
+      "id": "base",
+      "type": "plate",
+      "doc": "60 x 60 mm base",
+      "params": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "length": 60,
+        "width": 60,
+        "thickness": "base_thickness"
+      }
+    },
+    {
+      "id": "fins",
+      "type": "fin_array",
+      "doc": "fins spread across the full width",
+      "params": {
+        "x": 0,
+        "y": 0,
+        "z": "base_thickness",
+        "count": "fin_count",
+        "pitch": "(60 - fin_thickness) / (fin_count - 1)",
+        "length": 60,
+        "fin_thickness": "fin_thickness",
+        "height": "fin_height"
+      }
+    }
+  ],
+  "faces": {
+    "base_bottom": {
+      "kind": "plane",
+      "normal": "-z",
+      "at": 0,
+      "doc": "heat input (the device sits here)"
+    },
+    "exposed_top": {
+      "kind": "plane",
+      "normal": "z",
+      "doc": "fin tops and base top between fins"
+    },
+    "exposed_px": {
+      "kind": "plane",
+      "normal": "x",
+      "doc": "faces looking +x"
+    },
+    "exposed_nx": {
+      "kind": "plane",
+      "normal": "-x",
+      "doc": "faces looking -x"
+    },
+    "exposed_py": {
+      "kind": "plane",
+      "normal": "y",
+      "doc": "faces looking +y (fin sides)"
+    },
+    "exposed_ny": {
+      "kind": "plane",
+      "normal": "-y",
+      "doc": "faces looking -y (fin sides)"
+    }
+  },
+  "design_space": [
+    0,
+    0,
+    0,
+    60,
+    60,
+    48
+  ]
+}

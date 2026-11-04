@@ -145,6 +145,14 @@ nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params
         write_skin(m, r, (fs::path(work) / ("result_" + lc.name) / "skin.json").string(), eff.yield);
       }
     }
+    for (auto& tc : spec.thermal_cases) {  // steady heat transfer on the same mesh (C2)
+      std::string dir = (fs::path(work) / ("thermal_" + tc.name)).string();
+      ThermalResult tr = solve_thermal(m, eff, tc, dir, so);
+      double mass_g = volume(rg.shape) * eff.density * 1e6;
+      mt.by_case[tc.name] = {{"peak_temperature", tr.t_max}, {"mass_g", mass_g}};
+      cases[tc.name] = tr.summary();
+      cases[tc.name]["mass_g"] = mass_g;
+    }
   } catch (const std::exception& e) {
     out["error"] = e.what();
     return finish("solve_fail");

@@ -115,14 +115,15 @@ std::vector<TopoDS_Face> select_faces(const TopoDS_Shape& s, const FaceSelector&
   std::vector<TopoDS_Face> out;
   if (sel.kind == "plane") {
     gp_Dir n = dir_of(sel.normal);
-    double at = eval_value(sel.at, v);
+    const bool any = sel.at.is_null();
+    double at = any ? 0.0 : eval_value(sel.at, v);
     double sign = sel.normal[0] == '-' ? -1 : 1;
     for (auto& f : faces_of(s)) {
       if (BRepAdaptor_Surface(f).GetType() != GeomAbs_Plane) continue;
       if (normal(f).Dot(n) < 1 - 1e-6) continue;
       gp_Pnt c = centre(f);
       double coord = gp_Vec(c.XYZ()).Dot(gp_Vec(n)) * sign;
-      if (std::fabs(coord - at) <= tol * std::max(1.0, std::fabs(at)) && inside(c)) out.push_back(f);
+      if ((any || std::fabs(coord - at) <= tol * std::max(1.0, std::fabs(at))) && inside(c)) out.push_back(f);
     }
   } else {
     gp_Dir a = dir_of(sel.axis);

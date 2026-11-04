@@ -21,7 +21,9 @@ std::string pct(double v) {
 
 double rep_size(const nlohmann::json& ev) {
   double vol = 0;
-  for (auto& [_, c] : ev["load_cases"].items()) vol = c.value("volume_mm3", 0.0);
+  for (auto& [_, c] : ev["load_cases"].items()) vol = std::max(vol, c.value("volume_mm3", 0.0));
+  if (vol <= 0 && ev["metrics"].contains("mass_g") && ev["material"].value("density", 0.0) > 0)  // thermal-only studies
+    vol = ev["metrics"]["mass_g"].get<double>() * 1e-6 / ev["material"]["density"].get<double>();
   double n = ev["mesh"].value("elements", 1.0);
   return std::cbrt(vol / std::max(1.0, n));
 }
@@ -107,12 +109,13 @@ nlohmann::json build_trust(const DesignSpec& spec, const Values& free, const Tru
   double h1 = rep_size(fine), h2 = rep_size(medium), h3 = rep_size(coarse);
   nlohmann::json err = nlohmann::json::object();
   std::map<std::string, Gci> gci;
-  for (auto q : {"max_von_mises_MPa", "max_disp_mm", "mass_g"}) {
+  for (auto& [q, _] : fine["metrics"].items()) {  // every governing quantity the spec produced
+    if (q == "safety_factor" || !medium["metrics"].contains(q) || !coarse["metrics"].contains(q)) continue;
     Gci g = grid_convergence(fine["metrics"][q], medium["metrics"][q], coarse["metrics"][q], h1, h2, h3);
     gci[q] = g;
     err[q] = g.to_json();
   }
-  gci["safety_factor"] = gci["max_von_mises_MPa"];  // SF = yield / peak stress: same relative error
+  if (gci.count("max_von_mises_MPa")) gci["safety_factor"] = gci["max_von_mises_MPa"];  // SF = yield / peak stress
   t["numerical_error"] = err;
 
   // requirements with margins, proven or not
@@ -142,6 +145,16 @@ nlohmann::json build_trust(const DesignSpec& spec, const Values& free, const Tru
   nlohmann::json checks = nlohmann::json::array();
   bool independent_ok = true;
   for (auto& [name, c] : fine["load_cases"].items()) {
+    if (!c.contains("equilibrium_error") && !c.contains("heat_balance_error")) continue;
+    if (c.contains("heat_balance_error")) {  // thermal case: heat out through the films equals heat in
+      double hb = c.value("heat_balance_error", 1.0);
+      bool hok = hb >= 0 && hb < 0.01;
+      checks.push_back({{"check", "heat balance (" + name + ")"}, {"value", hb}, {"limit", 0.01}, {"passed", hok},
+                        {"detail", "heat in " + std::to_string(c.value("heat_in_W", 0.0)) + " W, convected out " +
+                                       std::to_string(c.value("heat_out_W", 0.0)) + " W"}});
+      independent_ok = independent_ok && hok;
+      continue;
+    }
     double eq = c.value("equilibrium_error", 1.0);
     bool ok = eq < 0.005;
     checks.push_back({{"check", "reaction equilibrium (" + name + ")"}, {"value", eq}, {"limit", 0.005}, {"passed", ok},
@@ -162,7 +175,11 @@ nlohmann::json build_trust(const DesignSpec& spec, const Values& free, const Tru
 
   // assumptions in plain words
   nlohmann::json as = nlohmann::json::array();
-  as.push_back("Linear elastic, isotropic material and small deflections (no yielding, buckling or contact is modelled in this result).");
+  if (!spec.load_cases.empty())
+    as.push_back("Linear elastic, isotropic material and small deflections (no yielding, buckling or contact is modelled in this result).");
+  for (auto& tc : spec.thermal_cases)
+    as.push_back("Thermal case '" + tc.name + "': steady conduction in the part with a fixed convection coefficient on the exposed faces "
+                 "(no airflow is simulated); constant conductivity.");
   as.push_back("Material: " + fine["material"].value("name", std::string("?")) + "; source: " + fine["material"].value("source", std::string("?")) +
                (fine["material"].value("verify", true) ? " (values to be confirmed against the datasheet)" : ""));
   for (auto& slc : spec.load_cases) {

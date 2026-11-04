@@ -69,7 +69,22 @@ DesignSpec DesignSpec::from_json(const nlohmann::json& j) {
   }
   s.apply_print_knockdown = j.value("apply_print_knockdown", true);
   if (j.contains("print_direction")) s.print_direction = j["print_direction"].get<std::array<double, 3>>();
-  for (auto& lc : j.at("load_cases")) {
+  const nlohmann::json tcs = j.value("thermal_cases", nlohmann::json::array());
+  for (auto& tc : tcs) {
+    ThermalCase t;
+    try {
+      t = ThermalCase::from_json(tc);
+    } catch (const std::exception& e) {
+      throw SpecError(e.what());
+    }
+    auto named = [&](const std::string& grp) { return std::any_of(g.faces.begin(), g.faces.end(), [&](auto& f) { return f.first == grp; }); };
+    for (auto& x : t.temperatures) if (!named(x.group)) throw SpecError("thermal group '" + x.group + "' is not a named face of family " + s.family);
+    for (auto& x : t.films) if (!named(x.group)) throw SpecError("film group '" + x.group + "' is not a named face of family " + s.family);
+    for (auto& x : t.fluxes) if (!named(x.group)) throw SpecError("flux group '" + x.group + "' is not a named face of family " + s.family);
+    s.thermal_cases.push_back(t);
+  }
+  const nlohmann::json lcs = j.value("load_cases", nlohmann::json::array());
+  for (auto& lc : lcs) {
     SpecLoadCase x;
     try {
       x.lc = LoadCase::from_json(lc);
@@ -86,7 +101,7 @@ DesignSpec DesignSpec::from_json(const nlohmann::json& j) {
         throw SpecError("load group '" + l.group + "' is not a named face of family " + s.family);
     s.load_cases.push_back(x);
   }
-  if (s.load_cases.empty()) throw SpecError("spec has no load cases");
+  if (s.load_cases.empty() && s.thermal_cases.empty()) throw SpecError("spec has no load cases or thermal cases");
   for (auto& o : j.value("objectives", nlohmann::json::array())) {
     Objective x{o.at("quantity"), o.value("sense", std::string("min"))};
     if (!quantities().count(x.quantity)) throw SpecError("unknown objective quantity '" + x.quantity + "'");
