@@ -143,6 +143,33 @@ class Scene:
         return worst
 
     # ------------------------------------------------------------------ scene
+    def _add_moving(self, mesh, flat=False, **kw):
+        """Add a mesh that will move. PyVista copies a mesh added with smooth_shading=True, so later updates would never
+        reach the screen; instead add it as is, shade it smoothly from its own normals, and return the drawn dataset."""
+        mesh = mesh.triangulate()
+        self._refresh_normals(mesh)
+        actor = self.pl.add_mesh(mesh, smooth_shading=False, **kw)
+        actor.prop.interpolation = "flat" if flat else ("pbr" if kw.get("pbr") else "gouraud")  # boxes keep crisp faces
+        # PyVista feeds the mapper through its own pipeline (a copy for scalar colouring); connect the mapper straight to
+        # this mesh instead, so every update (followed by Modified()) is what the window draws
+        actor.GetMapper().SetInputData(mesh)
+        if kw.get("scalars"):
+            mesh.set_active_scalars(kw["scalars"])
+        return mesh
+
+    @staticmethod
+    def _refresh_normals(mesh):
+        """Area-weighted vertex normals from the triangles (never changes the point count, unlike compute_normals)."""
+        tri = mesh.faces.reshape(-1, 4)[:, 1:]
+        p = mesh.points
+        fn = np.cross(p[tri[:, 1]] - p[tri[:, 0]], p[tri[:, 2]] - p[tri[:, 0]])
+        vn = np.zeros_like(p)
+        for c in range(3):
+            np.add.at(vn, tri[:, c], fn)
+        vn /= np.maximum(np.linalg.norm(vn, axis=1, keepdims=True), 1e-12)
+        mesh.point_data["Normals"] = vn
+        mesh.point_data.active_normals_name = "Normals"
+
     def _context(self, sub: int, engineering: bool):
         pv, pl, p = self.pv, self.pl, self.meta["params"]
         pl.subplot(0, sub)
@@ -158,23 +185,25 @@ class Scene:
             # the shelf: subdivided so it can bend with the arm
             board = pv.Box(bounds=(0, 250, -150, w + 150, top, top + 18), level=12, quads=True)
             crate = pv.Box(bounds=(70, 190, w / 2 - 70, w / 2 + 70, top + 18, top + 18 + 110))
+            board = self._add_moving(board, flat=True, color="#c08a55", specular=0.15)
+            crate = self._add_moving(crate, flat=True, color="#8a6b4a")
             meshes["board"] = (board, board.points.copy())
             meshes["crate"] = (crate, crate.points.copy())
-            pl.add_mesh(board, color="#c08a55", smooth_shading=True, specular=0.15)
-            pl.add_mesh(crate, color="#8a6b4a", smooth_shading=True, show_edges=True, edge_color="#5a4630")
         if engineering:
             part = self.surface.copy()
             part["von Mises (MPa)"] = self.frames[0, self.surf_ids, 3]
-            pl.add_mesh(part, scalars="von Mises (MPa)", cmap="viridis", clim=[0, self.vm_max], smooth_shading=True,
+            part = self._add_moving(part, scalars="von Mises (MPa)", cmap="viridis", clim=[0, self.vm_max],
                         scalar_bar_args={"title": "von Mises (MPa) per solved step", "vertical": True, "position_x": 0.86,
                                          "position_y": 0.2, "height": 0.55, "fmt": "%.0f", "title_font_size": 12, "label_font_size": 11})
             meshes["part"] = (part, self.surf_base)
+            assert part.n_points == len(self.surf_base), "triangulating the surface changed its points"
             pl.add_text(f"ENGINEERING VIEW · deformation x{self.scale:.0f} · stress per time step", position="upper_edge",
                         font_size=10, color="#333333")
         else:
             part = self.cad.copy()
-            pl.add_mesh(part, color="#4a4f57", pbr=True, metallic=0.0, roughness=0.55, smooth_shading=True)  # printed PETG, dark grey
+            part = self._add_moving(part, color="#4a4f57", pbr=True, metallic=0.0, roughness=0.55)  # printed PETG, dark grey
             meshes["part"] = (part, self.cad_base)
+            assert part.n_points == len(self.cad_base), "triangulating the CAD surface changed its points"
             pl.add_text("REAL WORLD · true scale (x1)", position="upper_edge", font_size=10, color="#333333")
         if not engineering:
             try:
@@ -228,16 +257,25 @@ class Scene:
             if engineering:
                 part.points = base + fr[self.surf_ids, :3] * scale
                 part["von Mises (MPa)"] = fr[self.surf_ids, 3]
+                part.set_active_scalars("von Mises (MPa)")
+                self._refresh_normals(part)
+                part.Modified()
             else:
                 u = np.einsum("ij,ijk->ik", self.cad_w, fr[self.cad_idx, :3])
                 part.points = base + u * scale
+                self._refresh_normals(part)
+                part.Modified()
             if self.bracket:
                 board, bb = meshes["board"]
                 q = bb.copy()
                 q[:, 2] += self.shelf_uz(bb[:, 0], xc, prof * scale)
                 board.points = q
+                self._refresh_normals(board)
+                board.Modified()
                 crate, cb = meshes["crate"]
                 crate.points = self.place_crate(cb, xc, prof * scale) + np.array([0.0, 0.0, lift])
+                self._refresh_normals(crate)
+                crate.Modified()
         if f is None:
             self.clock.SetText(0, f"lowering the crate (staging)    t < 0")
         else:
