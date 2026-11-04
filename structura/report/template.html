@@ -68,7 +68,7 @@ footer{color:var(--muted);font-size:.8rem;margin-top:20px}
         <div class="seg" id="whichseg" role="group" aria-label="Design"><button data-w="sel" aria-pressed="true">Selected</button><button data-w="base" aria-pressed="false">Baseline</button></div>
       </div>
       <div id="viewer"><canvas id="cv"></canvas><div id="probe">hover the part to read values</div><div id="legend"></div><div id="viewname"></div></div>
-      <p class="muted" style="font-size:.8rem;margin:.4rem 0 0">Drag to rotate, wheel to zoom, shift-drag to pan. Safety view: green above the required safety factor, amber within 10% of it, red below (local yield / von Mises).</p>
+      <p id="viewnote" class="muted" style="font-size:.8rem;margin:.4rem 0 0">Drag to rotate, wheel to zoom, shift-drag to pan. Safety view: green above the required safety factor, amber within 10% of it, red below (local yield / von Mises).</p>
     </section>
     <section class="card">
       <h2>Pareto front: click a design</h2>
@@ -114,12 +114,15 @@ const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n)
 $("#title").textContent = D.title;
 $("#brief").textContent = D.brief;
 const rec = D.designs.find(d => d.recommended) || D.designs[0];
+const OX = D.objectives[0], OY = D.objectives[1] || D.objectives[0];
+const qn = q => ({mass_g: "Mass", safety_factor: "Safety factor", max_disp_mm: "Max displacement", max_von_mises_MPa: "Peak von Mises", peak_temperature: "Peak temperature"}[q] || q);
+const qv = (m, o) => m && m[o.quantity] != null ? f3(m[o.quantity]) + (o.unit ? " " + o.unit : "") : "–";
 const headline = [
-  ["Recommended design", rec ? f3(rec.metrics.mass_g) + " g" : "–"],
-  ["Safety factor", rec ? f3(rec.metrics.safety_factor) : "–"],
+  ["Recommended: " + qn(OX.quantity), rec ? qv(rec.metrics, OX) : "–"],
+  [qn(OY.quantity), rec ? qv(rec.metrics, OY) : "–"],
   ["Trust grade", D.trust ? D.trust.grade : "–"],
   ["Evaluations", D.history.length],
-  ["Baseline", D.baseline ? f3(D.baseline.metrics.mass_g) + " g, SF " + f3(D.baseline.metrics.safety_factor) : "–"]];
+  ["Baseline", D.baseline ? qv(D.baseline.metrics, OX) + " · " + qv(D.baseline.metrics, OY) : "–"]];
 $("#headline").innerHTML = headline.map(([k, v]) => `<div class="stat"><b>${esc(v)}</b><span>${esc(k)}</span></div>`).join("");
 $("#spec").innerHTML = "<tr><th>Id</th><th>Requirement</th><th>Source</th></tr>" + D.spec.requirements.map(r =>
   `<tr><td>${esc(r.id)}</td><td>${esc(r.quantity)} ${esc(r.op)} ${esc(r.value)} ${r.unit === "1" ? "" : esc(r.unit)}</td><td class="muted">${esc(r.source)}</td></tr>`).join("");
@@ -156,7 +159,8 @@ function viridis(t){t = Math.min(1, Math.max(0, t)); const x = t*(VIRIDIS.length
   return [(a[0]+(b[0]-a[0])*f)/255, (a[1]+(b[1]-a[1])*f)/255, (a[2]+(b[2]-a[2])*f)/255]}
 function safetyColor(sf, req){if (sf >= req*1.1) return [0.19,0.55,0.33]; if (sf >= req) return [0.85,0.6,0.2]; return [0.75,0.2,0.24]}
 
-function decode(skin){if (skin._d) return skin._d; skin._d = {pos: b64f(skin.positions), disp: b64f(skin.disp), vm: b64f(skin.von_mises), idx: b64u(skin.indices)}; return skin._d}
+function decode(skin){if (skin._d) return skin._d; const sc = skin.scalar ? skin[skin.scalar.name] : skin.von_mises;
+  skin._d = {pos: b64f(skin.positions), disp: b64f(skin.disp), vm: b64f(sc), idx: b64u(skin.indices)}; return skin._d}
 function show(design, label){
   current = design; $("#viewname").textContent = label;
   const k = decode(design.skin);
@@ -173,6 +177,9 @@ function show(design, label){
   g.computeBoundingSphere(); target.copy(g.boundingSphere.center); radius = g.boundingSphere.radius * 3.2;
   const umax = Math.max(1e-9, design.skin.max_disp_mm), size = g.boundingSphere.radius;
   $("#scale").max = (0.15*size/umax).toFixed(2);
+  const thermal = !!design.skin.scalar;
+  $("#viewnote").textContent = thermal ? "Drag to rotate, wheel to zoom, shift-drag to pan. Colour: temperature on the surface of the part (hover to read it)." : "Drag to rotate, wheel to zoom, shift-drag to pan. Safety view: green above the required safety factor, amber within 10% of it, red below (local yield / von Mises).";
+  $("#fieldseg").style.display = thermal ? "none" : ""; $("#scale").parentElement.style.display = thermal ? "none" : ""; $("#ghost").parentElement.style.display = thermal ? "none" : "";
   colorize(); deform(); resize();
 }
 function colorize(){
@@ -180,11 +187,12 @@ function colorize(){
   const k = decode(current.skin), c = mesh.geometry.attributes.color.array, n = k.vm.length;
   const req = D.required_sf || 2, yld = current.skin.yield_MPa || 1;
   let lo = 0, hi = 1, unit = "MPa", name = "Von Mises";
-  if (field === "vm") {hi = current.skin.max_von_mises_MPa || 1}
+  if (current.skin.scalar) {field = "vm"; lo = current.skin.scalar.min; hi = current.skin.scalar.max; unit = current.skin.scalar.unit; name = current.skin.scalar.name === "temperature" ? "Temperature" : current.skin.scalar.name}
+  else if (field === "vm") {hi = current.skin.max_von_mises_MPa || 1}
   else if (field === "disp") {hi = current.skin.max_disp_mm || 1; unit = "mm"; name = "Displacement"}
   for (let i = 0; i < n; i++) {
     let rgb;
-    if (field === "vm") rgb = viridis(k.vm[i] / hi);
+    if (field === "vm") rgb = viridis((k.vm[i] - lo) / (hi - lo || 1));
     else if (field === "disp") {const x = k.disp[3*i], y = k.disp[3*i+1], z = k.disp[3*i+2]; rgb = viridis(Math.sqrt(x*x+y*y+z*z) / hi)}
     else rgb = safetyColor(k.vm[i] > 0 ? yld / k.vm[i] : 1e9, req);
     c[3*i] = rgb[0]; c[3*i+1] = rgb[1]; c[3*i+2] = rgb[2];
@@ -193,7 +201,7 @@ function colorize(){
   const lg = $("#legend");
   if (field === "safety") lg.innerHTML = `<div>SF</div><div class="bar" style="background:linear-gradient(#2f8c54 0 45%,#d99a33 45% 60%,#bf333d 60% 100%)"></div><div>&lt; ${req}</div>`;
   else {const last = VIRIDIS.length - 1, stops = VIRIDIS.map((v, i) => `rgb(${VIRIDIS[last - i].join(",")}) ${(100*i/last).toFixed(1)}%`).join(",");
-    lg.innerHTML = `<div>${f3(hi)} ${unit}</div><div class="bar" style="background:linear-gradient(${stops})"></div><div>0</div><div class="muted">${name}</div>`}
+    lg.innerHTML = `<div>${f3(hi)} ${unit}</div><div class="bar" style="background:linear-gradient(${stops})"></div><div>${f3(lo)}</div><div class="muted">${name}</div>`}
   draw();
 }
 function deform(){
@@ -210,6 +218,7 @@ function probe(e){
   ray.setFromCamera(mouse, camera); const hit = ray.intersectObject(mesh)[0];
   if (!hit) {$("#probe").textContent = "hover the part to read values"; return}
   const k = decode(current.skin), i = hit.face.a, x = k.disp[3*i], y = k.disp[3*i+1], z = k.disp[3*i+2];
+  if (current.skin.scalar) {$("#probe").textContent = `${current.skin.scalar.name} ${f3(k.vm[i])} ${current.skin.scalar.unit} · at (${f3(k.pos[3*i])}, ${f3(k.pos[3*i+1])}, ${f3(k.pos[3*i+2])}) mm`; return}
   const sf = k.vm[i] > 0 ? (current.skin.yield_MPa || 0) / k.vm[i] : Infinity;
   $("#probe").textContent = `von Mises ${f3(k.vm[i])} MPa · displacement ${f3(Math.sqrt(x*x+y*y+z*z))} mm · local SF ${isFinite(sf) ? f3(sf) : "∞"} · at (${f3(k.pos[3*i])}, ${f3(k.pos[3*i+1])}, ${f3(k.pos[3*i+2])}) mm`;
 }
@@ -225,25 +234,29 @@ let selected = rec;
 const label = d => d.recommended ? `Recommended · trial ${d.trial}` : `Trial ${d.trial}`;
 function pareto(){
   const svg = $("#pareto"), W = 420, H = 300, L = 48, R = 12, T = 12, B = 36;
-  const pts = D.history.filter(h => h.status === "ok");
-  const xs = pts.map(p => p.mass_g), ys = pts.map(p => p.safety_factor);
-  if (D.baseline) {xs.push(D.baseline.metrics.mass_g); ys.push(D.baseline.metrics.safety_factor)}
-  const x0 = Math.min(...xs)*0.95, x1 = Math.max(...xs)*1.05, y0 = 0, y1 = Math.max(...ys, D.required_sf || 2)*1.1;
+  const kx = OX.quantity, ky = OY.quantity;
+  const reqY = D.spec.requirements.find(r => r.quantity === ky);
+  const pts = D.history.filter(h => h.status === "ok" && h[kx] != null && h[ky] != null);
+  const xs = pts.map(p => p[kx]), ys = pts.map(p => p[ky]);
+  if (D.baseline) {xs.push(D.baseline.metrics[kx]); ys.push(D.baseline.metrics[ky])}
+  if (reqY) ys.push(reqY.value);
+  const x0 = Math.min(...xs)*0.95, x1 = Math.max(...xs)*1.05, y0 = ky === "safety_factor" ? 0 : Math.min(...ys)*0.97, y1 = Math.max(...ys)*1.05;
   const X = v => L + (v - x0)/(x1 - x0)*(W - L - R), Y = v => H - B - (v - y0)/(y1 - y0)*(H - T - B);
   let s = `<line x1="${L}" y1="${H-B}" x2="${W-R}" y2="${H-B}" stroke="${cssv('--line')}"/><line x1="${L}" y1="${T}" x2="${L}" y2="${H-B}" stroke="${cssv('--line')}"/>`;
-  const req = D.required_sf; if (req) s += `<rect x="${L}" y="${T}" width="${W-L-R}" height="${Y(req)-T}" fill="${cssv('--good-soft')}" opacity="0.6"/><text x="${W-R-4}" y="${Y(req)-4}" text-anchor="end">required SF ${req}</text>`;
+  if (reqY) {const yr = Y(reqY.value), top = reqY.op === ">=" ? T : yr, hgt = reqY.op === ">=" ? yr - T : H - B - yr;
+    s += `<rect x="${L}" y="${top}" width="${W-L-R}" height="${Math.max(0, hgt)}" fill="${cssv('--good-soft')}" opacity="0.6"/><text x="${W-R-4}" y="${yr-4}" text-anchor="end">${esc(reqY.id)}: ${esc(reqY.op)} ${reqY.value}</text>`}
   for (let i = 0; i <= 4; i++) {const v = x0 + (x1-x0)*i/4; s += `<text x="${X(v)}" y="${H-B+14}" text-anchor="middle">${f3(v)}</text>`}
   for (let i = 0; i <= 4; i++) {const v = y0 + (y1-y0)*i/4; s += `<text x="${L-6}" y="${Y(v)+4}" text-anchor="end">${f3(v)}</text>`}
-  s += `<text x="${(L+W-R)/2}" y="${H-4}" text-anchor="middle">mass (g)</text><text transform="rotate(-90)" x="${-(T+H-B)/2}" y="12" text-anchor="middle">safety factor</text>`;
-  for (const p of pts) s += `<circle cx="${X(p.mass_g)}" cy="${Y(p.safety_factor)}" r="2.6" fill="${p.feasible ? cssv('--muted') : cssv('--line')}"/>`;
-  const front = D.designs.filter(d => d.on_front).sort((a, b) => a.metrics.mass_g - b.metrics.mass_g);
-  if (front.length > 1) s += `<polyline fill="none" stroke="${cssv('--accent')}" stroke-width="1.5" points="${front.map(d => X(d.metrics.mass_g)+','+Y(d.metrics.safety_factor)).join(' ')}"/>`;
+  s += `<text x="${(L+W-R)/2}" y="${H-4}" text-anchor="middle">${esc(qn(kx))}${OX.unit ? " (" + OX.unit + ")" : ""}</text><text transform="rotate(-90)" x="${-(T+H-B)/2}" y="12" text-anchor="middle">${esc(qn(ky))}${OY.unit ? " (" + OY.unit + ")" : ""}</text>`;
+  for (const p of pts) s += `<circle cx="${X(p[kx])}" cy="${Y(p[ky])}" r="2.6" fill="${p.feasible ? cssv('--muted') : cssv('--line')}"/>`;
+  const front = D.designs.filter(d => d.on_front).sort((a, b) => a.metrics[kx] - b.metrics[kx]);
+  if (front.length > 1) s += `<polyline fill="none" stroke="${cssv('--accent')}" stroke-width="1.5" points="${front.map(d => X(d.metrics[kx])+','+Y(d.metrics[ky])).join(' ')}"/>`;
   for (const d of D.designs) {
-    const sel = d === selected; s += `<g class="pt" data-t="${d.trial}"><circle cx="${X(d.metrics.mass_g)}" cy="${Y(d.metrics.safety_factor)}" r="${sel ? 8 : 6}" fill="${cssv('--accent')}" stroke="${cssv('--panel')}" stroke-width="2"/>${d.recommended ? `<circle cx="${X(d.metrics.mass_g)}" cy="${Y(d.metrics.safety_factor)}" r="12" fill="none" stroke="${cssv('--accent')}" stroke-width="1.5"/>` : ""}<title>${label(d)}: ${f3(d.metrics.mass_g)} g, SF ${f3(d.metrics.safety_factor)}</title></g>`;
+    const sel = d === selected; s += `<g class="pt" data-t="${d.trial}"><circle cx="${X(d.metrics[kx])}" cy="${Y(d.metrics[ky])}" r="${sel ? 8 : 6}" fill="${cssv('--accent')}" stroke="${cssv('--panel')}" stroke-width="2"/>${d.recommended ? `<circle cx="${X(d.metrics[kx])}" cy="${Y(d.metrics[ky])}" r="12" fill="none" stroke="${cssv('--accent')}" stroke-width="1.5"/>` : ""}<title>${label(d)}: ${qv(d.metrics, OX)}, ${qv(d.metrics, OY)}</title></g>`;
   }
-  if (D.baseline) {const b = D.baseline.metrics; s += `<g class="pt" data-t="base"><rect x="${X(b.mass_g)-6}" y="${Y(b.safety_factor)-6}" width="12" height="12" fill="${cssv('--bad')}"/><title>Baseline: ${f3(b.mass_g)} g, SF ${f3(b.safety_factor)}</title></g>`}
+  if (D.baseline) {const b = D.baseline.metrics; s += `<g class="pt" data-t="base"><rect x="${X(b[kx])-6}" y="${Y(b[ky])-6}" width="12" height="12" fill="${cssv('--bad')}"/><title>Baseline: ${qv(b, OX)}, ${qv(b, OY)}</title></g>`}
   svg.innerHTML = s;
-  $("#paretonote").textContent = `Green band: meets the required safety factor. Dots: every evaluated design (grey feasible, light infeasible). Large dots: Pareto designs re-solved on the fine mesh; ring: recommended. Square: hand baseline.`;
+  $("#paretonote").textContent = `Green band: meets the requirement on the vertical axis. Dots: every evaluated design (grey feasible, light infeasible). Large dots: Pareto designs re-solved on the fine mesh; ring: recommended. Square: hand baseline.`;
 }
 $("#pareto").addEventListener("click", e => {const g = e.target.closest(".pt"); if (!g) return;
   if (g.dataset.t === "base") {which = "base"; show(D.baseline, "Baseline (hand design)")} else {selected = D.designs.find(d => String(d.trial) === g.dataset.t); which = "sel"; show(selected, label(selected))}
@@ -251,7 +264,8 @@ $("#pareto").addEventListener("click", e => {const g = e.target.closest(".pt"); 
 
 function compare(){
   const a = D.baseline && D.baseline.metrics, b = selected && selected.metrics;
-  const rows = [["mass_g", "Mass", "g"], ["safety_factor", "Safety factor", ""], ["max_disp_mm", "Max displacement", "mm"], ["max_von_mises_MPa", "Peak von Mises (evaluation region)", "MPa"]];
+  const units = {mass_g: "g", safety_factor: "", max_disp_mm: "mm", max_von_mises_MPa: "MPa", peak_temperature: "degC"};
+  const rows = Object.keys(units).filter(k => (b && b[k] != null) || (a && a[k] != null)).map(k => [k, qn(k) + (k === "max_von_mises_MPa" ? " (evaluation region)" : ""), units[k]]);
   $("#cmp").innerHTML = `<tr><th></th><th class="n">Baseline</th><th class="n">${esc(selected ? label(selected) : "")}</th><th class="n">Change</th></tr>` + rows.map(([k, n, u]) => {
     const va = a ? a[k] : null, vb = b ? b[k] : null, ch = va && vb != null ? 100*(vb - va)/Math.abs(va) : null;
     return `<tr><td>${n}${u ? " (" + u + ")" : ""}</td><td class="n">${f3(va)}</td><td class="n">${f3(vb)}</td><td class="n">${ch == null ? "–" : (ch > 0 ? "+" : "") + ch.toFixed(0) + "%"}</td></tr>`}).join("") +
@@ -269,22 +283,25 @@ function trust(){
   <p class="muted" style="font-size:.8rem">${esc(t.grade_rule)}</p>`;
 }
 function history(){
-  const svg = $("#history"), W = 420, H = 220, L = 40, R = 40, T = 10, B = 26, h = D.history;
+  const svg = $("#history"), W = 420, H = 220, L = 40, R = 40, T = 20, B = 26, h = D.history;
   if (!h.length) return;
-  const mm = h.filter(p => p.status === "ok").map(p => p.mass_g), sf = h.filter(p => p.status === "ok").map(p => p.safety_factor);
-  const m0 = Math.min(...mm), m1 = Math.max(...mm), s1 = Math.max(...sf, D.required_sf || 2);
-  const X = i => L + i/(h.length - 1 || 1)*(W - L - R), YM = v => H - B - (v - m0)/(m1 - m0 || 1)*(H - T - B), YS = v => H - B - v/s1*(H - T - B);
+  const kx = OX.quantity, ky = OY.quantity, reqY = D.spec.requirements.find(r => r.quantity === ky);
+  const ok = h.filter(p => p.status === "ok" && p[kx] != null && p[ky] != null), mm = ok.map(p => p[kx]), sf = ok.map(p => p[ky]);
+  if (reqY) sf.push(reqY.value);
+  const m0 = Math.min(...mm), m1 = Math.max(...mm), s0 = ky === "safety_factor" ? 0 : Math.min(...sf)*0.97, s1 = Math.max(...sf)*1.03;
+  const X = i => L + i/(h.length - 1 || 1)*(W - L - R), YM = v => H - B - (v - m0)/(m1 - m0 || 1)*(H - T - B), YS = v => H - B - (v - s0)/(s1 - s0 || 1)*(H - T - B);
   let s = `<line x1="${L}" y1="${H-B}" x2="${W-R}" y2="${H-B}" stroke="${cssv('--line')}"/>`;
-  if (D.required_sf) s += `<line x1="${L}" x2="${W-R}" y1="${YS(D.required_sf)}" y2="${YS(D.required_sf)}" stroke="${cssv('--good')}" stroke-dasharray="4 3"/>`;
+  if (reqY) s += `<line x1="${L}" x2="${W-R}" y1="${YS(reqY.value)}" y2="${YS(reqY.value)}" stroke="${cssv('--good')}" stroke-dasharray="4 3"/>`;
   h.forEach((p, i) => {if (p.status !== "ok") {s += `<line x1="${X(i)}" x2="${X(i)}" y1="${H-B}" y2="${H-B-6}" stroke="${cssv('--bad')}"><title>trial ${p.n}: ${esc(p.status)}</title></line>`; return}
-    s += `<circle cx="${X(i)}" cy="${YS(p.safety_factor)}" r="2.2" fill="${p.feasible ? cssv('--accent') : cssv('--line')}"><title>trial ${p.n}: SF ${f3(p.safety_factor)}, ${f3(p.mass_g)} g</title></circle>`});
+    if (p[ky] == null) return;
+    s += `<circle cx="${X(i)}" cy="${YS(p[ky])}" r="2.2" fill="${p.feasible ? cssv('--accent') : cssv('--line')}"><title>trial ${p.n}: ${qv(p, OY)}, ${qv(p, OX)}</title></circle>`});
   let best = Infinity, path = [];
-  h.forEach((p, i) => {if (p.status === "ok" && p.feasible && p.mass_g < best) best = p.mass_g; if (isFinite(best)) path.push(`${X(i)},${YM(best)}`)});
+  h.forEach((p, i) => {if (p.status === "ok" && p.feasible && p[kx] < best) best = p[kx]; if (isFinite(best)) path.push(`${X(i)},${YM(best)}`)});
   if (path.length) s += `<polyline fill="none" stroke="${cssv('--warn')}" stroke-width="1.6" points="${path.join(" ")}"/>`;
-  s += `<text x="${L}" y="${H-6}">evaluation 1</text><text x="${W-R}" y="${H-6}" text-anchor="end">${h.length}</text><text x="${L-4}" y="${T+8}" text-anchor="end">SF</text><text x="${W-R+4}" y="${T+8}">mass</text>`;
+  s += `<text x="${L}" y="${H-6}">evaluation 1</text><text x="${W-R}" y="${H-6}" text-anchor="end">${h.length}</text><text x="${L}" y="${T-4}">${esc(qn(ky))}</text><text x="${W-R}" y="${T-4}" text-anchor="end">${esc(qn(kx))}</text>`;
   svg.innerHTML = s;
   const fails = h.filter(p => p.status !== "ok").length;
-  $("#histnote").textContent = `Dots: safety factor per evaluation (teal feasible), dashed line: required SF. Orange: lightest feasible design so far (mass axis on the right). Red ticks: ${fails} evaluations that failed the gate or the mesher.`;
+  $("#histnote").textContent = `Dots: ${qn(ky).toLowerCase()} per evaluation (teal feasible), dashed line: its requirement. Orange: best feasible ${qn(kx).toLowerCase()} so far. Red ticks: ${fails} evaluations that failed the gate or the mesher.`;
 }
 function timeline(){
   $("#timeline").innerHTML = (D.timeline || []).map(e => `<li><span class="muted">${esc((e.time || "").slice(11,19)) || "·"}</span><b>${esc(e.step)}</b><span>${esc(e.outcome)}${e.detail ? ' <span class="muted">' + esc(e.detail) + '</span>' : ""}</span></li>`).join("") || '<li class="muted">No agent steps recorded for this study.</li>';

@@ -125,6 +125,24 @@ void write_skin(const Mesh& m, const Result& r, const std::string& path, double 
   std::ofstream(path) << j.dump();
 }
 
+void write_skin_scalar(const Mesh& m, const std::map<int, double>& field, const std::string& name, const std::string& unit,
+                       const std::string& path) {
+  Result r;
+  for (auto& [n, v] : field) r.von_mises[n] = v;  // reuse the skin writer's scalar slot
+  write_skin(m, r, path, 0);
+  std::ifstream in(path);
+  nlohmann::json j = nlohmann::json::parse(in);
+  in.close();
+  j[name] = j["von_mises"];
+  j.erase("von_mises");
+  j.erase("max_von_mises_MPa");
+  j.erase("yield_MPa");
+  double mx = -1e300, mn = 1e300;
+  for (auto& [_, v] : field) { mx = std::max(mx, v); mn = std::min(mn, v); }
+  j["scalar"] = {{"name", name}, {"unit", unit}, {"min", mn}, {"max", mx}};
+  std::ofstream(path) << j.dump();
+}
+
 std::vector<std::string> export_bundle(const TopoDS_Shape& shape, const std::string& dir) {
   fs::create_directories(dir);
   std::string step = (fs::path(dir) / "part.step").string(), stl = (fs::path(dir) / "part.stl").string();

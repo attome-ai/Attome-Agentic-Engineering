@@ -63,8 +63,7 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
     hist = []
     for t in sorted(study.get_trials(deepcopy=False), key=lambda t: t.number):
         m = t.user_attrs.get("metrics") or {}
-        hist.append({"n": t.number, "status": t.user_attrs.get("status", t.state.name), "feasible": bool(t.user_attrs.get("feasible")),
-                     "mass_g": m.get("mass_g"), "safety_factor": m.get("safety_factor")})
+        hist.append({"n": t.number, "status": t.user_attrs.get("status", t.state.name), "feasible": bool(t.user_attrs.get("feasible")), **m})
     trust = None
     if trust_dir and (Path(trust_dir) / "trust.json").exists():
         trust = json.loads((Path(trust_dir) / "trust.json").read_text())
@@ -81,10 +80,12 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
         if trust:
             timeline.append({"time": "", "step": "trust", "outcome": f"grade {trust.get('grade')}", "detail": "; ".join(trust.get("reasons", []))})
     req_sf = next((r["value"] for r in card["requirements"] if r["quantity"] == "safety_factor" and r["op"] == ">="), None)
+    units = {"mass_g": "g", "safety_factor": "", "max_disp_mm": "mm", "max_von_mises_MPa": "MPa", "peak_temperature": "degC"}
+    objectives = [{"quantity": q, "sense": sense, "unit": units.get(q, "")} for q, sense in spec.objectives]
     data = {"title": f"{card['id']}: {spec.objectives[0][0]} vs {spec.objectives[1][0]}" if len(spec.objectives) > 1 else card["id"],
             "brief": card.get("brief") or json.loads(Path(spec_path).read_text()).get("brief", ""),
             "spec": {"id": card["id"], "version": card["version"], "hash": card["hash"], "requirements": card["requirements"]},
-            "required_sf": req_sf, "designs": designs, "baseline": base, "history": hist, "trust": trust, "timeline": timeline,
+            "required_sf": req_sf, "objectives": objectives, "designs": designs, "baseline": base, "history": hist, "trust": trust, "timeline": timeline,
             "generated": datetime.now(timezone.utc).isoformat(timespec="seconds")}
     html = TEMPLATE.read_text(encoding="utf-8")
     html = html.replace("__THREE__", THREE.read_text(encoding="utf-8")).replace("__DATA__", json.dumps(data).replace("</", "<\\/"))

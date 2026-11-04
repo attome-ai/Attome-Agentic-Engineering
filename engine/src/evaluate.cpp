@@ -148,6 +148,10 @@ nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params
     for (auto& tc : spec.thermal_cases) {  // steady heat transfer on the same mesh (C2)
       std::string dir = (fs::path(work) / ("thermal_" + tc.name)).string();
       ThermalResult tr = solve_thermal(m, eff, tc, dir, so);
+      if (o.save_bundle) {
+        fs::create_directories(fs::path(work) / ("result_" + tc.name));
+        write_skin_scalar(m, tr.temperature, "temperature", "degC", (fs::path(work) / ("result_" + tc.name) / "skin.json").string());
+      }
       double mass_g = volume(rg.shape) * eff.density * 1e6;
       mt.by_case[tc.name] = {{"peak_temperature", tr.t_max}, {"mass_g", mass_g}};
       cases[tc.name] = tr.summary();

@@ -12,3 +12,4 @@ engine/build/
 runs/
 spooles.out
 engine/build-dev/
+engine/build-dev.log
