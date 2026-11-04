@@ -22,7 +22,7 @@ What this shows:
 - gmsh's INP writer orders C3D10 nodes the way CalculiX expects (a wrong order would not converge to the reference).
 - Runtime: about 0.8 s at 30k DOF and 8.7 s at 176k DOF on this machine. The research estimated 1 s at 50k DOF and
   10-60 s at 500k DOF; these measurements are consistent with that, on a much faster machine than a typical laptop.
-- The 8 GB / 4-core minimum machine (J1) has not been measured yet.
+- The demo machine is this development machine (it also has an NVIDIA RTX 5090); no separate minimum laptop is planned.
 
 Notes found while building it:
 - gmsh's INP export names element sets after geometry entities, not physical groups; faces are found through the

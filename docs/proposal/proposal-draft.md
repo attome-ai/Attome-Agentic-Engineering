@@ -110,7 +110,7 @@ rib tips and a stress exclusion zone near load and support faces (Saint-Venant);
 ## 4. Feasibility: measured results
 
 All measurements: development machine (AMD Ryzen 9 9950X3D, 16 cores, 61.6 GB RAM, Windows 11), 2026-11-04.
-The 8 GB / 4-core minimum laptop has **[pending]** measurements.
+The live demo runs on this same machine (with an NVIDIA RTX 5090), so these timings are the demo timings.
 
 ### 4.1 The solver gives the right answers (validation suite)
 
@@ -277,7 +277,7 @@ From `docs/agentic-engineering-roadmap.html`:
 
 - **Physical test predictions** (`benchmarks/h3_predictions.json`, `python benchmarks/gauge_point.py`): stiffness at
   the arm end 59.8 N/mm (baseline) against 389.9 N/mm (recommended), ratio 6.5×. Protocol: `docs/test-protocol-h3.md`.
-- **Before 10 January:** physical test, video, Hephaestus-CCX benchmark, measurements on an 8 GB laptop.
+- **Before 10 January:** physical test, video, Hephaestus-CCX benchmark (its kit is not public yet).
 - **11–24 January (P6):** redesign an uploaded STEP part (keep its holes, make it lighter), a surrogate for faster
   screening. (Already built: uploading and analysing a STEP part as-is with detected holes and faces, which
   reproduces the native result exactly; print rules; the FDM/CNC cost model; the fin-channel correlation.)
@@ -302,6 +302,5 @@ From `docs/agentic-engineering-roadmap.html`:
 - [ ] Replace every **[pending]** with a measured value or remove the claim.
 - [ ] Physical test done; photos and measured loads added to 5.2.
 - [ ] Video recorded and linked.
-- [ ] Measurements repeated on the 8 GB minimum laptop.
 - [ ] Re-read section 6 against the latest SimScale release notes (the window is short).
 - [ ] Convert to the competition's required format (check the AIDTC template; none is in the repo yet).
