@@ -144,6 +144,37 @@ def check_feasibility(study_id: str, mesh_size: float = 6.0) -> dict:
     return _ok(**r)
 
 
+@mcp.tool(description="When check_feasibility says infeasible: draft the smallest relaxation that makes the spec feasible, as a new spec version "
+                      "with a diff. It is NOT accepted: show the diff, let the user choose (relax, change material or family, or stop), then "
+                      "call accept_spec only with their answer.")
+def propose_relaxation(study_id: str, mesh_size: float = 6.0, margin: float = 0.05) -> dict:
+    path = S.latest_spec_path(study_id)
+    spec = json.loads(path.read_text(encoding="utf-8"))
+    f = engine.call("feasibility", spec=str(path), **{"mesh-size": mesh_size, "threads": 4})
+    if f["feasible"]:
+        return _ok(feasible=True, message="the spec is already feasible; nothing to relax")
+    changes = []
+    for prob in f["problems"]:
+        if "best_achievable" not in prob:
+            continue
+        best = float(prob["best_achievable"])
+        for r in spec["requirements"]:
+            if r["id"] == prob["id"]:
+                new = best * (1 - margin) if r["op"] == ">=" else best * (1 + margin)
+                changes.append({"id": r["id"], "quantity": r["quantity"], "old": r["value"], "new": round(new, 4),
+                                "why": f"best achievable in the bounds is {best:.4g}; {100 * margin:.0f}% inside it"})
+                r["value"] = round(new, 4)
+                r["source"] = (r.get("source", "") + f"; relaxed from {changes[-1]['old']} (proposal, needs user acceptance)").strip("; ")
+    if not changes:
+        return _err("relaxation", "the infeasibility is not a numeric limit that can be relaxed", problems=f["problems"])
+    spec["version"] = int(spec.get("version", 1)) + 1
+    newp = S.save_spec(study_id, spec)
+    S.log(study_id, "propose_relaxation", "drafted", changes=changes, spec_version=newp.name)
+    return _ok(feasible=False, proposed_spec_version=newp.name, changes=changes, needs_acceptance=True,
+               alternatives=["change the material (list it in data/materials.json)", "widen the free-parameter bounds",
+                             "choose another part family"])
+
+
 # ------------------------------------------------------------------ geometry
 @mcp.tool(description="Build a design from a design graph (JSON) or a family with parameters, and run the geometry gate. Returns volume, named faces "
                       "and gate reasons. Use describe_grammar for feature types. Errors are typed: graph (bad value or reference), compile "

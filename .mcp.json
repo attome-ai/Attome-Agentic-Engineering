@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "attome-ae": {
+      "command": "C:/Users/Computia.me/micromamba/micromamba.exe",
+      "args": [
+        "run",
+        "-n",
+        "attome-ae",
+        "python",
+        "-m",
+        "structura.agent.mcp_server"
+      ],
+      "env": {
+        "MAMBA_ROOT_PREFIX": "C:/Users/Computia.me/micromamba/root"
+      }
+    }
+  }
+}

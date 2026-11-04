@@ -99,3 +99,17 @@ def test_verify_tool_writes_a_graded_trust_record(tmp_path, monkeypatch):
     assert v["ok"] and v["grade"] in ("A", "B", "C")
     assert (Path(v["folder"]) / "trust.json").exists()
     assert v["grade"] == "A" and v["status"] == "verified"  # the P2 demo's recommended design
+
+
+def test_propose_relaxation_for_the_100kg_brief(tmp_path, monkeypatch):
+    monkeypatch.setattr(srv.S, "STUDIES", tmp_path / "studies")
+    spec = json.loads((SPEC.parent / "bracket_100kg.json").read_text())
+    sid = "relax-test"
+    srv.create_study(spec, study_id=sid)
+    srv.accept_spec(sid, "owner")
+    r = srv.propose_relaxation(sid)
+    assert r["ok"] and not r["feasible"] and r["needs_acceptance"]
+    ch = {c["id"]: c for c in r["changes"]}
+    assert "R1" in ch and ch["R1"]["new"] < 2.0
+    assert not srv.S.accepted(sid)  # a proposal never inherits the old acceptance
+    assert srv.run_optimization(sid, budget=4)["error"] == "approval"
