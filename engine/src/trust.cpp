@@ -121,6 +121,7 @@ nlohmann::json build_trust(const DesignSpec& spec, const Values& free, const Tru
   // requirements with margins, proven or not
   nlohmann::json reqs = nlohmann::json::array();
   bool all_pass = true, all_proven = true;
+  bool not_proven_margin = false, not_proven_oscillating = false;
   double worst_gci_gov = 0;
   for (auto& c : fine["checks"]) {
     std::string q = c["quantity"];
@@ -132,6 +133,10 @@ nlohmann::json build_trust(const DesignSpec& spec, const Values& free, const Tru
     // a value converged to round-off may oscillate; monotone convergence is only required when the error matters
     // oscillatory convergence is accepted when its error is small (ASME V&V 20 style); it is still reported
     bool proven = passed && room > error_abs && (monotone || e < 0.05);
+    if (passed && !proven) {
+      if (room <= error_abs) not_proven_margin = true;
+      else not_proven_oscillating = true;
+    }
     all_pass = all_pass && passed;
     all_proven = all_proven && proven;
     worst_gci_gov = std::max(worst_gci_gov, e);
@@ -212,7 +217,10 @@ nlohmann::json build_trust(const DesignSpec& spec, const Values& free, const Tru
   t["status"] = (grade == "A" || grade == "B") ? "verified" : "not_verified";
   std::vector<std::string> why;
   if (!all_pass) why.push_back("a requirement fails");
-  if (all_pass && !all_proven) why.push_back("a requirement margin is smaller than its numerical error");
+  if (not_proven_margin) why.push_back("a requirement margin is smaller than its numerical error");
+  if (not_proven_oscillating)
+    why.push_back("a requirement's value does not converge monotonically across the three meshes and its error is 5% or more, so the "
+                  "error estimate is not trusted (refine the mesh or remove the stress raiser)");
   if (!independent_ok) why.push_back("an independent check fails");
   if (!val_ok) why.push_back("the validation suite has not passed in full");
   if (worst_gci_gov >= 0.05) why.push_back("numerical error on a governing value is " + pct(worst_gci_gov));

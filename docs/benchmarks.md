@@ -281,8 +281,10 @@ length, width and depth searched by NSGA-II (120 evaluations at 4 mm, front re-s
 | Lightest redesign feasible on the fine mesh (pocket 108.8 x 33.7 x 5.6 mm) | **328.2 g (-7.3%)** | 2.32 | 0.66 mm |
 
 Front: 14 designs, all still feasible on the fine mesh. Trust grade **B**, not A: the safety factor's numerical error
-is 8.2% (the pocket's 1 mm corner radius concentrates stress), and the trust record marks R1 "not proven". To check
-before quoting: why R1 counts as not proven when its 16% margin is larger than the 8.2% error. A larger pocket
+is 8.2% (the pocket's 1 mm corner radius concentrates stress), and R1 is "not proven": its margin (0.32) is larger
+than the error (0.19), but the safety factor does not converge monotonically over the three meshes and an error of 5%
+or more from oscillating convergence is not trusted. The trust record now gives that reason; it used to say the margin
+was smaller than the error, which was wrong for this case. A larger pocket
 corner radius, or pockets in the ribs and wall plate, are the next redesign operations.
 
 Two defects found and fixed on the way: the hole detector summed the angular spans of co-axial segments, so a corner
