@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import logging
 import math
+import os
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -86,6 +87,9 @@ def run_ax(spec: SpecInfo, budget: int, seed: int, study: optuna.Study, mesh_siz
         RangeParameterConfig(name=k, bounds=(lo, hi), parameter_type="int" if k in spec.integer else "float")
         for k, (lo, hi) in spec.free.items()])
     client.configure_optimization(objective=_ax_objective(spec), outcome_constraints=_ax_constraints(spec))
+    device = os.environ.get("STRUCTURA_TORCH_DEVICE")  # e.g. "cuda": GP fitting on the GPU; unset = CPU (the measured default)
+    if device:
+        client.configure_generation_strategy(torch_device=device, initialization_random_seed=seed)
     metrics_needed = {q for q, _ in spec.objectives} | {r["quantity"] for r in spec.requirements}
     done = 0
     with ThreadPoolExecutor(max_workers=batch) as pool:
