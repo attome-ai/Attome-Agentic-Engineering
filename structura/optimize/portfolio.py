@@ -41,10 +41,11 @@ def _ax_constraints(spec: SpecInfo) -> list[str]:
     return [f"{r['quantity']} {r['op']} {float(r['value'])}" for r in spec.requirements]
 
 
-def _record(study: optuna.Study, spec: SpecInfo, params: dict, ev, seconds: float) -> None:
+def _record(study: optuna.Study, spec: SpecInfo, params: dict, ev, seconds: float, extra: dict | None = None,
+            method: str = "botorch_qnehvi") -> None:
     dists = {k: (optuna.distributions.IntDistribution(int(lo), int(hi)) if k in spec.integer
                  else optuna.distributions.FloatDistribution(lo, hi)) for k, (lo, hi) in spec.free.items()}
-    attrs = {"status": ev.status, "seconds": round(seconds, 3), "method": "botorch_qnehvi"}
+    attrs = {"status": ev.status, "seconds": round(seconds, 3), "method": method, **(extra or {})}
     if ev.status == "ok":
         attrs.update(violations=ev.violations, feasible=ev.feasible, metrics=ev.raw["metrics"], checks=ev.raw["checks"],
                      hash=ev.raw["hash"])
