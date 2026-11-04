@@ -223,11 +223,25 @@ double channel_h(double channel_velocity_m_s, double spacing_mm, double length_m
   double fd = re_star * a.Pr / 2.0;
   double dev = 0.664 * std::sqrt(re_star) * std::cbrt(a.Pr) * std::sqrt(1.0 + 3.65 / std::sqrt(re_star));
   double nu_b = std::pow(std::pow(fd, -3.0) + std::pow(dev, -3.0), -1.0 / 3.0);
-  double h_si = nu_b * a.k / b;  // W/(m^2 K)
+  double h_si = nu_b * a.k / b;  // W/(m^2 K), laminar (developing to fully developed)
+  // turbulent channel flow: Gnielinski on the hydraulic diameter of the gap (Dh = 2 b for wide parallel plates),
+  // with the Petukhov friction factor (Incropera, Fundamentals of Heat and Mass Transfer, eqs. 8.21 and 8.62);
+  // never below the laminar value through the transition
+  double dh = 2 * b, re_dh = v_ch * dh / a.nu;
+  std::string regime = re_dh < 2300 ? "laminar" : (re_dh < 4000 ? "transitional" : "turbulent");
+  double h_turb = 0;
+  if (re_dh >= 2300) {
+    double f = std::pow(0.790 * std::log(re_dh) - 1.64, -2.0);
+    double nu_t = (f / 8) * (re_dh - 1000) * a.Pr / (1 + 12.7 * std::sqrt(f / 8) * (std::pow(a.Pr, 2.0 / 3.0) - 1));
+    h_turb = nu_t * a.k / dh;
+    h_si = std::max(h_si, h_turb);
+  }
   if (info)
-    *info = {{"model", "plate_fin_channel (Teertstra et al. 1999)"}, {"channel_velocity_m_s", v_ch}, {"spacing_mm", spacing_mm},
-             {"length_mm", length_mm}, {"film_temperature_C", film_T_C}, {"Re_b", re_b}, {"Re_star", re_star}, {"Nu_b", nu_b},
-             {"h_W_m2K", h_si}, {"laminar", re_b < 2300}, {"air", {{"k", a.k}, {"nu", a.nu}, {"Pr", a.Pr}, {"source", "Incropera Table A.4"}}}};
+    *info = {{"model", re_dh < 2300 ? "plate_fin_channel (Teertstra et al. 1999), laminar"
+                                     : "plate_fin_channel: max of Teertstra (laminar) and Gnielinski (turbulent, Dh = 2 b)"},
+             {"channel_velocity_m_s", v_ch}, {"spacing_mm", spacing_mm}, {"length_mm", length_mm}, {"film_temperature_C", film_T_C},
+             {"Re_b", re_b}, {"Re_star", re_star}, {"Re_Dh", re_dh}, {"Nu_b", nu_b}, {"h_turbulent_W_m2K", h_turb}, {"regime", regime},
+             {"h_W_m2K", h_si}, {"laminar", re_dh < 2300}, {"air", {{"k", a.k}, {"nu", a.nu}, {"Pr", a.Pr}, {"source", "Incropera Table A.4"}}}};
   return h_si * 1e-6;  // W/(mm^2 K)
 }
 
@@ -251,14 +265,29 @@ double fan_channel_velocity(double pmax, double qmax, double channels, double sp
   AirProperties a = air_properties(film_T_C);
   double T = film_T_C + 273.15, rho = 101325.0 / (287.05 * T), mu = a.nu * rho;
   double b = spacing_mm * 1e-3, H = fin_height_mm * 1e-3, L = length_mm * 1e-3, area = channels * b * H;  // m, m^2
-  // pmax (1 - area V / qmax) = 12 mu L V / b^2 + 0.75 rho V^2   ->   A V^2 + B V - C = 0
-  double A = 0.75 * rho, B = 12 * mu * L / (b * b) + pmax * area / qmax, C = pmax;
-  double v = (-B + std::sqrt(B * B + 4 * A * C)) / (2 * A);
+  // channel loss: friction (laminar 12 mu L V / b^2, or turbulent f(Re) L / Dh rho V^2 / 2 with Petukhov f, whichever
+  // is larger) plus entry and exit losses 1.5 rho V^2 / 2; the operating point is where the fan's pressure equals it
+  double dh = 2 * b;
+  auto loss = [&](double V) {
+    double lam = 12 * mu * L * V / (b * b);
+    double re = V * dh / a.nu, turb = 0;
+    if (re > 2300) turb = std::pow(0.790 * std::log(re) - 1.64, -2.0) * (L / dh) * 0.5 * rho * V * V;
+    return std::max(lam, turb) + 0.75 * rho * V * V;
+  };
+  auto fan = [&](double V) { return pmax * (1 - area * V / qmax); };
+  double lo = 0, hi = qmax / area;  // at hi the fan delivers no pressure
+  for (int i = 0; i < 100; ++i) {
+    double mid = 0.5 * (lo + hi);
+    (fan(mid) > loss(mid) ? lo : hi) = mid;
+  }
+  double v = 0.5 * (lo + hi);
   if (info)
     *info = {{"fan_max_pressure_Pa", pmax}, {"fan_max_flow_m3_s", qmax}, {"channels", channels}, {"flow_area_mm2", area * 1e6},
              {"channel_velocity_m_s", v}, {"flow_m3_s", area * v}, {"pressure_drop_Pa", pmax * (1 - area * v / qmax)},
              {"fraction_of_free_flow", area * v / qmax},
-             {"assumption", "fan ducted onto the fins (no bypass); laminar parallel-plate friction plus entry and exit losses"}};
+             {"Re_Dh", v * dh / a.nu},
+             {"assumption", "fan ducted onto the fins (no bypass); parallel-plate friction (laminar, or turbulent above Re 2300) "
+                            "plus entry and exit losses"}};
   return v;
 }
 

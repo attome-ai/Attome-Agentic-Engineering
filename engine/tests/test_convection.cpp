@@ -25,7 +25,7 @@ TEST_CASE("C2: plate-fin channel h against a hand calculation and both limits of
   CHECK(info["h_W_m2K"].get<double>() == doctest::Approx(22.518).epsilon(1e-3));
   CHECK(info["Re_star"].get<double>() == doctest::Approx(438.34).epsilon(1e-3));
   CHECK(h == doctest::Approx(22.518e-6).epsilon(1e-3));  // engine units W/(mm^2 K)
-  CHECK(info["laminar"].get<bool>());
+  CHECK(info["regime"] == "transitional");  // Re_Dh = 3160 on the hydraulic diameter 2b: the laminar value still governs
 
   auto a = air_properties(50);
   // narrow, long channel: fully developed limit Nu = Re* Pr / 2
@@ -94,4 +94,26 @@ TEST_CASE("C2-T4: the fan operating point slows the air as the fins get denser")
   double rho = 101325.0 / (287.05 * 323.15), mu = a.nu * rho, b = 1.36e-3;
   double loss = 12 * mu * (L * 1e-3) * v_dense / (b * b) + 0.75 * rho * v_dense * v_dense;
   CHECK(dense["pressure_drop_Pa"].get<double>() == doctest::Approx(loss).epsilon(1e-6));
+}
+
+TEST_CASE("C2-T5: turbulent channel flow uses Gnielinski and turbulent friction") {
+  nlohmann::json lam, turb;
+  channel_h(1.0, 5.0, 60, 50, &lam);    // Re_Dh about 550: laminar
+  channel_h(12.0, 18.5, 60, 50, &turb); // Re_Dh about 24,000: turbulent
+  CHECK(lam["regime"] == "laminar");
+  CHECK(turb["regime"] == "turbulent");
+  // Gnielinski by hand at the same Reynolds number
+  AirProperties a = air_properties(50);
+  double dh = 2 * 18.5e-3, re = 12.0 * dh / a.nu, f = std::pow(0.790 * std::log(re) - 1.64, -2.0);
+  double nu = (f / 8) * (re - 1000) * a.Pr / (1 + 12.7 * std::sqrt(f / 8) * (std::pow(a.Pr, 2.0 / 3.0) - 1));
+  CHECK(turb["h_turbulent_W_m2K"].get<double>() == doctest::Approx(nu * a.k / dh).epsilon(1e-9));
+  CHECK(turb["h_W_m2K"].get<double>() >= turb["h_turbulent_W_m2K"].get<double>());
+  // a wide-gap sink under the 60 mm fan: the operating point is turbulent and the balance holds
+  nlohmann::json op;
+  double v = fan_channel_velocity(32, 0.0068, 3, 18.5, 10, 60, 50, &op);
+  CHECK(op["Re_Dh"].get<double>() > 2300);
+  double rho = 101325.0 / (287.05 * 323.15), Dh = 2 * 18.5e-3;
+  double fr = std::pow(0.790 * std::log(v * Dh / a.nu) - 1.64, -2.0);
+  double loss = std::max(12 * a.nu * rho * 0.06 * v / (18.5e-3 * 18.5e-3), fr * (0.06 / Dh) * 0.5 * rho * v * v) + 0.75 * rho * v * v;
+  CHECK(op["pressure_drop_Pa"].get<double>() == doctest::Approx(loss).epsilon(1e-6));
 }
