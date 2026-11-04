@@ -420,7 +420,8 @@ class Scene:
 
         self.pl.subplot(0, 0)
         slider = self.pl.add_slider_widget(on_slider, [0, n - 1], value=0, title="time step", pointa=(0.2, 0.92),
-                                           pointb=(0.8, 0.92), style="modern")
+                                           pointb=(0.8, 0.92), style="modern",
+                                           interaction_event="always")  # update while dragging, not only on release
 
         def toggle():
             state["play"] = not state["play"]
