@@ -132,7 +132,7 @@ D5). The full 120-call run was stopped after the first BoTorch seed; partial res
 
 ## P2 exit demo: 20 kg bracket brief
 
-> **Under review (2026-11-04):** the 20 kg bracket result (234 g, safety factor 2.06, grade A) is not valid as stated. Its peak stress sits at the sharp junction of the rib tip and the arm, where stress does not converge: it rises from 12.1 MPa at 3 mm to 13.8 MPa at 2 mm (SF 1.82), and with realistic 1.5 mm fillets at that junction the first solve gives 16.7 MPa (SF 1.50). The convergence study behind grade A (3 / 4.5 / 6.75 mm) was too coarse to see it. Being fixed: filleted rib junctions in the bracket family, a stricter stress-convergence rule, and a re-run of the optimization.
+> **Corrected (2026-11-04, decision D10):** an earlier result here (234 g, safety factor 2.06, grade A) was wrong: its peak stress sat at a sharp corner where each rib tip met the arm, which three uniform meshes could not see. Bracket family version 3 fillets those corners and the trust record now refines locally to catch this. **The search is not converged yet:** 200, 400 and 800 evaluations found 192.5, 179.6 and 162.2 g, so the numbers below are the best verified so far, not the final optimum.
  (`benchmarks/p2_demo.py`, bracket family v2)
 
 200 NSGA-II evaluations at 4 mm (the portfolio chose NSGA-II from the measured evaluation cost), front re-solved at 3 mm,
@@ -421,3 +421,48 @@ The GPU does not speed up model fitting at this size (a few dozen points, five p
 overhead outweigh the work. The CPU stays the default (`STRUCTURA_TORCH_DEVICE` unset) and the optimizer-choice rule
 (D5) is unchanged. Over three seeds BoTorch reaches a hypervolume of 661 at 40 calls against about 565-573 for random
 search and NSGA-II: still better per solver call, by less than the single-seed 733 suggested.
+
+## Corrected results after decision D10 (family version 3, 2026-11-04)
+
+**Rib tip on one design** (10.86 mm plate, 3 ribs of 8.58 mm, 56.45 mm wide; uniform 2 mm mesh, then adaptive to 0.3 mm):
+
+| Rib tip | Mass | Peak on the uniform mesh | Adaptive peaks | Deflection |
+|---|---|---|---|---|
+| 80% of arm, 3 mm cut, sharp corner (version 2) | 250.8 g | 11 MPa at 3-4 mm | keeps growing: 11, 17, 28, 44, 52 MPa | 0.72 mm |
+| 80%, 3 mm cut, 1.5 mm fillet | 250.8 g | 21.8 MPa | 21.5, 20.9, 20.6 MPa | 0.71 mm |
+| 80%, 6 mm cut, 3 mm fillet | 249.9 g | 17.9 MPa | 17.9, 17.1, 18.9, 18.8 MPa | 0.75 mm |
+| 95%, 6 mm cut, 3 mm fillet (adopted, plus a fillet at the wall end) | 266.5 g | 9.2 MPa | 9.1, 8.6, 10.4, 10.0, 10.0 MPa | 0.39 mm |
+
+Effective yield is 25 MPa, so the version 2 design's true safety factor was about 1.2 against the reported 2.3.
+
+**Budget (D8), 20 kg brief:** the study does not converge yet.
+
+| Evaluations | Lightest feasible on the finer mesh | Recommended | Grade |
+|---|---|---|---|
+| 200 | 192.5 g, SF 2.47 | 245.8 g, SF 2.52 | B (sharp corner) |
+| 400 | 179.6 g, SF 2.07 | 179.6 g, SF 2.07 ± 0.5% | A |
+| 800 | 162.2 g, SF 2.01 | 169.6 g, SF 2.07 | B (peak grows 14% under refinement, at the rib edge near its tip) |
+
+**Ten-brief suite: 10 of 10** (`benchmarks/brief_suite.json`), counting a grade B design as a success as the suite defines it.
+All five feasible brackets are grade B: 107.0 g (10 kg PLA), 170.7 g (20 kg PETG), 269.1 g (30 kg PETG), 148.9 g (15 kg, 1 mm), 179.2 g
+(50 kg aluminium). Their peak is the sharp edge where a rib's flank meets the arm, near its tip; it grows about 15-20% on halving the
+element size. Filleting those long edges is the next geometry step. The three feasible heat sinks are grade A and identical (27.2 g, the
+lightest corner), so they test the pipeline, not the optimizer. Two bracket briefs first failed at verification with a non-JSON engine exit;
+neither failure reproduced on a re-run or on any of their 48 front designs. An engine change made in the meantime moved models above
+600,000 unknowns to the iterative solver after SPOOLES crashes, which may be the cause; this is not proven.
+
+**Heat sink with the fan's operating point:** 103.7 g (45.3 C) to 27.2 g (66.3 C), the same at 300 and 600 evaluations, grade A. Supersedes 34.4 g.
+
+**Bolted bores against rigid bores** (bracket, 2 mm mesh): deflection 1.9682 against 1.9670 mm, peak 31.80 MPa in both, so the rigid-bore
+model did not distort this result. Adaptive refinement against Peterson's Kt for a plate with a hole (d/W 0.25): 32.35 MPa against
+32.27 MPa (+0.24%).
+
+**In-house solver against CalculiX on stress:** 49.9568 against 49.9564 MPa on the same mesh, once it recovers stress as CalculiX does.
+
+**Viewer (`runs/perf/report_200k.html#perf`, headless Chrome, RTX 5090, idle machine):** 262,280 triangles, 807 ms to the first frame, 121 frames per
+second with the GPU wait, worst frame 465 ms. Measured on the development machine, not a laptop. The file is 72.6 MB at this mesh.
+
+**Brief benchmark (`benchmarks/brief_bench_opus55_session.json`):** 475 of 500 fields (95.0%), 70 of 70 numeric values with correct units, with Opus 5.5 in
+a Claude Code session given only the brief and the harness's rules, not through the API. 19 of the 25 misses are the objective: the rules say not to
+guess defaults while the gold expects min_mass. The benchmark has no image briefs.
+

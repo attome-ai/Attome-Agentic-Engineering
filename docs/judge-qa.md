@@ -55,14 +55,14 @@ still poor the trust record says so (the uploaded-part redesign is grade B for e
 
 ## Results
 
-> **Under review (2026-11-04):** the 20 kg bracket result (234 g, safety factor 2.06, grade A) is not valid as stated. Its peak stress sits at the sharp junction of the rib tip and the arm, where stress does not converge: it rises from 12.1 MPa at 3 mm to 13.8 MPa at 2 mm (SF 1.82), and with realistic 1.5 mm fillets at that junction the first solve gives 16.7 MPa (SF 1.50). The convergence study behind grade A (3 / 4.5 / 6.75 mm) was too coarse to see it. Being fixed: filleted rib junctions in the bracket family, a stricter stress-convergence rule, and a re-run of the optimization.
+> **Corrected (2026-11-04, decision D10):** an earlier result here (234 g, safety factor 2.06, grade A) was wrong: its peak stress sat at a sharp corner where each rib tip met the arm, which three uniform meshes could not see. Bracket family version 3 fillets those corners and the trust record now refines locally to catch this. **The search is not converged yet:** 200, 400 and 800 evaluations found 192.5, 179.6 and 162.2 g, so the numbers below are the best verified so far, not the final optimum.
 
 
 **Q: Show me a result.**
-- 20 kg PETG shelf bracket: the hand design (96 g) is unsafe by a factor of 5 (SF 0.37); the recommended design is
-  234 g with SF 2.06 ± 1.5%, grade A. (`benchmarks/p2_demo.json`)
-- 10 W fan-cooled heat sink: 103.7 g hand design → 34.4 g (−67%), 71.3 °C against a 75 °C limit, grade A, converged.
-  (`benchmarks/heatsink_fan_demo_300.json`)
+- 20 kg PETG shelf bracket: the hand design (99 g) is unsafe by a factor of 4 (SF 0.48); the best verified design so far is
+  179.6 g with SF 2.07 ± 0.5%, grade A; the search is not converged. (`benchmarks/p2_demo_400.json`)
+- 10 W fan-cooled heat sink: 103.7 g hand design → 27.2 g (−74%), 66.3 °C against a 75 °C limit, grade A, the same at 300 and 600
+  evaluations. It is the lightest corner of the design space, so the bound decides it, not the limit. (`benchmarks/heatsink_fan60_demo_300.json`)
 - An uploaded over-built bracket: 354 g → 328 g (−7.3%) with its bolt holes frozen, grade B. (`benchmarks/a3_redesign_demo.json`)
 - A 100 kg PETG brief: the system says no design in the family can do it (best SF 0.67 at the strongest corner) and
   that the strongest design carries about 33 kg. It never returns a design that fails. (`benchmarks/bracket_100kg_demo.json`)

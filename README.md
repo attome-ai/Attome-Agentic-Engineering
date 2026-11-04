@@ -14,14 +14,14 @@ Entry for AIDTC 2027 (Gulf University, Bahrain). Status: working prototype; see 
 
 ## Results (measured, each traceable to a stored run)
 
-> **Under review (2026-11-04):** the 20 kg bracket result (234 g, safety factor 2.06, grade A) is not valid as stated. Its peak stress sits at the sharp junction of the rib tip and the arm, where stress does not converge: it rises from 12.1 MPa at 3 mm to 13.8 MPa at 2 mm (SF 1.82), and with realistic 1.5 mm fillets at that junction the first solve gives 16.7 MPa (SF 1.50). The convergence study behind grade A (3 / 4.5 / 6.75 mm) was too coarse to see it. Being fixed: filleted rib junctions in the bracket family, a stricter stress-convergence rule, and a re-run of the optimization.
+> **Corrected (2026-11-04, decision D10):** an earlier result here (234 g, safety factor 2.06, grade A) was wrong: its peak stress sat at a sharp corner where each rib tip met the arm, which three uniform meshes could not see. Bracket family version 3 fillets those corners and the trust record now refines locally to catch this. **The search is not converged yet:** 200, 400 and 800 evaluations found 192.5, 179.6 and 162.2 g, so the numbers below are the best verified so far, not the final optimum.
 
 
 | Brief | Hand design | Result | Trust |
 |---|---|---|---|
-| 20 kg PETG shelf bracket | 96 g, safety factor 0.37 (unsafe) | 234 g, safety factor 2.06 ± 1.5% | grade A |
-| 10 W heat sink, small fan, below 75 °C | 103.7 g | 34.4 g (−67%), 71.3 °C, converged at 300/600 evaluations | grade A |
-| Uploaded over-built bracket, same bolt holes | 354 g | 328 g (−7.3%) | grade B |
+| 20 kg PETG shelf bracket | 99 g, safety factor 0.48 (unsafe) | 179.6 g, safety factor 2.07 ± 0.5% (search not converged; see above) | grade A |
+| 10 W heat sink, small fan, below 75 °C | 103.7 g | 27.2 g (−74%), 66.3 °C, same at 300 and 600 evaluations; the lightest corner of the design space, so the limit does not govern | grade A |
+| Uploaded over-built bracket, same bolt holes | 354 g | 328 g (−7.3%), from before the stricter trust check; to be re-run | grade B |
 | 100 kg PETG bracket | – | reported infeasible: the family's strongest design carries about 33 kg | – |
 
 Solver validation: 7 of 7 cases pass (NAFEMS LE10 +0.14%, LE1 −0.40%, cantilever −0.80%, buckling +0.06%, modal

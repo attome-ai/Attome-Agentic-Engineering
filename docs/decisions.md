@@ -126,8 +126,10 @@ The previous grade A was wrong about this design.
 **Decision.** (1) The trust record refines locally twice, the second time to half the element size. If the peak grows by
 more than 10% it is a sharp corner: the record says so and where, the design cannot be grade A, and the report states
 that its stress is a value at the stated mesh size. (2) Bracket family version 3: ribs run 95% of the arm and end in a
-6 mm tip with a 3 mm fillet. On the same design this gives 266 g, a settled peak of 10 MPa (safety factor 2.5) and 0.39 mm
+6 mm tip with a 3 mm fillet, at both the arm end and the wall end. On the same design (before the wall-end fillet) this gives 266 g, a settled peak of 10 MPa (safety factor 2.5) and 0.39 mm
 deflection, against 251 g, 21 MPa and 0.71 mm with the short rib and small fillet (`docs/benchmarks.md`).
+
+**Still open.** The sharp edges along each rib's flank remain, and they cap most bracket designs at grade B (peak growth of about 15-20% on halving).
 
 **Consequence.** Every bracket result from family version 2 is superseded and re-run. The grade rule changes; the owner
 should review this decision, because it changes headline numbers.

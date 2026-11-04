@@ -2,8 +2,8 @@
   "spec": "docs\\examples\\bracket_20kg.json",
   "evaluations": 400,
   "method": "nsga2",
-  "method_reason": "evaluations are cheap (4.2 s each against about 43 s of model fitting per trial): NSGA-II runs many evaluations in parallel for the same wall clock",
-  "optimize_seconds": 378.4,
+  "method_reason": "evaluations are cheap (5.3 s each against about 43 s of model fitting per trial): NSGA-II runs many evaluations in parallel for the same wall clock",
+  "optimize_seconds": 517.3,
   "baseline": {
     "params": {
       "thickness": 6,
@@ -14,10 +14,10 @@
     },
     "status": "ok",
     "metrics": {
-      "mass_g": 96.34706346510676,
-      "max_disp_mm": 4.962966988446,
-      "max_von_mises_MPa": 67.8220712798356,
-      "safety_factor": 0.36861156741806606
+      "mass_g": 99.06850323714248,
+      "max_disp_mm": 2.479746076568438,
+      "max_von_mises_MPa": 52.57115347935025,
+      "safety_factor": 0.47554596666439714
     },
     "feasible": false,
     "checks": [
@@ -25,194 +25,192 @@
         "id": "R1",
         "limit": 2.0,
         "load_case": "service",
-        "margin": -0.815694216290967,
+        "margin": -0.7622270166678015,
         "op": ">=",
         "passed": false,
         "quantity": "safety_factor",
         "unit": "1",
-        "value": 0.36861156741806606
+        "value": 0.47554596666439714
       },
       {
         "id": "R2",
         "limit": 3.0,
         "load_case": "service",
-        "margin": -0.6543223294820001,
+        "margin": 0.1734179744771874,
         "op": "<=",
-        "passed": false,
+        "passed": true,
         "quantity": "max_disp_mm",
         "unit": "mm",
-        "value": 4.962966988446
+        "value": 2.479746076568438
       },
       {
         "id": "R3",
         "limit": 250.0,
         "load_case": "service",
-        "margin": 0.6146117461395729,
+        "margin": 0.6037259870514301,
         "op": "<=",
         "passed": true,
         "quantity": "mass_g",
         "unit": "g",
-        "value": 96.34706346510676
+        "value": 99.06850323714248
       }
     ]
   },
-  "front_size": 5,
+  "front_size": 11,
   "front_ranking_changed_on_fine_mesh": false,
-  "front_still_feasible_on_fine_mesh": "3 of 5",
+  "front_still_feasible_on_fine_mesh": "11 of 11",
   "lightest_at_least_as_safe_as_baseline": {
-    "trial": 285,
+    "trial": 7,
     "params": {
-      "fillet_radius": 1.009568746858078,
-      "plate_width": 56.240635084970094,
+      "fillet_radius": 0.5623773612527814,
+      "plate_width": 32.956026040923554,
       "rib_count": 3,
-      "rib_thickness": 6.381065268132371,
-      "thickness": 11.354588942889324
+      "rib_thickness": 6.920812342717063,
+      "thickness": 11.029261530092173
     },
     "coarse": [
-      233.60220969849757,
-      2.147852836364594
+      179.57890781009712,
+      2.0624437831558873
     ],
     "status": "ok",
     "fine": [
-      233.60002655498167,
-      2.0262486192727955
+      179.5788469154386,
+      2.06507339060183
     ],
     "change_pct": [
-      -0.0009345560209918021,
-      -5.661664292495144
+      -3.3909694225363675e-05,
+      0.12749959380317782
     ],
     "feasible_fine": true
   },
   "recommended_knee": {
-    "trial": 285,
+    "trial": 340,
     "params": {
-      "fillet_radius": 1.009568746858078,
-      "plate_width": 56.240635084970094,
+      "fillet_radius": 0.5623773612527814,
+      "plate_width": 32.956026040923554,
       "rib_count": 3,
-      "rib_thickness": 6.381065268132371,
-      "thickness": 11.354588942889324
+      "rib_thickness": 6.920812342717063,
+      "thickness": 11.029261530092173
     },
     "values": [
-      233.60220969849757,
-      2.147852836364594
+      179.57890781009712,
+      2.0624437831558873
     ],
-    "front_size": 5,
+    "front_size": 11,
     "neighbours": [
       {
-        "trial": 298,
+        "trial": 339,
         "values": [
-          234.0044123461562,
-          2.210679633066741
+          187.97723443422657,
+          2.2799590208053955
         ]
       },
       {
-        "trial": 349,
+        "trial": 342,
         "values": [
-          208.55065493353644,
-          2.0507929128155657
+          206.08990427912318,
+          2.4742971660492157
         ]
       }
     ]
   },
   "any_feasible": true,
   "best_safety_factor_reached": {
-    "trial": 240,
+    "trial": 0,
     "params": {
-      "fillet_radius": 0.9984490775000667,
-      "plate_width": 79.17023781831503,
+      "fillet_radius": 6.0,
+      "plate_width": 80.0,
       "rib_count": 3,
-      "rib_thickness": 9.75320269303042,
-      "thickness": 11.473273206168532
+      "rib_thickness": 10.0,
+      "thickness": 12.0
     },
     "metrics": {
-      "mass_g": 339.21922719106476,
-      "max_disp_mm": 0.5063035180551904,
-      "max_von_mises_MPa": 8.000681610881662,
-      "safety_factor": 3.1247337684326424
+      "mass_g": 372.1297602503794,
+      "max_disp_mm": 0.2899616702822359,
+      "max_von_mises_MPa": 6.62534622056093,
+      "safety_factor": 3.7733877095231096
     }
   },
   "knee_trust": {
-    "grade": "B",
+    "grade": "A",
     "status": "verified",
-    "reasons": [
-      "a requirement margin is smaller than its numerical error"
-    ],
+    "reasons": [],
     "requirements": [
       {
         "governing_case": "service",
         "id": "R1",
         "limit": 2.0,
-        "margin": 0.013124309636397768,
-        "numerical_error": 0.015511756750304018,
+        "margin": 0.032536695300914964,
+        "numerical_error": 0.005286411212624799,
         "op": ">=",
         "quantity": "safety_factor",
-        "result": "not proven",
+        "result": "pass",
         "unit": "1",
-        "value": 2.0262486192727955
+        "value": 2.06507339060183
       },
       {
         "governing_case": "service",
         "id": "R2",
         "limit": 3.0,
-        "margin": 0.7475665576676774,
-        "numerical_error": 0.0016220534009418679,
+        "margin": 0.8182086746175145,
+        "numerical_error": 0.0005592073177193772,
         "op": "<=",
         "quantity": "max_disp_mm",
         "result": "pass",
         "unit": "mm",
-        "value": 0.7573003269969675
+        "value": 0.545373976147457
       },
       {
         "governing_case": "service",
         "id": "R3",
         "limit": 250.0,
-        "margin": 0.06559989378007333,
-        "numerical_error": 4.336209637366463e-06,
+        "margin": 0.28168461233824565,
+        "numerical_error": 1.8300874265574573e-07,
         "op": "<=",
         "quantity": "mass_g",
         "result": "pass",
         "unit": "g",
-        "value": 233.60002655498167
+        "value": 179.5788469154386
       }
     ],
     "numerical_error": {
       "mass_g": {
-        "coarse": 233.60228224453817,
-        "fine": 233.60002655498167,
-        "gci_fine": 4.336209637366463e-06,
+        "coarse": 179.57913982900192,
+        "fine": 179.5788469154386,
+        "gci_fine": 1.8300874265574573e-07,
         "h": [
-          1.5360095859241092,
-          2.1224145742640035,
-          2.732657918328638
+          1.5535179905332477,
+          2.0960449632408187,
+          2.4989563977518445
         ],
-        "medium": 233.60217025726973,
+        "medium": 179.57890775113495,
         "monotone": true,
         "observed_order": 4.0
       },
       "max_disp_mm": {
-        "coarse": 0.7475687213227736,
-        "fine": 0.7573003269969675,
-        "gci_fine": 0.0016220534009418679,
+        "coarse": 0.5436106870209935,
+        "fine": 0.545373976147457,
+        "gci_fine": 0.0005592073177193772,
         "h": [
-          1.5360095859241092,
-          2.1224145742640035,
-          2.732657918328638
+          1.5535179905332477,
+          2.0960449632408187,
+          2.4989563977518445
         ],
-        "medium": 0.7547006786475643,
+        "medium": 0.5448094309408099,
         "monotone": true,
         "observed_order": 4.0
       },
       "max_von_mises_MPa": {
-        "coarse": 8.663568201025429,
-        "fine": 12.338071331529049,
-        "gci_fine": 0.015511756750304018,
+        "coarse": 12.359228640407904,
+        "fine": 12.106107276271757,
+        "gci_fine": 0.005286411212624799,
         "h": [
-          1.5360095859241092,
-          2.1224145742640035,
-          2.732657918328638
+          1.5535179905332477,
+          2.0960449632408187,
+          2.4989563977518445
         ],
-        "medium": 11.933039108360912,
-        "monotone": true,
+        "medium": 11.987640402438004,
+        "monotone": false,
         "observed_order": 4.0
       }
     }

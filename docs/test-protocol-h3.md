@@ -1,3 +1,5 @@
+> **Do not print from this version.** The designs and predictions below are from bracket family version 2, superseded by decision D10. Re-run `benchmarks/gauge_point.py` on the final design first.
+
 # H3: Physical test protocol, 20 kg PETG bracket
 
 Draft 2026-11-04. Hardware, printing and testing are the owner's; this document fixes what is measured, how, and

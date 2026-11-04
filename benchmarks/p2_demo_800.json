@@ -1,0 +1,220 @@
+{
+  "spec": "docs\\examples\\bracket_20kg.json",
+  "evaluations": 800,
+  "method": "nsga2",
+  "method_reason": "evaluations are cheap (5.7 s each against about 43 s of model fitting per trial): NSGA-II runs many evaluations in parallel for the same wall clock",
+  "optimize_seconds": 995.1,
+  "baseline": {
+    "params": {
+      "thickness": 6,
+      "plate_width": 50,
+      "rib_count": 1,
+      "rib_thickness": 4,
+      "fillet_radius": 3
+    },
+    "status": "ok",
+    "metrics": {
+      "mass_g": 99.06850323714248,
+      "max_disp_mm": 2.479746076568438,
+      "max_von_mises_MPa": 52.57115347935025,
+      "safety_factor": 0.47554596666439714
+    },
+    "feasible": false,
+    "checks": [
+      {
+        "id": "R1",
+        "limit": 2.0,
+        "load_case": "service",
+        "margin": -0.7622270166678015,
+        "op": ">=",
+        "passed": false,
+        "quantity": "safety_factor",
+        "unit": "1",
+        "value": 0.47554596666439714
+      },
+      {
+        "id": "R2",
+        "limit": 3.0,
+        "load_case": "service",
+        "margin": 0.1734179744771874,
+        "op": "<=",
+        "passed": true,
+        "quantity": "max_disp_mm",
+        "unit": "mm",
+        "value": 2.479746076568438
+      },
+      {
+        "id": "R3",
+        "limit": 250.0,
+        "load_case": "service",
+        "margin": 0.6037259870514301,
+        "op": "<=",
+        "passed": true,
+        "quantity": "mass_g",
+        "unit": "g",
+        "value": 99.06850323714248
+      }
+    ]
+  },
+  "front_size": 59,
+  "front_ranking_changed_on_fine_mesh": false,
+  "front_still_feasible_on_fine_mesh": "59 of 59",
+  "lightest_at_least_as_safe_as_baseline": {
+    "trial": 456,
+    "params": {
+      "fillet_radius": 1.080594675753298,
+      "plate_width": 30.610044489402377,
+      "rib_count": 3,
+      "rib_thickness": 5.595723481648202,
+      "thickness": 11.930737440037479
+    },
+    "coarse": [
+      162.1945430489382,
+      2.034297842975588
+    ],
+    "status": "ok",
+    "fine": [
+      162.19416839990123,
+      2.0125444685557636
+    ],
+    "change_pct": [
+      -0.00023098744872289385,
+      -1.0693308501967198
+    ],
+    "feasible_fine": true
+  },
+  "recommended_knee": {
+    "trial": 708,
+    "params": {
+      "fillet_radius": 0.8684750461040254,
+      "plate_width": 33.617201923293926,
+      "rib_count": 3,
+      "rib_thickness": 5.538443087297486,
+      "thickness": 11.72654147991321
+    },
+    "values": [
+      169.57888275595323,
+      2.0665215883864514
+    ],
+    "front_size": 59,
+    "neighbours": [
+      {
+        "trial": 712,
+        "values": [
+          244.32333853339534,
+          2.925582589267291
+        ]
+      },
+      {
+        "trial": 715,
+        "values": [
+          182.8832571898748,
+          2.1809935753936953
+        ]
+      }
+    ]
+  },
+  "any_feasible": true,
+  "best_safety_factor_reached": {
+    "trial": 0,
+    "params": {
+      "fillet_radius": 6.0,
+      "plate_width": 80.0,
+      "rib_count": 3,
+      "rib_thickness": 10.0,
+      "thickness": 12.0
+    },
+    "metrics": {
+      "mass_g": 372.1297602503794,
+      "max_disp_mm": 0.2899616702822359,
+      "max_von_mises_MPa": 6.62534622056093,
+      "safety_factor": 3.7733877095231096
+    }
+  },
+  "knee_trust": {
+    "grade": "B",
+    "status": "verified",
+    "reasons": [
+      "the peak stress is at a sharp corner and keeps growing under local refinement, so the safety factor is a value at the stated mesh size"
+    ],
+    "requirements": [
+      {
+        "governing_case": "service",
+        "id": "R1",
+        "limit": 2.0,
+        "margin": 0.05148202790775436,
+        "numerical_error": 0.011074530519868933,
+        "op": ">=",
+        "quantity": "safety_factor",
+        "result": "pass",
+        "unit": "1",
+        "value": 2.1029640558155087
+      },
+      {
+        "governing_case": "service",
+        "id": "R2",
+        "limit": 3.0,
+        "margin": 0.8100566336096079,
+        "numerical_error": 0.004517941903113105,
+        "op": "<=",
+        "quantity": "max_disp_mm",
+        "result": "pass",
+        "unit": "mm",
+        "value": 0.5698300991711763
+      },
+      {
+        "governing_case": "service",
+        "id": "R3",
+        "limit": 250.0,
+        "margin": 0.32168677116915717,
+        "numerical_error": 2.453721282087616e-06,
+        "op": "<=",
+        "quantity": "mass_g",
+        "result": "pass",
+        "unit": "g",
+        "value": 169.5783072077107
+      }
+    ],
+    "numerical_error": {
+      "mass_g": {
+        "coarse": 169.57909928313757,
+        "fine": 169.5783072077107,
+        "gci_fine": 2.453721282087616e-06,
+        "h": [
+          1.514865549640555,
+          2.0023960830830845,
+          2.428150168834224
+        ],
+        "medium": 169.57899055258605,
+        "monotone": true,
+        "observed_order": 4.0
+      },
+      "max_disp_mm": {
+        "coarse": 0.5683373018764076,
+        "fine": 0.5698300991711763,
+        "gci_fine": 0.004517941903113105,
+        "h": [
+          1.514865549640555,
+          2.0023960830830845,
+          2.428150168834224
+        ],
+        "medium": 0.5690466349257027,
+        "monotone": true,
+        "observed_order": 1.1553921676605396
+      },
+      "max_von_mises_MPa": {
+        "coarse": 12.139361550124002,
+        "fine": 11.887982550564919,
+        "gci_fine": 0.011074530519868933,
+        "h": [
+          1.514865549640555,
+          2.0023960830830845,
+          2.428150168834224
+        ],
+        "medium": 12.104193607455269,
+        "monotone": true,
+        "observed_order": 4.0
+      }
+    }
+  }
+}

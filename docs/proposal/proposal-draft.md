@@ -144,26 +144,24 @@ typed grammar and the gate, not from a better mesher.
 
 ### 4.3 End to end: the 20 kg bracket brief
 
-> **Under review (2026-11-04):** the 20 kg bracket result (234 g, safety factor 2.06, grade A) is not valid as stated. Its peak stress sits at the sharp junction of the rib tip and the arm, where stress does not converge: it rises from 12.1 MPa at 3 mm to 13.8 MPa at 2 mm (SF 1.82), and with realistic 1.5 mm fillets at that junction the first solve gives 16.7 MPa (SF 1.50). The convergence study behind grade A (3 / 4.5 / 6.75 mm) was too coarse to see it. Being fixed: filleted rib junctions in the bracket family, a stricter stress-convergence rule, and a re-run of the optimization.
+> **Corrected (2026-11-04, decision D10):** an earlier result here (234 g, safety factor 2.06, grade A) was wrong: its peak stress sat at a sharp corner where each rib tip met the arm, which three uniform meshes could not see. Bracket family version 3 fillets those corners and the trust record now refines locally to catch this. **The search is not converged yet:** 200, 400 and 800 evaluations found 192.5, 179.6 and 162.2 g, so the numbers below are the best verified so far, not the final optimum.
 
 
-Source: `benchmarks/p2_demo.json`, `runs/p2_demo/`; command `python benchmarks/p2_demo.py`. About 4.5 minutes in
-total, 200 evaluations (NSGA-II, chosen from the measured 4.2 s per evaluation).
+Source: `benchmarks/p2_demo_400.json`, `runs/p2_demo_400/`; command `python benchmarks/p2_demo.py --evals 400 --name p2_demo_400`.
+400 evaluations, NSGA-II, chosen from the measured evaluation cost.
 
 | | Mass | Safety factor | Max displacement | Requirements |
 |---|---|---|---|---|
-| Hand baseline (6 mm plate, 1 rib) | 96.3 g | 0.37 | 4.96 mm | fails R1 (SF ≥ 2) and R2 (≤ 3 mm) |
-| Recommended design (trial 183: 11.8 mm plate, 2 ribs of 7.7 mm) | 234.1 g | 2.06 ± 1.5% | 0.78 ± 0.3% mm | all pass, **trust grade A** |
+| Hand baseline (6 mm plate, 1 rib) | 99.1 g | 0.48 | 2.48 mm | fails R1 (SF ≥ 2) |
+| Best verified so far (11.0 mm plate, 3 ribs of 6.9 mm) | 179.6 g | 2.07 ± 0.5% | 0.55 ± 0.1% mm | all pass, **trust grade A** |
 
-What this shows, stated honestly: the hand design is not a lighter version of a safe design, it is **unsafe** by a
-factor of 5. The system finds the lightest design in the family that is *proven* to meet the brief; the error bars come
-from a three-level grid convergence study (Roache's GCI), and the margin on R1 (3.2%) exceeds its numerical error
-(1.5%), so the requirement is proven rather than merely met. 3 of the 4 Pareto designs stayed feasible on the finer
-mesh, and their ranking did not change.
+What this shows, stated honestly: the hand design is **unsafe**, not a lighter version of a safe design. The error bars
+come from a three-level grid convergence study, and local refinement confirms the peak stress settles.
 
-Converged (decision D8): the same run with 400 evaluations found 233.6 g (−0.2%); that design meets the brief but
-only at grade B (its safety-factor margin, 1.3%, is smaller than its numerical error), so the proven 234.1 g design
-stays the recommendation (`benchmarks/p2_demo_400.json`).
+**Not converged (decision D8).** The lightest design feasible on the finer mesh was 192.5 g at 200 evaluations, 179.6 g at
+400 and 162.2 g at 800. The 800-evaluation recommendation (169.6 g) is only grade B, because its peak still grows 14% under
+local refinement, at the rib's edge near its tip (`benchmarks/p2_demo_800.json`). Before submission this section needs
+a budget where the result changes by less than 2%.
 
 ### 4.4 Second physics on the same pipeline: a fan-cooled 10 W heat sink
 
@@ -174,17 +172,17 @@ Source: `benchmarks/heatsink_fan_demo_300.json` (converged, checked by `benchmar
 | | Mass | Peak temperature | Requirement (≤ 75 °C) |
 |---|---|---|---|
 | Hand baseline (4 mm base, 8 fins 2 × 25 mm) | 103.7 g | 48.4 °C | pass, large margin |
-| Optimized (2.0 mm base, 5 fins 1.3 × 13.8 mm) | **34.4 g (−67%)** | 71.3 °C | pass, **trust grade A** |
+| Optimized (2.0 mm base, 4 fins 1.2 × 10 mm) | **27.2 g (−74%)** | 66.3 °C | pass, **trust grade A** |
 
-Convection is not a guessed number: the coefficient comes from the plate-fin channel correlation of Teertstra et al.
-(1999), recomputed for every design from its fin spacing, at a stated fan velocity of 1.5 m/s (to be confirmed
-against a fan datasheet). 27 of 27 Pareto designs stayed feasible on the finer mesh; the heat balance closes to
-better than 10⁻⁷.
+Baseline temperature with this fan model: 45.3 °C. Convection comes from the plate-fin channel correlation (Teertstra et
+al. 1999; Gnielinski above Re 2300), recomputed for every design, at the air speed where a typical 60 mm fan's curve meets
+the fins' pressure drop (to be confirmed against a fan datasheet). An earlier 34.4 g result kept the air speed fixed
+however dense the fins were, which the ten-brief suite showed was not credible; it is superseded.
 
-**Convergence (D8).** 150 evaluations gave 55.8 g, 300 gave 34.4 g and 600 gave 34.6 g. The 150-evaluation design
-was verified and still 62% heavier than the optimum: verification proves a design meets the brief, not that the search
-found the best one, so every headline result is re-run at double the budget. An earlier run with a fixed coefficient
-of 25 W/m²K gave 44.3 g at 150 and 42.0 g at 300 evaluations (not converged, superseded by the correlation).
+**What this result does and does not show.** It is the same at 300 and 600 evaluations (`benchmarks/heatsink_fan60_demo_*.json`),
+but it is the lightest corner of the design space: the temperature limit has 8.7 °C of room, so the bounds decide the answer.
+The 5 W and 15 W briefs land on the same corner. A harder limit or a wider space is needed to show the optimizer
+trading mass against temperature.
 
 ### 4.5 Infeasible briefs are reported, not faked
 
@@ -209,8 +207,8 @@ also a tighter bound than the search: the optimizer, trading mass against the 25
 Source: `benchmarks/a3_redesign_demo.json`. An over-built bracket arrives as a STEP file: analysed as-is (354.1 g,
 SF 3.20), its two bolt holes detected and frozen, a lightening pocket sized by the optimizer under the same 20 kg
 brief: **328.2 g (−7.3%)**, SF 2.32, 14 of 14 Pareto designs feasible on the finer mesh, trust grade **B** (the pocket
-corners make the safety factor converge non-monotonically; the record says so). The same STEP route reproduces the
-native model's result exactly (234.143 g, SF 2.0642), so importing a part loses nothing.
+corners make the safety factor converge non-monotonically; the record says so). This result predates the stricter trust check and is to be re-run. The STEP route reproduced the native model's
+result exactly at the time, so importing a part lost nothing.
 
 ### 4.6 Choosing the optimizer by measured cost
 

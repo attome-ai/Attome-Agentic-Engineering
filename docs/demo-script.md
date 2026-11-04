@@ -1,3 +1,5 @@
+> **Numbers below predate decision D10** and must be re-recorded once the bracket search converges (234 g, 34.4 g and the 14.7 h print are stale). See `docs/benchmarks.md`.
+
 # Demo script: three-minute video and live demo
 
 For the proposal video (P5-t3) and the 3 February live demo. Every number on screen comes from a stored run; the
