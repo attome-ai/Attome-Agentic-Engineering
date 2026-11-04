@@ -322,3 +322,18 @@ answer scores 58% on all fields but 0% here, so this is the honest number) and u
 Self-check: the gold answers score 100%; no answers score 0% on stated fields. The model run needs an API key:
 `python -m benchmarks.brief_bench.run extract --model claude-opus-5-5 --out runs/brief_bench/opus`, then `score`.
 Image briefs (a sketch or photo) are not in this set yet.
+
+## Reproducibility (P3-x2, `structura reproduce --dir TRUST_DIR`)
+
+Each trust record stores the spec path and hash, the parameters and the fine-mesh metrics; `reproduce` refuses a
+changed spec and re-solves. 2026-11-04:
+
+| Result | Reproduced | Largest relative difference |
+|---|---|---|
+| 20 kg bracket, recommended design (`runs/p2_demo/trust`) | yes | 0 (bit-identical: mass, displacement, stress, SF) |
+| Fan heat sink, 34.4 g design (`runs/heatsink_fan_demo_300/trust`) | yes | 0 |
+| Uploaded-part redesign (`runs/a3_demo/trust`) | yes | 0 |
+
+The search itself is not replayed trial for trial: NSGA-II evaluates in parallel, so the order of finished trials
+varies between runs (the live rehearsal found 231.4 g where the stored run found 234.1 g; both grade A). What is
+delivered, a design with its verified numbers, reproduces exactly.
