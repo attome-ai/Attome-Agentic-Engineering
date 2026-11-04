@@ -29,7 +29,7 @@ TEST_CASE("C4-T1: bracket default meshes with checked groups") {
   for (auto& t : m.tets) CHECK(t.size() == 11);
 }
 
-TEST_CASE("C4-T1: an unmeshable input fails after four logged attempts") {
+TEST_CASE("C4-T1: an unmeshable input fails after every ladder attempt is logged") {
   // A shape whose named group cannot exist forces nothing; instead point gmsh at a broken STEP via a 0-size box.
   fs::path dir = fs::temp_directory_path() / "structura_test_mesh_fail";
   fs::remove_all(dir);
@@ -42,7 +42,7 @@ TEST_CASE("C4-T1: an unmeshable input fails after four logged attempts") {
     mesh_shape(b, {}, dir.string(), o);
   } catch (const MeshError& e) {
     threw = true;
-    CHECK(e.attempts.size() == 4);
+    CHECK(e.attempts.size() == 5);  // delaunay, delaunay straight-sided, hxt, frontal, coarser delaunay
   }
   CHECK(threw);
 }

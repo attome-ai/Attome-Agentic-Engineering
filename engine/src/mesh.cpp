@@ -20,10 +20,52 @@ struct Rung {
   const char* algo;
   int code;
   double scale;
+  bool straight = false;  // straight-sided quadratic elements (mid-side nodes not moved onto curved surfaces)
 };
 // Delaunay first: gmsh's default and the most robust. HXT runs single-threaded because with several threads it can
-// hang on Windows (found in the validation suite: 120 s timeouts on simple boxes).
-const Rung kLadder[] = {{"delaunay", 1, 1.0}, {"hxt", 10, 1.0}, {"frontal", 4, 1.0}, {"delaunay", 1, 1.5}};
+// hang on Windows (found in the validation suite: 120 s timeouts on simple boxes). Curved quadratic elements can fold
+// near tight fillets (CalculiX: "nonpositive jacobian"), so the second rung repeats Delaunay with straight sides.
+const Rung kLadder[] = {{"delaunay", 1, 1.0, false}, {"delaunay-straight", 1, 1.0, true}, {"hxt", 10, 1.0, true},
+                        {"frontal", 4, 1.0, true}, {"delaunay-straight", 1, 1.5, true}};
+
+// Smallest ratio detJ(point) / detJ(straight corner tet) over the corners and the four Gauss points of a quadratic
+// tetrahedron (CalculiX/VTK node order). A value <= 0 means the curved element is inverted somewhere.
+double quad_tet_jacobian_ratio(const std::map<int, std::array<double, 3>>& nodes, const std::vector<int>& t) {
+  if (t.size() < 11) return 1.0;
+  const double a = 0.5854101966249685, b = 0.1381966011250105;
+  const double pts[8][4] = {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1},
+                            {a, b, b, b}, {b, a, b, b}, {b, b, a, b}, {b, b, b, a}};
+  const int edge[6][2] = {{0, 1}, {1, 2}, {2, 0}, {0, 3}, {1, 3}, {2, 3}};
+  double X[10][3];
+  for (int i = 0; i < 10; ++i)
+    for (int c = 0; c < 3; ++c) X[i][c] = nodes.at(t[1 + i])[c];
+  auto det3 = [](const double m[3][3]) {
+    return m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
+           m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+  };
+  double lin[3][3];
+  for (int r = 0; r < 3; ++r)
+    for (int c = 0; c < 3; ++c) lin[r][c] = X[r + 1][c] - X[0][c];
+  double d0 = det3(lin);
+  if (std::fabs(d0) < 1e-300) return 0.0;
+  double worst = 1e300;
+  for (auto& L : pts) {
+    double g[10][4] = {};
+    for (int i = 0; i < 4; ++i) g[i][i] = 4 * L[i] - 1;
+    for (int e = 0; e < 6; ++e) {
+      g[4 + e][edge[e][0]] = 4 * L[edge[e][1]];
+      g[4 + e][edge[e][1]] = 4 * L[edge[e][0]];
+    }
+    double J[3][3] = {};
+    for (int r = 0; r < 3; ++r)       // d/dxi_r with xi = (L2, L3, L4), L1 = 1 - sum
+      for (int i = 0; i < 10; ++i) {
+        double dn = g[i][r + 1] - g[i][0];
+        for (int c = 0; c < 3; ++c) J[r][c] += dn * X[i][c];
+      }
+    worst = std::min(worst, det3(J) / d0);
+  }
+  return worst;
+}
 
 std::string upper(std::string s) {
   std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
@@ -38,14 +80,14 @@ std::string num(double v) {
 }
 
 std::string geo_text(const std::string& step, double size, int algo, const MeshOptions& o,
-                     const std::vector<std::pair<std::string, std::vector<std::vector<double>>>>& groups) {
+                     const std::vector<std::pair<std::string, std::vector<std::vector<double>>>>& groups, bool straight) {
   std::ostringstream g;
   g << "SetFactory(\"OpenCASCADE\");\n"
     << "Geometry.OCCImportLabels = 0;\n"
     << "v() = ShapeFromFile(\"" << step << "\");\n"
     << "Mesh.Algorithm3D = " << algo << ";\n"
     << "Mesh.ElementOrder = " << o.order << ";\n"
-    << "Mesh.SecondOrderLinear = 0;\n"
+    << "Mesh.SecondOrderLinear = " << (straight ? 1 : 0) << ";\n"
     << "Mesh.HighOrderOptimize = 0;\n"
     << "Mesh.MeshSizeMax = " << num(size) << ";\n"
     << "Mesh.MeshSizeMin = " << num(size * o.size_min_factor) << ";\n"
@@ -118,7 +160,7 @@ Mesh mesh_shape(const TopoDS_Shape& shape, const std::map<std::string, std::vect
     fs::path out = fs::path(workdir) / "mesh.inp";
     std::error_code ec;
     fs::remove(out, ec);
-    std::ofstream(fs::path(workdir) / "mesh.geo") << geo_text(step.generic_string(), size, rung.code, opt, groups);
+    std::ofstream(fs::path(workdir) / "mesh.geo") << geo_text(step.generic_string(), size, rung.code, opt, groups, rung.straight);
     ProcessResult pr = run_process({gmsh, "mesh.geo", "-3", "-format", "inp", "-o", "mesh.inp", "-nt", std::to_string(rung.code == 10 ? 1 : opt.threads)},
                                    workdir, opt.timeout_s);
     nlohmann::json att = {{"algorithm", rung.algo}, {"size", size}, {"seconds", std::round(pr.seconds * 100) / 100}};
@@ -199,18 +241,28 @@ Mesh mesh_shape(const TopoDS_Shape& shape, const std::map<std::string, std::vect
       if (!good) bad.push_back(name);
       m.nsets[name] = std::vector<int>(ids.begin(), ids.end());
     }
-    double qmin = 1e300, qsum = 0;
+    double qmin = 1e300, qsum = 0, jmin = 1e300;
+    size_t inverted = 0;
     for (auto& t : m.tets) {
       double q = tet_quality(m.nodes, t);
       qmin = std::min(qmin, q);
       qsum += q;
+      double jr = quad_tet_jacobian_ratio(m.nodes, t);
+      jmin = std::min(jmin, jr);
+      inverted += jr <= 0;
+    }
+    if (inverted > 0) {  // the solver would reject these elements; try the next rung (straight-sided quadratics)
+      att.update({{"ok", false}, {"log", std::to_string(inverted) + " curved elements are inverted (min Jacobian ratio " +
+                                             std::to_string(jmin) + ")"}});
+      attempts.push_back(att);
+      continue;
     }
     att.update({{"ok", true}, {"nodes", m.nodes.size()}, {"elements", m.tets.size()}, {"dof", m.dof()},
-                {"min_quality", qmin}, {"mean_quality", qsum / m.tets.size()}});
+                {"min_quality", qmin}, {"mean_quality", qsum / m.tets.size()}, {"min_jacobian_ratio", jmin}});
     attempts.push_back(att);
     m.report = {{"attempts", attempts}, {"algorithm", rung.algo}, {"size", size}, {"order", opt.order},
-                {"nodes", m.nodes.size()}, {"elements", m.tets.size()}, {"dof", m.dof()}, {"min_quality", qmin},
-                {"mean_quality", qsum / m.tets.size()}, {"groups", checks}};
+                {"straight_sided", rung.straight}, {"nodes", m.nodes.size()}, {"elements", m.tets.size()}, {"dof", m.dof()},
+                {"min_quality", qmin}, {"mean_quality", qsum / m.tets.size()}, {"min_jacobian_ratio", jmin}, {"groups", checks}};
     if (!bad.empty()) {
       std::string names;
       for (auto& b : bad) names += (names.empty() ? "" : ", ") + b;

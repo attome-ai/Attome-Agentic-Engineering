@@ -1,5 +1,6 @@
 #include "structura/evaluate.hpp"
 
+#include <atomic>
 #include <chrono>
 #include <cmath>
 #include <cstdio>
@@ -10,6 +11,7 @@
 #include "structura/design.hpp"
 #include "structura/export.hpp"
 #include "structura/occ.hpp"
+#include "structura/process.hpp"
 #include "structura/repair.hpp"
 
 namespace fs = std::filesystem;
@@ -66,14 +68,21 @@ nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params
   out["hash"] = d.hash();
   out["spec_hash"] = spec.hash();
   out["params"] = d.params;
-  std::string work = o.workdir.empty() ? (fs::temp_directory_path() / ("structura_eval_" + d.hash().substr(0, 12))).string() : o.workdir;
+  // a unique folder per evaluation, so parallel runs of the same design never share solver files
+  static std::atomic<unsigned> counter{0};
+  std::string unique = d.hash().substr(0, 12) + "_" + std::to_string(current_pid()) + "_" + std::to_string(counter++);
+  std::string work = o.workdir.empty() ? (fs::temp_directory_path() / ("structura_eval_" + unique)).string() : o.workdir;
   auto finish = [&](const std::string& status) {
     out["status"] = status;
     out["seconds"] = std::chrono::duration<double>(clk::now() - t0).count();
     if (!o.keep_files && !o.save_bundle) {
       std::error_code ec;
-      fs::remove_all(fs::path(work) / "mesh", ec);
-      for (auto& lc : spec.load_cases) fs::remove_all(fs::path(work) / ("solve_" + lc.lc.name), ec);
+      if (o.workdir.empty()) {
+        fs::remove_all(work, ec);
+      } else {
+        fs::remove_all(fs::path(work) / "mesh", ec);
+        for (auto& lc : spec.load_cases) fs::remove_all(fs::path(work) / ("solve_" + lc.lc.name), ec);
+      }
     }
     return out;
   };

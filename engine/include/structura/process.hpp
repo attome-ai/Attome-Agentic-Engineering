@@ -19,4 +19,6 @@ ProcessResult run_process(const std::vector<std::string>& args, const std::strin
 // Locate an executable: $STRUCTURA_<NAME>, then the conda prefix (Library/bin or bin), then PATH.
 std::string find_exe(const std::string& name);
 
+unsigned long current_pid();
+
 }  // namespace structura

@@ -50,6 +50,14 @@ std::string find_exe(const std::string& name) {
   throw std::runtime_error(name + " not found (set STRUCTURA_" + upper + " or add it to PATH)");
 }
 
+unsigned long current_pid() {
+#ifdef _WIN32
+  return GetCurrentProcessId();
+#else
+  return static_cast<unsigned long>(getpid());
+#endif
+}
+
 #ifdef _WIN32
 static std::wstring widen(const std::string& s) {
   if (s.empty()) return {};
