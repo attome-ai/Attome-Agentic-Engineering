@@ -9,3 +9,5 @@ runs/
 *.12d
 spooles.out
 benchmarks/**/work/
+engine/build/
+engine/build.log

@@ -13,10 +13,10 @@
       "area": "Verify",
       "size": "M",
       "task": "Build the trust record for a design.",
-      "where": "new file structura/trust.py, tests/test_trust.py",
+      "where": "new file engine/src/trust.cpp, engine/tests/test_trust.cpp",
       "read_first": [
-        "structura/checks.py",
-        "structura/results.py",
+        "engine/src/checks.cpp",
+        "engine/src/results.cpp",
         "structura/optimize/verify_front.py"
       ],
       "steps": [
@@ -26,8 +26,8 @@
         "4. Write trust.json beside the design bundle."
       ],
       "verify": [
-        "micromamba run -n attome-ae python -m pytest tests/test_trust.py -q",
-        "all passed"
+        "scripts\\build_engine.cmd && micromamba run -n attome-ae engine\\build\\engine_tests.exe -tc=\"F1-T1*\"",
+        "all test cases pass"
       ],
       "done_when": "Every delivered design has a trust.json with all checks run.",
       "do_not": [
@@ -41,10 +41,10 @@
       "area": "Verify",
       "size": "M",
       "task": "Add GCI error bars, energy and hand-calculation checks, the confidence grade and the reproducible evidence bundle.",
-      "where": "structura/trust.py, new files structura/gci.py, structura/handcalc.py, scripts/reproduce.py",
+      "where": "engine/src/trust.cpp, new files engine/src/gci.cpp, engine/src/handcalc.cpp, scripts/reproduce.py",
       "read_first": [
-        "structura/trust.py",
-        "structura/feasibility.py"
+        "engine/src/trust.cpp",
+        "engine/src/feasibility.cpp"
       ],
       "steps": [
         "1. gci.estimate(values, sizes) computes the Grid Convergence Index from three mesh levels for each governing value.",
@@ -55,8 +55,8 @@
         "6. scripts/reproduce.py <design dir> re-runs the evidence bundle and asserts the reported numbers match within 0.1%."
       ],
       "verify": [
-        "micromamba run -n attome-ae python -m pytest tests/test_trust.py -q && micromamba run -n attome-ae python scripts/reproduce.py runs/demo/best",
-        "all passed; reproduce prints match"
+        "scripts\\build_engine.cmd && micromamba run -n attome-ae engine\\build\\engine_tests.exe -tc=\"F1-T2*\"",
+        "all test cases pass"
       ],
       "done_when": "Every delivered design has error bars, independent checks, a grade with its rule and reproduces from its bundle.",
       "do_not": [

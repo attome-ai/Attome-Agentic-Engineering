@@ -13,7 +13,7 @@
       "area": "Data",
       "size": "S",
       "task": "Define the solver-independent result schema.",
-      "where": "new file structura/results.py",
+      "where": "new file engine/src/results.cpp",
       "read_first": [
         "docs/feature-plan.md"
       ],
@@ -22,8 +22,8 @@
         "2. Write to and read from .npz plus JSON."
       ],
       "verify": [
-        "micromamba run -n attome-ae python -m pytest tests/test_results.py -q",
-        "all passed"
+        "scripts\\build_engine.cmd && micromamba run -n attome-ae engine\\build\\engine_tests.exe -tc=\"C1-T1*\"",
+        "all test cases pass"
       ],
       "done_when": "Results round-trip with units.",
       "do_not": [
@@ -37,22 +37,22 @@
       "area": "Solver",
       "size": "M",
       "task": "Write the deck, run ccx and parse results for a static case.",
-      "where": "new files structura/solve/calculix.py, tests/test_calculix.py",
+      "where": "new files engine/src/calculix.cpp, engine/tests/test_calculix.cpp",
       "read_first": [
-        "structura/results.py",
-        "structura/bc.py",
-        "structura/mesh/gmsh_mesh.py"
+        "engine/src/results.cpp",
+        "engine/src/bc.cpp",
+        "engine/src/mesh.cpp"
       ],
       "steps": [
         "1. Write *NODE and *ELEMENT, TYPE=C3D10 directly from the mesh arrays, remapping gmsh second-order node order to CalculiX order.",
-        "2. Write *MATERIAL from structura/materials.py, *SOLID SECTION, boundary sets and loads from bc.py, *STEP *STATIC, *NODE FILE U, *EL FILE S, *NODE PRINT RF.",
+        "2. Write *MATERIAL from engine/src/materials.cpp, *SOLID SECTION, boundary sets and loads from bc.py, *STEP *STATIC, *NODE FILE U, *EL FILE S, *NODE PRINT RF.",
         "3. Run ccx in a temp directory with subprocess, a timeout and OMP_NUM_THREADS from config.",
         "4. Parse the .frd for U and S, compute von Mises per node, and the .dat for reaction forces; fill Result.",
         "5. Test on the cantilever: tip deflection within 2% of beam theory."
       ],
       "verify": [
-        "micromamba run -n attome-ae python -m pytest tests/test_calculix.py -q",
-        "all passed"
+        "scripts\\build_engine.cmd && micromamba run -n attome-ae engine\\build\\engine_tests.exe -tc=\"C1-T2*\"",
+        "all test cases pass"
       ],
       "done_when": "A bracket design returns a full Result with reactions balancing the load within 0.5%.",
       "do_not": [

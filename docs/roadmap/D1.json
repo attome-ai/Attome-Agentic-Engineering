@@ -14,9 +14,9 @@
       "task": "Write the evaluation function and the Optuna study runner.",
       "where": "new files structura/optimize/evaluate.py, structura/optimize/study.py, tests/test_study.py",
       "read_first": [
-        "structura/spec.py",
-        "structura/checks.py",
-        "structura/solve/calculix.py"
+        "engine/src/spec.cpp",
+        "engine/src/checks.cpp",
+        "engine/src/calculix.cpp"
       ],
       "steps": [
         "1. evaluate(spec, params, mesh_size) runs build → gate → mesh → solve → checks and returns objectives, constraint violations and a status (ok, gate_fail, mesh_fail, solve_fail).",
@@ -43,7 +43,7 @@
       "where": "new file structura/optimize/portfolio.py, tests/test_portfolio.py",
       "read_first": [
         "structura/optimize/study.py",
-        "structura/spec.py"
+        "engine/src/spec.cpp"
       ],
       "steps": [
         "1. Add ax-platform and botorch to environment.yml and record their licences in docs/licences.md.",

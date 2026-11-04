@@ -23,10 +23,19 @@ stop and ask the owner.
 8. Never, under any task:
    - let the agent or an LLM change solver settings, material values or checker thresholds that judge a design;
    - report a number from a surrogate, an estimate or a coarse mesh as a verified result;
-   - import the `gmsh` Python module into code that will be distributed as a binary (run gmsh and ccx as subprocesses);
+   - link or import gmsh or CalculiX in any form: they run only as `gmsh.exe` / `ccx.exe` subprocesses (decisions D1, D2);
+   - put engine logic (geometry, gate, meshing, decks, results, verification) in Python: the engine is C++ in `engine/`,
+     Python in `structura/` is only the AI layer (optimizers, agent) and calls the engine (decision D1);
    - add a dependency whose licence is AGPL, or FluidX3D, or anything not listed in `docs/licences.md`;
    - mix units: every number is mm, N, MPa, tonne, s, K (or °C where stated) and the unit is stored with it;
    - push to a remote unless the owner says so.
+
+## Engine (C++) tasks
+
+- Build with `scripts\build_engine.cmd`; a task is not done while the build has errors or new warnings.
+- Name each new doctest case with the task id first, for example `TEST_CASE("C1-T2: cantilever tip deflection")`,
+  so `engine_tests.exe -tc="C1-T2*"` runs exactly that task's checks.
+- Every engine command prints JSON only on stdout; OCCT messages are silenced.
 
 ## Finishing the task
 

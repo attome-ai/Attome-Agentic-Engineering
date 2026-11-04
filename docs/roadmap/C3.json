@@ -13,10 +13,10 @@
       "area": "Solver",
       "size": "S",
       "task": "Turn named faces into physical groups and CalculiX sets.",
-      "where": "new file structura/bc.py, tests/test_bc.py",
+      "where": "new file engine/src/bc.cpp, engine/tests/test_bc.cpp",
       "read_first": [
-        "structura/templates/base.py",
-        "structura/mesh/gmsh_mesh.py"
+        "engine/src/design.cpp",
+        "engine/src/mesh.cpp"
       ],
       "steps": [
         "1. bc.groups(template, shape) returns {group_name: [face ids]} from named_faces.",
@@ -25,8 +25,8 @@
         "4. Test with the bracket: fixed mount_holes, 1000 N on load_face."
       ],
       "verify": [
-        "micromamba run -n attome-ae python -m pytest tests/test_bc.py -q",
-        "all passed"
+        "scripts\\build_engine.cmd && micromamba run -n attome-ae engine\\build\\engine_tests.exe -tc=\"C3-T1*\"",
+        "all test cases pass"
       ],
       "done_when": "Loads and supports land on the named faces with the exact total force.",
       "do_not": [

@@ -40,3 +40,15 @@ Recorded 2026-11-04 by task F2-T1.
 AMD Ryzen 9 9950X3D (16 cores, 32 threads), 61.6 GB RAM, NVIDIA GeForce RTX 5090, Windows 11 Pro.
 This is not the 8 GB / 4-core minimum machine that J1 promises; runtimes measured here are labelled with the
 machine, and the minimum-hardware run is a separate measurement.
+
+## C++ engine build (decision D1)
+
+- Compiler: Visual Studio 2022 Community, MSVC 19.44.35221 (x64), Windows SDK 10.0.26100.
+- Build tools from the environment: CMake (system, 4.2.0-rc1), Ninja 1.13.2, nlohmann_json 3.12.0, doctest 2.5.3;
+  OpenCASCADE 7.8.1 headers, import libraries and DLLs come from the `occt` package already in the environment.
+- Build: `scripts\build_engine.cmd` (Release by default). It calls `vcvars64.bat` (override with `VCVARS`) and
+  configures CMake with the environment's `Library` folder as the prefix.
+- Run tests: `micromamba run -n attome-ae engine\build\engine_tests.exe` (the environment puts the OCCT DLLs and
+  gmsh on PATH). A single task's cases: `engine_tests.exe -tc="C1-T2*"`.
+- First full build: about 2 minutes on the development machine; the engine test suite runs in about 46 s, most of it
+  the meshing failure-ladder case.

@@ -12,10 +12,10 @@
       "area": "CAD",
       "size": "S",
       "task": "Write the geometry gate and run it on 200 random bracket designs.",
-      "where": "new files structura/geometry/gate.py, tests/test_gate.py",
+      "where": "new files engine/src/gate.cpp, tests/test_gate.py",
       "read_first": [
-        "structura/templates/base.py",
-        "structura/templates/bracket.py"
+        "engine/src/design.cpp",
+        "families/bracket.json"
       ],
       "steps": [
         "1. gate(shape, spec_limits) returns GateResult(ok, reasons, volume_mm3, solids).",
@@ -23,8 +23,8 @@
         "3. Sample 200 random in-bounds bracket designs and write the pass rate and the failure reasons to benchmarks/gate_sweep.json."
       ],
       "verify": [
-        "micromamba run -n attome-ae python -m pytest tests/test_gate.py -q",
-        "all passed; benchmarks/gate_sweep.json written"
+        "scripts\\build_engine.cmd && micromamba run -n attome-ae engine\\build\\engine_tests.exe -tc=\"B4-T1*\"",
+        "all test cases pass"
       ],
       "done_when": "Every failing design has a named reason; the pass rate is recorded.",
       "do_not": [
@@ -38,9 +38,9 @@
       "area": "CAD",
       "size": "M",
       "task": "Add safe auto-repair and re-gate the repaired shape.",
-      "where": "new files structura/geometry/repair.py, tests/test_repair.py",
+      "where": "new files engine/src/repair.cpp, engine/tests/test_repair.cpp",
       "read_first": [
-        "structura/geometry/gate.py"
+        "engine/src/gate.cpp"
       ],
       "steps": [
         "1. repair(shape, reasons) removes fillets and faces smaller than the minimum feature size, merges sliver faces with OCCT ShapeUpgrade_UnifySameDomain and sews small gaps.",
@@ -49,8 +49,8 @@
         "4. Run gate() again on the repaired shape and return both results."
       ],
       "verify": [
-        "micromamba run -n attome-ae python -m pytest tests/test_repair.py -q",
-        "all passed"
+        "scripts\\build_engine.cmd && micromamba run -n attome-ae engine\\build\\engine_tests.exe -tc=\"B4-T2*\"",
+        "all test cases pass"
       ],
       "done_when": "Repairable failures pass the gate after repair, with every change logged.",
       "do_not": [
@@ -66,10 +66,10 @@
       "area": "Mesh",
       "size": "M",
       "task": "Train the mesh-ability predictor and measure gate-pass to mesh-success.",
-      "where": "new files structura/geometry/meshability.py, benchmarks/gate_mesh_sweep.py",
+      "where": "new files engine/src/meshability.cpp, benchmarks/gate_mesh_sweep.py",
       "read_first": [
-        "structura/geometry/gate.py",
-        "structura/mesh/gmsh_mesh.py"
+        "engine/src/gate.cpp",
+        "engine/src/mesh.cpp"
       ],
       "steps": [
         "1. benchmarks/gate_mesh_sweep.py samples 500 bracket designs, runs gate, repair and mesh, and stores geometric features (smallest face area, face count, minimum edge length, thickness ratio) with the mesh outcome.",

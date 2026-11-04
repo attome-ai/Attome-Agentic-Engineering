@@ -12,18 +12,18 @@
       "area": "CAD",
       "size": "S",
       "task": "Export a design bundle folder.",
-      "where": "new file structura/export.py, tests/test_export.py",
+      "where": "new file engine/src/export.cpp, engine/tests/test_export.cpp",
       "read_first": [
-        "structura/designs.py",
-        "structura/results.py"
+        "engine/src/design.cpp",
+        "engine/src/results.cpp"
       ],
       "steps": [
         "1. export(design, result, out_dir) writes part.step, part.stl (0.05 mm tolerance), result.vtu (meshio, with von Mises and displacement) and design.json.",
         "2. Test that every file exists and the STEP re-imports as one valid solid."
       ],
       "verify": [
-        "micromamba run -n attome-ae python -m pytest tests/test_export.py -q",
-        "all passed"
+        "scripts\\build_engine.cmd && micromamba run -n attome-ae engine\\build\\engine_tests.exe -tc=\"H2-T1*\"",
+        "all test cases pass"
       ],
       "done_when": "A design bundle opens in ParaView and a slicer.",
       "do_not": [

@@ -11,7 +11,9 @@ LGPL-2.1 **only** (with the Open CASCADE exception), not "or later".
 ## Rules
 
 - **GPL tools run only as subprocesses.** CalculiX (`ccx.exe`) and gmsh (`gmsh.exe`) are called as separate
-  programs exchanging files. The `gmsh` Python module is never imported into code that is distributed. This keeps
+  programs exchanging files. Neither the gmsh library nor its Python module is linked or imported (decision D2).
+- **OCCT is LGPL-2.1**: the C++ engine links it dynamically (DLLs from the environment), which keeps the engine's
+  own licence free to choose; distributing the engine means shipping the OCCT DLLs with their licence and source offer. This keeps
   the Attome AE core free to use any licence.
 - **No AGPL dependencies**, and nothing that is not listed in this file.
 - **Distributing binaries** of ccx or gmsh (for example in an installer) requires offering their source.
@@ -38,6 +40,10 @@ LGPL-2.1 **only** (with the Open CASCADE exception), not "or later".
 | PyVista | 0.49.2 | MIT | https://raw.githubusercontent.com/pyvista/pyvista/main/LICENSE | 2026-11-04 |
 | VTK | 9.3.1 | BSD-3-Clause | https://gitlab.kitware.com/vtk/vtk/-/raw/master/Copyright.txt | 2026-11-04 |
 | pytest | 9.2.0 | MIT | https://raw.githubusercontent.com/pytest-dev/pytest/main/LICENSE | 2026-11-04 |
+| nlohmann/json | 3.12.0 | MIT | https://raw.githubusercontent.com/nlohmann/json/develop/LICENSE.MIT | 2026-11-04 |
+| doctest | 2.5.3 | MIT | https://raw.githubusercontent.com/doctest/doctest/master/LICENSE.txt | 2026-11-04 |
+| Ninja | 1.13.2 | Apache-2.0 | https://raw.githubusercontent.com/ninja-build/ninja/master/COPYING | 2026-11-04 |
+| Eigen (planned, C1/D3 in-house solver) | not yet installed | MPL-2.0 | https://gitlab.com/libeigen/eigen/-/raw/master/COPYING.MPL2 | 2026-11-04 |
 | three.js (dashboard) | not yet installed | MIT | https://raw.githubusercontent.com/mrdoob/three.js/dev/LICENSE | 2026-11-04 |
 | plotly.js (dashboard) | not yet installed | MIT | https://raw.githubusercontent.com/plotly/plotly.js/master/LICENSE | 2026-11-04 |
 

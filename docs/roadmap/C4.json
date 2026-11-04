@@ -12,9 +12,9 @@
       "area": "Mesh",
       "size": "M",
       "task": "Mesh a STEP file in a gmsh subprocess with physical groups and the fallback ladder.",
-      "where": "new files structura/mesh/gmsh_mesh.py, structura/mesh/gmsh_worker.py, tests/test_mesh.py",
+      "where": "new files engine/src/mesh.cpp, engine/src/mesh.cpp, tests/test_mesh.py",
       "read_first": [
-        "structura/templates/bracket.py",
+        "families/bracket.json",
         "docs/licences.md"
       ],
       "steps": [
@@ -25,8 +25,8 @@
         "5. Tests: the bracket default meshes; a deliberately broken STEP returns a failure with four logged attempts."
       ],
       "verify": [
-        "micromamba run -n attome-ae python -m pytest tests/test_mesh.py -q",
-        "all passed"
+        "scripts\\build_engine.cmd && micromamba run -n attome-ae engine\\build\\engine_tests.exe -tc=\"C4-T1*\"",
+        "all test cases pass"
       ],
       "done_when": "Meshing returns a mesh or a logged failure, never hangs.",
       "do_not": [

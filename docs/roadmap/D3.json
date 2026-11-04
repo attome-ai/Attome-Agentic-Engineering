@@ -1,7 +1,7 @@
 {
   "id": "D3",
   "size": "L",
-  "summary": "Screen before solving, content-hash cache, parallel solves, coarse-to-fine re-solve and an in-process scikit-fem screening path.",
+  "summary": "Screen before solving, content-hash cache, parallel solves, coarse-to-fine re-solve and an in-process the in-house C++ solver (Eigen) screening path.",
   "reuse": [],
   "prereq": [
     "D1"
@@ -14,7 +14,7 @@
       "task": "Cache evaluations by content hash.",
       "where": "new file structura/optimize/cache.py",
       "read_first": [
-        "structura/designs.py",
+        "engine/src/design.cpp",
         "structura/optimize/evaluate.py"
       ],
       "steps": [
@@ -65,11 +65,11 @@
       "id": "D3-T3",
       "area": "Solver",
       "size": "M",
-      "task": "Add screening before solving and the scikit-fem fast path.",
-      "where": "structura/optimize/evaluate.py, new file structura/solve/skfem_fast.py",
+      "task": "Add screening before solving and the the in-house C++ solver (Eigen) fast path.",
+      "where": "structura/optimize/evaluate.py, new file engine/src/fem_fast.cpp",
       "read_first": [
-        "structura/feasibility.py",
-        "structura/solve/skfem_check.py",
+        "engine/src/feasibility.cpp",
+        "engine/src/fem_check.cpp",
         "structura/optimize/evaluate.py"
       ],
       "steps": [
@@ -79,12 +79,12 @@
         "4. Record evaluations per minute and cache hit rate for a 200-evaluation study in docs/benchmarks.md."
       ],
       "verify": [
-        "micromamba run -n attome-ae python -m pytest tests/test_evaluate.py -q",
-        "all passed"
+        "scripts\\build_engine.cmd && micromamba run -n attome-ae engine\\build\\engine_tests.exe -tc=\"D3-T3*\"",
+        "all test cases pass"
       ],
       "done_when": "Screened designs cost milliseconds and throughput is measured.",
       "do_not": [
-        "do not report a scikit-fem screening result as a final number"
+        "do not report a the in-house C++ solver (Eigen) screening result as a final number"
       ],
       "stop_and_ask_if": "skfem_fast and CalculiX differ by more than 3% on the bracket.",
       "after": [

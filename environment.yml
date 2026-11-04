@@ -22,3 +22,7 @@ dependencies:
   - pyvista
   # tests
   - pytest
+  # C++ engine build (MSVC from Visual Studio 2022 on Windows)
+  - ninja
+  - nlohmann_json
+  - doctest

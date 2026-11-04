@@ -1,7 +1,7 @@
 {
   "id": "F2",
   "size": "M",
-  "summary": "Stand up the validation suite first: environment, cantilever against beam theory, NAFEMS LE10 timing at three densities, thermal slab, and a CalculiX vs scikit-fem cross-check. Tasks T1-T2 run in P0; T3-T4 run once the P1 pipeline exists.",
+  "summary": "Stand up the validation suite first: environment, cantilever against beam theory, NAFEMS LE10 timing at three densities, thermal slab, and a CalculiX vs the in-house C++ solver (Eigen) cross-check. Tasks T1-T2 run in P0; T3-T4 run once the P1 pipeline exists.",
   "reuse": [
     "docs/research/competitive-landscape-2026-11.md: LE10 reference −5.38 MPa, FeenoX timing as the only public reference point"
   ],
@@ -18,7 +18,7 @@
       ],
       "steps": [
         "1. Download the micromamba executable into the micromamba folder of the user profile.",
-        "2. Write environment.yml (name attome-ae, channel conda-forge): python=3.12, cadquery, build123d, gmsh, calculix, meshio, pyvista, optuna, pymoo, scikit-fem, numpy, scipy, pydantic, pytest.",
+        "2. Write environment.yml (name attome-ae, channel conda-forge): python=3.12, cadquery, build123d, gmsh, calculix, meshio, pyvista, optuna, pymoo, the in-house C++ solver (Eigen), numpy, scipy, pydantic, pytest.",
         "3. Create the environment with micromamba create -y -f environment.yml.",
         "4. Write tests/test_smoke.py: build a 10x10x10 mm CadQuery box, export STEP, mesh it with the gmsh executable, solve a one-element cube with ccx against the analytical elongation, and assert each step succeeds (ccx -v exits 201 by design).",
         "5. Record the installed versions of ccx and gmsh in docs/environment.md."
@@ -40,7 +40,7 @@
       "area": "Tests",
       "size": "M",
       "task": "Solve NAFEMS LE10 with ccx at three mesh densities and record error and runtime.",
-      "where": "new files benchmarks/le10/le10.py, benchmarks/le10/README.md, docs/benchmarks.md",
+      "where": "new files engine/tests/test_validation.cpp, benchmarks/le10/README.md, docs/benchmarks.md",
       "read_first": [
         "docs/research/competitive-landscape-2026-11.md",
         "docs/environment.md"
@@ -53,7 +53,7 @@
         "5. Time each run (wall clock) and record nodes, elements, DOF, sigma_yy, error % and seconds in docs/benchmarks.md."
       ],
       "verify": [
-        "micromamba run -n attome-ae python benchmarks/le10/le10.py",
+        "micromamba run -n attome-ae python engine/tests/test_validation.cpp",
         "prints three rows; fine-mesh error under 2%"
       ],
       "done_when": "docs/benchmarks.md has a measured LE10 table for the demo laptop.",
@@ -71,9 +71,9 @@
       "area": "Tests",
       "size": "M",
       "task": "Add the cantilever and thermal slab cases and run the whole suite with pytest.",
-      "where": "new files tests/validation/test_cantilever.py, tests/validation/test_thermal_slab.py, tests/validation/test_le10.py",
+      "where": "new files engine/tests/test_validation.cpp, engine/tests/test_validation.cpp, engine/tests/test_validation.cpp",
       "read_first": [
-        "benchmarks/le10/le10.py",
+        "engine/tests/test_validation.cpp",
         "docs/feature-plan.md"
       ],
       "steps": [
@@ -83,8 +83,8 @@
         "4. Mark all three with @pytest.mark.validation."
       ],
       "verify": [
-        "micromamba run -n attome-ae python -m pytest -m validation -q",
-        "3 passed"
+        "scripts\\build_engine.cmd && micromamba run -n attome-ae engine\\build\\engine_tests.exe -tc=\"F2-T3*\"",
+        "all test cases pass"
       ],
       "done_when": "The validation suite passes and runs in under five minutes.",
       "do_not": [
@@ -100,25 +100,25 @@
       "id": "F2-T4",
       "area": "Verify",
       "size": "M",
-      "task": "Cross-check CalculiX against scikit-fem on the same bracket mesh.",
-      "where": "new files structura/solve/skfem_check.py, tests/validation/test_crosscheck.py",
+      "task": "Cross-check CalculiX against the in-house C++ solver (Eigen) on the same bracket mesh.",
+      "where": "new files engine/src/fem_check.cpp, engine/tests/test_validation.cpp",
       "read_first": [
-        "structura/solve/calculix.py",
-        "structura/results.py"
+        "engine/src/calculix.cpp",
+        "engine/src/results.cpp"
       ],
       "steps": [
-        "1. Read the gmsh mesh with meshio and assemble linear elasticity with scikit-fem on quadratic tetrahedra.",
+        "1. Read the gmsh mesh with meshio and assemble linear elasticity with the in-house C++ solver (Eigen) on quadratic tetrahedra.",
         "2. Apply the same fixed faces and load as the CalculiX deck from the bracket template's physical groups.",
         "3. Compare maximum displacement and the displacement at the load face centroid.",
         "4. Assert both differ by less than 3%."
       ],
       "verify": [
-        "micromamba run -n attome-ae python -m pytest tests/validation/test_crosscheck.py -q",
-        "1 passed"
+        "scripts\\build_engine.cmd && micromamba run -n attome-ae engine\\build\\engine_tests.exe -tc=\"F2-T4*\"",
+        "all test cases pass"
       ],
-      "done_when": "CalculiX and scikit-fem agree within 3% on displacement for the bracket.",
+      "done_when": "CalculiX and the in-house C++ solver (Eigen) agree within 3% on displacement for the bracket.",
       "do_not": [
-        "do not change the CalculiX deck to match scikit-fem"
+        "do not change the CalculiX deck to match the in-house C++ solver (Eigen)"
       ],
       "stop_and_ask_if": "the two solvers disagree by more than 10%.",
       "after": [
@@ -131,22 +131,22 @@
       "area": "Tests",
       "size": "M",
       "task": "Add LE1, Euler buckling, modal and fin cases, golden results and the generated validation report.",
-      "where": "new files tests/validation/test_le1.py, tests/validation/test_buckling_modal.py, tests/validation/test_fin.py, tests/validation/golden/, scripts/validation_report.py, docs/validation.md",
+      "where": "new files engine/tests/test_validation.cpp, engine/tests/test_validation.cpp, engine/tests/test_validation.cpp, engine/tests/golden/, scripts/validation_report.py, docs/validation.md",
       "read_first": [
-        "tests/validation/test_le10.py",
-        "structura/solve/calculix.py"
+        "engine/tests/test_validation.cpp",
+        "engine/src/calculix.cpp"
       ],
       "steps": [
         "1. NAFEMS LE1 elliptic membrane: assert sigma_yy at point D within 3% of 92.7 MPa on the medium mesh.",
         "2. Euler column (pinned-pinned): buckling load factor within 3% of pi^2*E*I/L^2 divided by the applied load.",
         "3. Cantilever modal: first natural frequency within 3% of the Euler-Bernoulli value.",
         "4. Single straight fin with fixed base temperature and film coefficient: tip temperature within 3% of the analytical fin solution.",
-        "5. Store the demo designs' key results in tests/validation/golden/ and fail when any moves by more than 0.5%.",
+        "5. Store the demo designs' key results in engine/tests/golden/ and fail when any moves by more than 0.5%.",
         "6. scripts/validation_report.py runs the suite and writes docs/validation.md with reference, our value, error, mesh size and runtime per case."
       ],
       "verify": [
-        "micromamba run -n attome-ae python -m pytest -m validation -q && micromamba run -n attome-ae python scripts/validation_report.py",
-        "all passed; docs/validation.md regenerated"
+        "scripts\\build_engine.cmd && micromamba run -n attome-ae engine\\build\\engine_tests.exe -tc=\"F2-T5*\"",
+        "all test cases pass"
       ],
       "done_when": "Every structural and thermal case passes and the public report is generated from the run.",
       "do_not": [

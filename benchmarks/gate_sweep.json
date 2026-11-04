@@ -1,2411 +1,2411 @@
 {
- "family": "bracket",
- "n": 200,
- "seed": 1,
- "passed": 200,
- "pass_rate": 1.0,
- "seconds": 16.4,
- "reasons": {},
  "designs": [
   {
-   "params": {
-    "thickness": 4.209278197011611,
-    "plate_width": 72.37168684686164,
-    "rib_count": 1.0,
-    "rib_thickness": 4.040552205915374,
-    "fillet_radius": 3.2248929790056753
-   },
+   "min_wall_mm": 4.4186605422350125,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.040552205915378
+   "params": {
+    "fillet_radius": 1.3071574103074894,
+    "plate_width": 76.62786806840828,
+    "rib_count": 1.0,
+    "rib_thickness": 4.41866054223501,
+    "thickness": 11.97466327407239
+   },
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 7.045419583098643,
-    "plate_width": 62.579648636138145,
-    "rib_count": 1.0,
-    "rib_thickness": 2.750876694193879,
-    "fillet_radius": 0.6559111208710346
-   },
+   "min_wall_mm": 3.8310473603487005,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.7508766941938796
-  },
-  {
    "params": {
-    "thickness": 10.521885935278828,
-    "plate_width": 51.638353395252665,
-    "rib_count": 1.0,
-    "rib_thickness": 7.566662934147548,
-    "fillet_radius": 1.9648180825149275
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 7.566662934147547
-  },
-  {
-   "params": {
-    "thickness": 10.216437302968352,
-    "plate_width": 59.5576717500652,
-    "rib_count": 1.0,
-    "rib_thickness": 9.211419660891869,
-    "fillet_radius": 0.6682449066845444
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 8.995363547897114
-  },
-  {
-   "params": {
-    "thickness": 3.2290127489411473,
-    "plate_width": 57.07062363967483,
+    "fillet_radius": 5.645464899875741,
+    "plate_width": 39.31301056869073,
     "rib_count": 2.0,
-    "rib_thickness": 7.491870833432638,
-    "fillet_radius": 5.829723576617547
+    "rib_thickness": 7.357968323576377,
+    "thickness": 3.831047360348701
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.2290127489411398
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 9.532673413018637,
-    "plate_width": 56.381470718119914,
-    "rib_count": 2.0,
-    "rib_thickness": 9.513336151588693,
-    "fillet_radius": 3.540727669611308
-   },
+   "min_wall_mm": 3.6356179928864294,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 8.869955212129197
-  },
-  {
    "params": {
-    "thickness": 6.111303732378772,
-    "plate_width": 63.84242699249872,
-    "rib_count": 2.0,
-    "rib_thickness": 9.61795564232955,
-    "fillet_radius": 5.595786430822263
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.111303732378768
-  },
-  {
-   "params": {
-    "thickness": 6.745619450049115,
-    "plate_width": 75.81349177526471,
+    "fillet_radius": 5.329645904116098,
+    "plate_width": 45.66367565443733,
     "rib_count": 3.0,
-    "rib_thickness": 2.8000021687690175,
-    "fillet_radius": 3.961440976403569
+    "rib_thickness": 3.6356179928864316,
+    "thickness": 10.616798265103565
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.800002168769018
+   "reasons": []
   },
   {
+   "min_wall_mm": 3.2464883641959497,
+   "ok": true,
    "params": {
-    "thickness": 9.512751093056192,
-    "plate_width": 44.81951963934673,
+    "fillet_radius": 2.8688421362481993,
+    "plate_width": 63.523375384211704,
     "rib_count": 3.0,
-    "rib_thickness": 4.661561482881033,
-    "fillet_radius": 4.468164241707976
+    "rib_thickness": 5.657638474213527,
+    "thickness": 3.2464883641959617
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.661561482881033
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 9.400725927257517,
-    "plate_width": 76.82202933997297,
-    "rib_count": 2.0,
-    "rib_thickness": 6.061738004090529,
-    "fillet_radius": 5.506017824163143
-   },
+   "min_wall_mm": 9.170772760226528,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.061738004090528
-  },
-  {
    "params": {
-    "thickness": 4.708647562044238,
-    "plate_width": 44.207968334697405,
-    "rib_count": 2.0,
-    "rib_thickness": 8.769579347426502,
-    "fillet_radius": 3.2790610131878024
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.70864756204423
-  },
-  {
-   "params": {
-    "thickness": 8.301020321842966,
-    "plate_width": 31.72629150756708,
-    "rib_count": 1.0,
-    "rib_thickness": 7.949845242345586,
-    "fillet_radius": 2.723584516187958
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.861301250882469
-  },
-  {
-   "params": {
-    "thickness": 8.982691694476205,
-    "plate_width": 48.3561915713544,
+    "fillet_radius": 2.223833016798637,
+    "plate_width": 68.91946177694598,
     "rib_count": 3.0,
-    "rib_thickness": 8.20670119967972,
-    "fillet_radius": 4.560185052907963
+    "rib_thickness": 9.746092576004509,
+    "thickness": 11.452150154687343
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 8.206701199679719
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 3.7782083075542348,
-    "plate_width": 63.18789024219904,
-    "rib_count": 1.0,
-    "rib_thickness": 8.227540920001166,
-    "fillet_radius": 3.3651612968722984
-   },
+   "min_wall_mm": 8.633175287199403,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.7782083075542325
-  },
-  {
    "params": {
-    "thickness": 6.539295854678034,
-    "plate_width": 54.48467602311291,
-    "rib_count": 1.0,
-    "rib_thickness": 5.754561128824191,
-    "fillet_radius": 2.1969118481025207
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.754561128824192
-  },
-  {
-   "params": {
-    "thickness": 10.634714170163045,
-    "plate_width": 60.740535852754014,
+    "fillet_radius": 5.062818505910165,
+    "plate_width": 73.81945731023038,
     "rib_count": 3.0,
-    "rib_thickness": 5.148797491023312,
-    "fillet_radius": 1.436920582706247
+    "rib_thickness": 8.633175287199405,
+    "thickness": 9.23090355257392
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.148797491023308
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 7.520147025901347,
-    "plate_width": 79.1038318769267,
-    "rib_count": 1.0,
-    "rib_thickness": 6.31693958759823,
-    "fillet_radius": 5.231593784063023
-   },
+   "min_wall_mm": 2.786774692443251,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.31693958759823
-  },
-  {
    "params": {
-    "thickness": 5.089585152567131,
-    "plate_width": 55.68858315938185,
+    "fillet_radius": 2.8160919146057823,
+    "plate_width": 32.96215985633701,
     "rib_count": 3.0,
-    "rib_thickness": 4.826193300433857,
-    "fillet_radius": 5.503652587391712
+    "rib_thickness": 2.7867746924432515,
+    "thickness": 5.4574497964585875
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.826193300433853
+   "reasons": []
   },
   {
+   "min_wall_mm": 4.3170371515525074,
+   "ok": true,
    "params": {
-    "thickness": 8.932933322578421,
-    "plate_width": 60.44724127542834,
+    "fillet_radius": 1.281660731470989,
+    "plate_width": 56.65826447088955,
+    "rib_count": 1.0,
+    "rib_thickness": 4.3170371515525074,
+    "thickness": 11.621005789154415
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 8.001154499192106,
+   "ok": true,
+   "params": {
+    "fillet_radius": 5.938735981921703,
+    "plate_width": 50.626942264319226,
+    "rib_count": 1.0,
+    "rib_thickness": 8.00115449919211,
+    "thickness": 10.04983025420888
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 3.7769963886389086,
+   "ok": true,
+   "params": {
+    "fillet_radius": 0.9035029583768317,
+    "plate_width": 44.02219961512014,
+    "rib_count": 2.0,
+    "rib_thickness": 3.7769963886389117,
+    "thickness": 9.733490879169135
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 4.3022027460921,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.2151571304204865,
+    "plate_width": 34.80861295839533,
+    "rib_count": 1.0,
+    "rib_thickness": 4.3022027460920995,
+    "thickness": 7.223146724056228
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 3.174302626802396,
+   "ok": true,
+   "params": {
+    "fillet_radius": 2.1441156101553944,
+    "plate_width": 63.9417765275997,
     "rib_count": 3.0,
-    "rib_thickness": 2.0456730356031434,
-    "fillet_radius": 4.810103779384644
+    "rib_thickness": 9.283587038911186,
+    "thickness": 3.1743026268023984
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.045673035603143
+   "reasons": []
   },
   {
+   "min_wall_mm": 3.1738285787663174,
+   "ok": true,
    "params": {
-    "thickness": 10.384373207329338,
-    "plate_width": 74.3089790413004,
+    "fillet_radius": 3.7411804563042113,
+    "plate_width": 58.29560142771064,
+    "rib_count": 2.0,
+    "rib_thickness": 3.1738285787663196,
+    "thickness": 8.259502115525342
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 6.077357442049621,
+   "ok": true,
+   "params": {
+    "fillet_radius": 3.211827765060402,
+    "plate_width": 35.116721524752386,
+    "rib_count": 2.0,
+    "rib_thickness": 9.599505069505527,
+    "thickness": 9.297825254581126
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 7.310357190753044,
+   "ok": true,
+   "params": {
+    "fillet_radius": 3.3318900917120775,
+    "plate_width": 68.27425536059255,
+    "rib_count": 2.0,
+    "rib_thickness": 7.310357190753045,
+    "thickness": 7.865404576931057
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 6.326305534510687,
+   "ok": true,
+   "params": {
+    "fillet_radius": 2.9638910063673065,
+    "plate_width": 59.32775194092888,
     "rib_count": 3.0,
-    "rib_thickness": 6.099999476023906,
-    "fillet_radius": 1.2108718518371173
+    "rib_thickness": 6.32630553451069,
+    "thickness": 11.501352828725155
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.099999476023906
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 9.996574640663123,
-    "plate_width": 40.27426288503806,
-    "rib_count": 1.0,
-    "rib_thickness": 5.8488145393139215,
-    "fillet_radius": 2.5060482593998037
-   },
+   "min_wall_mm": 3.3228335520968284,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.84881453931392
-  },
-  {
    "params": {
-    "thickness": 7.989610715199669,
-    "plate_width": 77.05067556527274,
+    "fillet_radius": 5.60129718333195,
+    "plate_width": 48.87921726805381,
     "rib_count": 2.0,
-    "rib_thickness": 5.879400897821873,
-    "fillet_radius": 2.4623448049972563
+    "rib_thickness": 3.3228335520968297,
+    "thickness": 11.029222817219209
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.87940089782187
+   "reasons": []
   },
   {
+   "min_wall_mm": 3.0105190476886876,
+   "ok": true,
    "params": {
-    "thickness": 6.114701271163394,
-    "plate_width": 56.92393978689222,
+    "fillet_radius": 4.296125244083392,
+    "plate_width": 67.54060513539017,
+    "rib_count": 2.0,
+    "rib_thickness": 3.010519047688689,
+    "thickness": 6.129892733705079
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 4.159423151543796,
+   "ok": true,
+   "params": {
+    "fillet_radius": 5.427374185053846,
+    "plate_width": 47.69695459807923,
+    "rib_count": 2.0,
+    "rib_thickness": 4.159423151543797,
+    "thickness": 8.829744563580736
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 5.984872556595955,
+   "ok": true,
+   "params": {
+    "fillet_radius": 0.905856061358779,
+    "plate_width": 78.24200246810612,
+    "rib_count": 1.0,
+    "rib_thickness": 5.9848725565959535,
+    "thickness": 6.852820714184803
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 5.048215962737547,
+   "ok": true,
+   "params": {
+    "fillet_radius": 2.7447524238797145,
+    "plate_width": 33.20336635864211,
+    "rib_count": 2.0,
+    "rib_thickness": 6.627116859621014,
+    "thickness": 10.082563265467229
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 4.4108840051548155,
+   "ok": true,
+   "params": {
+    "fillet_radius": 4.750065288393708,
+    "plate_width": 75.16897583104344,
     "rib_count": 3.0,
-    "rib_thickness": 8.291555083540228,
-    "fillet_radius": 2.321255985795016
+    "rib_thickness": 4.410884005154817,
+    "thickness": 5.133242784398195
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.114701271163393
+   "reasons": []
   },
   {
+   "min_wall_mm": 4.376368403330981,
+   "ok": true,
    "params": {
-    "thickness": 8.398696662871352,
-    "plate_width": 70.22847422570177,
+    "fillet_radius": 2.4649836834053813,
+    "plate_width": 58.93169660035806,
+    "rib_count": 2.0,
+    "rib_thickness": 9.087536761553974,
+    "thickness": 4.376368403330981
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 4.152008397534156,
+   "ok": true,
+   "params": {
+    "fillet_radius": 5.0743092431481704,
+    "plate_width": 61.16800585720446,
+    "rib_count": 2.0,
+    "rib_thickness": 4.152008397534156,
+    "thickness": 11.176816310089958
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 3.097086000204968,
+   "ok": true,
+   "params": {
+    "fillet_radius": 5.629275057717507,
+    "plate_width": 33.50407474903998,
+    "rib_count": 1.0,
+    "rib_thickness": 3.0970860002049703,
+    "thickness": 7.961924449358617
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 5.084237396025255,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.6471256964482173,
+    "plate_width": 33.30000868374844,
+    "rib_count": 1.0,
+    "rib_thickness": 6.065980301714433,
+    "thickness": 9.271363464586344
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 2.1590410567303686,
+   "ok": true,
+   "params": {
+    "fillet_radius": 0.6441604303381692,
+    "plate_width": 55.94309377846686,
+    "rib_count": 1.0,
+    "rib_thickness": 2.159041056730371,
+    "thickness": 3.443738213578988
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 3.2547584022316816,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.7746715495510887,
+    "plate_width": 42.31055349937885,
+    "rib_count": 1.0,
+    "rib_thickness": 4.30974266279494,
+    "thickness": 3.2547584022316816
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 4.233469445693532,
+   "ok": true,
+   "params": {
+    "fillet_radius": 3.7216759736192317,
+    "plate_width": 43.91594214180986,
+    "rib_count": 1.0,
+    "rib_thickness": 4.233469445693534,
+    "thickness": 11.709011331893363
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 8.503959773143093,
+   "ok": true,
+   "params": {
+    "fillet_radius": 2.0936800103875526,
+    "plate_width": 58.05151099359996,
+    "rib_count": 2.0,
+    "rib_thickness": 8.503959773143096,
+    "thickness": 11.726361712238425
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 8.90833482225781,
+   "ok": true,
+   "params": {
+    "fillet_radius": 4.609169018486352,
+    "plate_width": 60.6474045245804,
+    "rib_count": 2.0,
+    "rib_thickness": 8.908334822257812,
+    "thickness": 9.45652441845666
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 3.2267078721149205,
+   "ok": true,
+   "params": {
+    "fillet_radius": 5.654546792774319,
+    "plate_width": 36.82276136274895,
+    "rib_count": 2.0,
+    "rib_thickness": 3.226707872114922,
+    "thickness": 8.006162136758284
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 7.703911875591294,
+   "ok": true,
+   "params": {
+    "fillet_radius": 3.578443386055994,
+    "plate_width": 69.09792313477367,
+    "rib_count": 1.0,
+    "rib_thickness": 7.703911875591294,
+    "thickness": 11.247688858630362
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 3.113003839247137,
+   "ok": true,
+   "params": {
+    "fillet_radius": 2.010548343328888,
+    "plate_width": 33.59871415572438,
+    "rib_count": 1.0,
+    "rib_thickness": 4.886518040610992,
+    "thickness": 3.113003839247141
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 3.563435841652782,
+   "ok": true,
+   "params": {
+    "fillet_radius": 3.697474114169114,
+    "plate_width": 37.60685786665796,
     "rib_count": 3.0,
-    "rib_thickness": 3.4176900715086616,
-    "fillet_radius": 3.7145347892814273
+    "rib_thickness": 3.563435841652785,
+    "thickness": 3.665720981738911
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.417690071508661
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 10.749079747679923,
-    "plate_width": 69.9219470288713,
-    "rib_count": 2.0,
-    "rib_thickness": 2.2596730495539203,
-    "fillet_radius": 5.689636395887467
-   },
+   "min_wall_mm": 4.389441943242862,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.25967304955392
-  },
-  {
    "params": {
-    "thickness": 3.634081257500553,
-    "plate_width": 73.40390451874235,
-    "rib_count": 2.0,
-    "rib_thickness": 2.1164797993984985,
-    "fillet_radius": 4.65572726388709
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.1164797993984963
-  },
-  {
-   "params": {
-    "thickness": 5.246033030880805,
-    "plate_width": 35.47443136471797,
+    "fillet_radius": 1.6239696835902828,
+    "plate_width": 72.34143997367957,
     "rib_count": 3.0,
-    "rib_thickness": 3.4768814649833955,
-    "fillet_radius": 2.096563766765107
+    "rib_thickness": 4.389441943242862,
+    "thickness": 11.730179905504967
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.4768814649833915
+   "reasons": []
   },
   {
+   "min_wall_mm": 2.148609589337094,
+   "ok": true,
    "params": {
-    "thickness": 4.507232766126317,
-    "plate_width": 42.760805907614674,
+    "fillet_radius": 0.8851217973467803,
+    "plate_width": 74.65106059598016,
     "rib_count": 1.0,
-    "rib_thickness": 7.253252045685913,
-    "fillet_radius": 4.065115425093059
+    "rib_thickness": 2.148609589337089,
+    "thickness": 11.835809716391283
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.507232766126317
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 5.650434993895251,
-    "plate_width": 65.13127763643926,
-    "rib_count": 2.0,
-    "rib_thickness": 5.790168113362231,
-    "fillet_radius": 0.6299901769759289
-   },
+   "min_wall_mm": 5.642259760888012,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.650434993895241
-  },
-  {
    "params": {
-    "thickness": 6.4790139428532285,
-    "plate_width": 51.045933960453794,
-    "rib_count": 1.0,
-    "rib_thickness": 4.067366666123967,
-    "fillet_radius": 1.8940198194161186
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.067366666123966
-  },
-  {
-   "params": {
-    "thickness": 9.57137007706645,
-    "plate_width": 78.83691378276458,
+    "fillet_radius": 3.4250454550482083,
+    "plate_width": 60.316472982683635,
     "rib_count": 3.0,
-    "rib_thickness": 5.453244377198199,
-    "fillet_radius": 5.865543869245794
+    "rib_thickness": 5.642259760888016,
+    "thickness": 7.37710595861011
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.453244377198199
+   "reasons": []
   },
   {
+   "min_wall_mm": 3.9840245756547668,
+   "ok": true,
    "params": {
-    "thickness": 5.028366119867419,
-    "plate_width": 49.86576845737612,
+    "fillet_radius": 4.599339368563629,
+    "plate_width": 37.301637187829996,
+    "rib_count": 2.0,
+    "rib_thickness": 6.40758574848769,
+    "thickness": 3.984024575654777
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 8.113932900254307,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.6700353219722075,
+    "plate_width": 43.24597792073796,
     "rib_count": 1.0,
-    "rib_thickness": 7.750683782094319,
-    "fillet_radius": 1.3812517594633755
+    "rib_thickness": 8.113932900254307,
+    "thickness": 9.023096041345966
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.0283661198674094
+   "reasons": []
   },
   {
+   "min_wall_mm": 2.53229185969048,
+   "ok": true,
    "params": {
-    "thickness": 9.341450650668023,
-    "plate_width": 63.90878976384737,
+    "fillet_radius": 1.9317330617831434,
+    "plate_width": 34.77096222120073,
     "rib_count": 3.0,
-    "rib_thickness": 8.657959235942348,
-    "fillet_radius": 5.873368858290983
+    "rib_thickness": 2.532291859690482,
+    "thickness": 3.6683259084046482
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 8.657959235942347
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 8.676946529599261,
-    "plate_width": 64.75254458062332,
-    "rib_count": 2.0,
-    "rib_thickness": 3.785566241973366,
-    "fillet_radius": 4.06678529954591
-   },
+   "min_wall_mm": 6.612673743887728,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.7855662419733656
-  },
-  {
    "params": {
-    "thickness": 6.554082088724696,
-    "plate_width": 58.79229813940283,
-    "rib_count": 2.0,
-    "rib_thickness": 7.2785911340086376,
-    "fillet_radius": 2.8446465829261998
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.5540820887246936
-  },
-  {
-   "params": {
-    "thickness": 9.637061250861388,
-    "plate_width": 36.284166115486364,
-    "rib_count": 1.0,
-    "rib_thickness": 9.004273953881274,
-    "fillet_radius": 2.1851264118328526
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 8.000769902862473
-  },
-  {
-   "params": {
-    "thickness": 10.726629657209035,
-    "plate_width": 45.5181813676567,
-    "rib_count": 2.0,
-    "rib_thickness": 7.950736949336969,
-    "fillet_radius": 2.7889474452076404
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 7.950736949336963
-  },
-  {
-   "params": {
-    "thickness": 5.271222920518518,
-    "plate_width": 30.424013123183443,
-    "rib_count": 1.0,
-    "rib_thickness": 6.724671770299322,
-    "fillet_radius": 1.6967468656011384
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.271222920518507
-  },
-  {
-   "params": {
-    "thickness": 11.107316956911424,
-    "plate_width": 53.04262450766455,
+    "fillet_radius": 5.118048663108071,
+    "plate_width": 39.67171404211855,
     "rib_count": 3.0,
-    "rib_thickness": 6.983702511124238,
-    "fillet_radius": 0.705828562966202
+    "rib_thickness": 6.612673743887731,
+    "thickness": 10.242791089429
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.983702511124238
+   "reasons": []
   },
   {
+   "min_wall_mm": 7.880527726799271,
+   "ok": true,
    "params": {
-    "thickness": 4.803667099195554,
-    "plate_width": 34.95126813864773,
+    "fillet_radius": 4.746979162417131,
+    "plate_width": 46.22587502076403,
+    "rib_count": 1.0,
+    "rib_thickness": 7.880527726799271,
+    "thickness": 8.609629033208655
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 5.414486750986337,
+   "ok": true,
+   "params": {
+    "fillet_radius": 4.507065682040758,
+    "plate_width": 76.59860336879973,
     "rib_count": 3.0,
-    "rib_thickness": 7.393224113974913,
-    "fillet_radius": 2.8812256660517397
+    "rib_thickness": 5.414486750986336,
+    "thickness": 11.170342727944092
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.803667099195546
+   "reasons": []
   },
   {
+   "min_wall_mm": 6.453225519368796,
+   "ok": true,
    "params": {
-    "thickness": 4.747067804866706,
-    "plate_width": 35.22121114207577,
+    "fillet_radius": 5.535834955661397,
+    "plate_width": 49.88056385830296,
     "rib_count": 3.0,
-    "rib_thickness": 5.1204843101544775,
-    "fillet_radius": 3.272590519852188
+    "rib_thickness": 6.4532255193687975,
+    "thickness": 9.807018513686723
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.747067804866698
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 3.154801770509115,
-    "plate_width": 60.60641805515495,
-    "rib_count": 2.0,
-    "rib_thickness": 9.19742615707825,
-    "fillet_radius": 0.5995114100225946
-   },
+   "min_wall_mm": 3.3356127412728775,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.154801770509105
+   "params": {
+    "fillet_radius": 0.6325589393553569,
+    "plate_width": 49.50038591081219,
+    "rib_count": 1.0,
+    "rib_thickness": 3.335612741272879,
+    "thickness": 8.774095860326668
+   },
+   "reasons": []
   },
   {
+   "min_wall_mm": 5.159004912466512,
+   "ok": true,
    "params": {
-    "thickness": 4.807677102966835,
-    "plate_width": 46.38703525481338,
+    "fillet_radius": 5.797943939070831,
+    "plate_width": 70.41693721579134,
     "rib_count": 3.0,
-    "rib_thickness": 8.261603005835005,
-    "fillet_radius": 2.365026063180135
+    "rib_thickness": 5.1590049124665125,
+    "thickness": 7.068014460370394
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.807677102966831
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 4.9172681674273235,
-    "plate_width": 63.72275348618816,
-    "rib_count": 2.0,
-    "rib_thickness": 9.457499775149017,
-    "fillet_radius": 2.3911739813495085
-   },
+   "min_wall_mm": 4.565600991089265,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.917268167427319
-  },
-  {
    "params": {
-    "thickness": 10.941538822198172,
-    "plate_width": 64.35550910768288,
-    "rib_count": 2.0,
-    "rib_thickness": 8.14360946330477,
-    "fillet_radius": 3.428862283308226
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 8.143609463304768
-  },
-  {
-   "params": {
-    "thickness": 3.587904926606913,
-    "plate_width": 32.020022677138535,
+    "fillet_radius": 0.5699196652931023,
+    "plate_width": 36.31647602834945,
     "rib_count": 1.0,
-    "rib_thickness": 3.3575531343551006,
-    "fillet_radius": 5.5104328092943735
+    "rib_thickness": 7.545481585217787,
+    "thickness": 4.565600991089275
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.3575531343550975
+   "reasons": []
   },
   {
+   "min_wall_mm": 2.1201518389101772,
+   "ok": true,
    "params": {
-    "thickness": 4.916713754922817,
-    "plate_width": 67.95580913582201,
+    "fillet_radius": 1.4690794326822405,
+    "plate_width": 78.06586287389474,
     "rib_count": 3.0,
-    "rib_thickness": 6.047107865877878,
-    "fillet_radius": 1.9041017444774058
+    "rib_thickness": 2.1201518389101794,
+    "thickness": 7.13590752710442
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.916713754922817
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 6.049664229620747,
-    "plate_width": 35.69564561963651,
-    "rib_count": 1.0,
-    "rib_thickness": 8.939358588695221,
-    "fillet_radius": 3.8219039089044116
-   },
+   "min_wall_mm": 5.842781868528653,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.049664229620741
-  },
-  {
    "params": {
-    "thickness": 11.588767114549709,
-    "plate_width": 74.36325523584813,
-    "rib_count": 1.0,
-    "rib_thickness": 6.63965645737472,
-    "fillet_radius": 4.736392379354778
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.6396564573747225
-  },
-  {
-   "params": {
-    "thickness": 5.886533598245979,
-    "plate_width": 50.32994630679243,
-    "rib_count": 2.0,
-    "rib_thickness": 8.929346858932576,
-    "fillet_radius": 4.834640467988745
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.886533598245971
-  },
-  {
-   "params": {
-    "thickness": 10.456553743222022,
-    "plate_width": 47.04487320582917,
+    "fillet_radius": 2.048122211451654,
+    "plate_width": 36.54984220749554,
     "rib_count": 3.0,
-    "rib_thickness": 6.699263380879378,
-    "fillet_radius": 5.593909931028023
+    "rib_thickness": 6.275018695387041,
+    "thickness": 5.988572154647791
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.699263380879372
+   "reasons": []
   },
   {
+   "min_wall_mm": 6.191262180092958,
+   "ok": true,
    "params": {
-    "thickness": 3.6898647333460572,
-    "plate_width": 57.51373768736201,
+    "fillet_radius": 5.479657715915554,
+    "plate_width": 74.81401243924645,
     "rib_count": 3.0,
-    "rib_thickness": 2.6539460988191497,
-    "fillet_radius": 1.96698003639955
+    "rib_thickness": 8.757875562163981,
+    "thickness": 6.19126218009297
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.6539460988191466
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 11.016913150697748,
-    "plate_width": 58.22234166200987,
-    "rib_count": 1.0,
-    "rib_thickness": 5.662154072329963,
-    "fillet_radius": 2.0245052135923407
-   },
+   "min_wall_mm": 6.616541064900537,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.662154072329961
-  },
-  {
    "params": {
-    "thickness": 10.08313197204296,
-    "plate_width": 71.38840783228648,
-    "rib_count": 1.0,
-    "rib_thickness": 6.909415404225089,
-    "fillet_radius": 0.5800148435254183
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.909415404225089
-  },
-  {
-   "params": {
-    "thickness": 6.721809901564734,
-    "plate_width": 71.30599941501768,
-    "rib_count": 1.0,
-    "rib_thickness": 3.5033767366190762,
-    "fillet_radius": 4.820316738895116
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.5033767366190767
-  },
-  {
-   "params": {
-    "thickness": 8.281135870435254,
-    "plate_width": 38.10099173916808,
+    "fillet_radius": 1.195893871032505,
+    "plate_width": 57.31734081672002,
     "rib_count": 2.0,
-    "rib_thickness": 3.339067499690654,
-    "fillet_radius": 1.827811568038137
+    "rib_thickness": 6.616541064900539,
+    "thickness": 7.138922371829752
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.3390674996906555
+   "reasons": []
   },
   {
+   "min_wall_mm": 6.747851258055923,
+   "ok": true,
    "params": {
-    "thickness": 9.696057748833075,
-    "plate_width": 35.14170729931549,
+    "fillet_radius": 2.8852199453863223,
+    "plate_width": 45.68054152418755,
+    "rib_count": 1.0,
+    "rib_thickness": 6.747851258055923,
+    "thickness": 11.550389765392122
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 8.144220019847374,
+   "ok": true,
+   "params": {
+    "fillet_radius": 3.4914348038561207,
+    "plate_width": 45.76224032165251,
+    "rib_count": 1.0,
+    "rib_thickness": 8.520800459930467,
+    "thickness": 10.266244723517051
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 2.431274196222676,
+   "ok": true,
+   "params": {
+    "fillet_radius": 2.8110652431117606,
+    "plate_width": 59.44199681267991,
     "rib_count": 2.0,
-    "rib_thickness": 8.451898930684568,
-    "fillet_radius": 3.48608995602075
+    "rib_thickness": 2.431274196222679,
+    "thickness": 4.721342431068441
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 8.451898930684566
+   "reasons": []
   },
   {
+   "min_wall_mm": 8.940139638260755,
+   "ok": true,
    "params": {
-    "thickness": 10.365150978015453,
-    "plate_width": 57.51045422755559,
+    "fillet_radius": 4.823892304411198,
+    "plate_width": 75.93008890980174,
+    "rib_count": 2.0,
+    "rib_thickness": 8.940139638260757,
+    "thickness": 9.111619535937765
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 5.238338711172616,
+   "ok": true,
+   "params": {
+    "fillet_radius": 3.6609132936345903,
+    "plate_width": 34.11274542535869,
+    "rib_count": 2.0,
+    "rib_thickness": 8.63076647772967,
+    "thickness": 5.292324726793268
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 7.580075967287334,
+   "ok": true,
+   "params": {
+    "fillet_radius": 0.9109814116091277,
+    "plate_width": 44.27881386302982,
     "rib_count": 3.0,
-    "rib_thickness": 5.816080767778143,
-    "fillet_radius": 1.0507102917274862
+    "rib_thickness": 7.580075967287334,
+    "thickness": 8.652685820999658
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.816080767778138
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 8.868451795404756,
-    "plate_width": 31.981010670685222,
-    "rib_count": 1.0,
-    "rib_thickness": 8.294879614268757,
-    "fillet_radius": 5.59082021285239
-   },
+   "min_wall_mm": 3.3282273210875744,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.9249810416619715
-  },
-  {
    "params": {
-    "thickness": 9.538353565105318,
-    "plate_width": 46.012563724012864,
-    "rib_count": 2.0,
-    "rib_thickness": 4.5062468885514235,
-    "fillet_radius": 0.8463063452620493
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.506246888551423
-  },
-  {
-   "params": {
-    "thickness": 11.220528154493463,
-    "plate_width": 78.49066384190579,
-    "rib_count": 2.0,
-    "rib_thickness": 2.8908984810151352,
-    "fillet_radius": 1.6835629851985414
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.8908984810151304
-  },
-  {
-   "params": {
-    "thickness": 8.560261920104,
-    "plate_width": 78.99764429450386,
+    "fillet_radius": 2.2747455037957165,
+    "plate_width": 69.46999207552386,
     "rib_count": 3.0,
-    "rib_thickness": 8.940910738002646,
-    "fillet_radius": 3.0790605592734313
+    "rib_thickness": 8.91583546791324,
+    "thickness": 3.3282273210875744
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 8.560261920103992
+   "reasons": []
   },
   {
+   "min_wall_mm": 3.92174106162433,
+   "ok": true,
    "params": {
-    "thickness": 6.2024428496641955,
-    "plate_width": 39.16113724619234,
+    "fillet_radius": 0.6274280172678317,
+    "plate_width": 52.54369675027413,
+    "rib_count": 2.0,
+    "rib_thickness": 3.9217410616243304,
+    "thickness": 9.037099119829438
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 5.441978215354417,
+   "ok": true,
+   "params": {
+    "fillet_radius": 5.855911447415843,
+    "plate_width": 36.509735904603545,
+    "rib_count": 2.0,
+    "rib_thickness": 5.441978215354418,
+    "thickness": 7.785012959878266
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 2.0799978197118265,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.7092646402047025,
+    "plate_width": 39.928494420422794,
     "rib_count": 1.0,
-    "rib_thickness": 4.458568942500108,
-    "fillet_radius": 1.8550965784680074
+    "rib_thickness": 2.079997819711828,
+    "thickness": 9.100207996738533
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.458568942500107
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 3.73231888845409,
-    "plate_width": 44.039336178233775,
-    "rib_count": 2.0,
-    "rib_thickness": 2.723907509565981,
-    "fillet_radius": 3.6589592809905365
-   },
+   "min_wall_mm": 3.2876059737007006,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.723907509565978
-  },
-  {
    "params": {
-    "thickness": 6.049954082568069,
-    "plate_width": 41.3713116908366,
-    "rib_count": 2.0,
-    "rib_thickness": 2.3284180359388236,
-    "fillet_radius": 1.5274706761691215
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.328418035938823
-  },
-  {
-   "params": {
-    "thickness": 10.134586249472296,
-    "plate_width": 58.95033169295648,
-    "rib_count": 2.0,
-    "rib_thickness": 3.9667850336035135,
-    "fillet_radius": 1.055211923966108
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.966785033603513
-  },
-  {
-   "params": {
-    "thickness": 8.502525748393452,
-    "plate_width": 70.37838488666807,
-    "rib_count": 1.0,
-    "rib_thickness": 3.960784031161989,
-    "fillet_radius": 0.612057156454388
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.9607840311619875
-  },
-  {
-   "params": {
-    "thickness": 5.193833698451241,
-    "plate_width": 33.616376693570544,
+    "fillet_radius": 1.9861454590798278,
+    "plate_width": 76.74360989453268,
     "rib_count": 3.0,
-    "rib_thickness": 8.940448407585404,
-    "fillet_radius": 4.510430957475408
+    "rib_thickness": 7.301758519899271,
+    "thickness": 3.2876059737007006
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.193833698451239
+   "reasons": []
   },
   {
+   "min_wall_mm": 5.271300329162777,
+   "ok": true,
    "params": {
-    "thickness": 3.193626699734023,
-    "plate_width": 30.4958481679937,
+    "fillet_radius": 1.5181286657256736,
+    "plate_width": 72.74489723959472,
     "rib_count": 2.0,
-    "rib_thickness": 5.9460883420011035,
-    "fillet_radius": 5.244569377788402
+    "rib_thickness": 8.879068556293312,
+    "thickness": 5.271300329162777
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.1936266997340206
+   "reasons": []
   },
   {
+   "min_wall_mm": 3.75191712196739,
+   "ok": true,
    "params": {
-    "thickness": 4.387616365465597,
-    "plate_width": 55.07147929733466,
+    "fillet_radius": 3.628718978168036,
+    "plate_width": 32.21361487327542,
     "rib_count": 2.0,
-    "rib_thickness": 2.616855890111329,
-    "fillet_radius": 5.7207537193511495
+    "rib_thickness": 8.167071317217886,
+    "thickness": 3.751917121967393
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.6168558901113266
+   "reasons": []
   },
   {
+   "min_wall_mm": 7.191388882371423,
+   "ok": true,
    "params": {
-    "thickness": 4.559178975344432,
-    "plate_width": 68.81044914929677,
+    "fillet_radius": 4.3812517862717115,
+    "plate_width": 47.1344454145498,
+    "rib_count": 2.0,
+    "rib_thickness": 8.182803446554036,
+    "thickness": 7.191388882371431
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 4.799756439148625,
+   "ok": true,
+   "params": {
+    "fillet_radius": 5.312289083785841,
+    "plate_width": 32.220897108582044,
     "rib_count": 1.0,
-    "rib_thickness": 8.572401157948114,
-    "fillet_radius": 2.2588120153615314
+    "rib_thickness": 8.494869545625926,
+    "thickness": 5.143898236266484
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.559178975344432
+   "reasons": []
   },
   {
+   "min_wall_mm": 6.178292544858475,
+   "ok": true,
    "params": {
-    "thickness": 3.9618996112340383,
-    "plate_width": 55.71791255276246,
+    "fillet_radius": 5.4713359456667305,
+    "plate_width": 58.474720575152105,
+    "rib_count": 1.0,
+    "rib_thickness": 6.1782925448584765,
+    "thickness": 9.195719231538966
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 4.498158704189172,
+   "ok": true,
+   "params": {
+    "fillet_radius": 5.539680534919268,
+    "plate_width": 72.35111413552704,
+    "rib_count": 2.0,
+    "rib_thickness": 4.498158704189172,
+    "thickness": 7.276374637872574
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 5.526626575944742,
+   "ok": true,
+   "params": {
+    "fillet_radius": 3.1415300067889724,
+    "plate_width": 42.85591489247844,
+    "rib_count": 1.0,
+    "rib_thickness": 5.526626575944742,
+    "thickness": 11.186719736285214
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 3.9842684744027683,
+   "ok": true,
+   "params": {
+    "fillet_radius": 5.184195331228503,
+    "plate_width": 30.445634007088202,
+    "rib_count": 1.0,
+    "rib_thickness": 3.9842684744027697,
+    "thickness": 5.999558749724239
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 4.553790336910011,
+   "ok": true,
+   "params": {
+    "fillet_radius": 5.397844151258659,
+    "plate_width": 60.834253448499126,
+    "rib_count": 2.0,
+    "rib_thickness": 4.553790336910013,
+    "thickness": 6.742638504248841
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 6.974449821189434,
+   "ok": true,
+   "params": {
+    "fillet_radius": 3.4920556607522117,
+    "plate_width": 40.874960949611165,
+    "rib_count": 1.0,
+    "rib_thickness": 6.974449821189435,
+    "thickness": 10.11336169779364
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 3.157535254492475,
+   "ok": true,
+   "params": {
+    "fillet_radius": 0.7656500663657831,
+    "plate_width": 37.227276958412965,
     "rib_count": 3.0,
-    "rib_thickness": 4.347915954965342,
-    "fillet_radius": 5.415673387326844
+    "rib_thickness": 3.157535254492476,
+    "thickness": 8.88723612656024
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.9618996112340263
+   "reasons": []
   },
   {
+   "min_wall_mm": 4.5948996996699405,
+   "ok": true,
    "params": {
-    "thickness": 4.275125823240254,
-    "plate_width": 75.5240837196367,
+    "fillet_radius": 5.301073086601955,
+    "plate_width": 65.76647913764808,
     "rib_count": 1.0,
-    "rib_thickness": 8.237947602037707,
-    "fillet_radius": 5.015664126478027
+    "rib_thickness": 4.594899699669941,
+    "thickness": 11.09157599896988
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.275125823240254
+   "reasons": []
   },
   {
+   "min_wall_mm": 6.997043842201321,
+   "ok": true,
    "params": {
-    "thickness": 8.611748197933334,
-    "plate_width": 63.609916235191285,
+    "fillet_radius": 1.6014927328154285,
+    "plate_width": 56.92202964509047,
+    "rib_count": 1.0,
+    "rib_thickness": 6.997043842201323,
+    "thickness": 10.602386484790372
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 7.210434664128939,
+   "ok": true,
+   "params": {
+    "fillet_radius": 4.369343437947916,
+    "plate_width": 46.072591613676806,
+    "rib_count": 1.0,
+    "rib_thickness": 7.2104346641289405,
+    "thickness": 8.626004308796876
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 6.6828737054664105,
+   "ok": true,
+   "params": {
+    "fillet_radius": 5.8326047882987915,
+    "plate_width": 69.980763131826,
     "rib_count": 3.0,
-    "rib_thickness": 8.725748177973902,
-    "fillet_radius": 4.604016869724872
+    "rib_thickness": 6.6828737054664105,
+    "thickness": 8.492167351030108
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 8.611748197933332
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 9.206356613702381,
-    "plate_width": 38.90774328221618,
-    "rib_count": 2.0,
-    "rib_thickness": 6.2999385093389115,
-    "fillet_radius": 0.7670733960832239
-   },
+   "min_wall_mm": 5.734905850977067,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.299938509338911
-  },
-  {
    "params": {
-    "thickness": 10.758890904560749,
-    "plate_width": 42.36484432689339,
+    "fillet_radius": 2.3991360422684433,
+    "plate_width": 45.68776907235964,
     "rib_count": 1.0,
-    "rib_thickness": 7.4566066243282485,
-    "fillet_radius": 2.9568224507971808
+    "rib_thickness": 7.05842652586561,
+    "thickness": 5.734905850977068
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 7.456606624328248
+   "reasons": []
   },
   {
+   "min_wall_mm": 2.365289337528401,
+   "ok": true,
    "params": {
-    "thickness": 6.871542706664125,
-    "plate_width": 42.51099092564644,
+    "fillet_radius": 2.9535472816665638,
+    "plate_width": 52.307311504993834,
     "rib_count": 2.0,
-    "rib_thickness": 8.810341330651038,
-    "fillet_radius": 2.993203226922198
+    "rib_thickness": 2.3652893375284023,
+    "thickness": 10.16929809656234
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.871542706664125
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 6.561394002486907,
-    "plate_width": 46.933457244752944,
-    "rib_count": 2.0,
-    "rib_thickness": 5.886264862084895,
-    "fillet_radius": 4.861868899728459
-   },
+   "min_wall_mm": 6.3324750169255415,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.886264862084892
-  },
-  {
    "params": {
-    "thickness": 11.393754942343792,
-    "plate_width": 78.81560004152493,
-    "rib_count": 1.0,
-    "rib_thickness": 2.4985730464281684,
-    "fillet_radius": 2.452188940274627
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.4985730464281724
-  },
-  {
-   "params": {
-    "thickness": 4.244557025595881,
-    "plate_width": 36.25645076427452,
-    "rib_count": 2.0,
-    "rib_thickness": 9.865736533935927,
-    "fillet_radius": 2.023028822152951
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.244557025595877
-  },
-  {
-   "params": {
-    "thickness": 8.076647472454155,
-    "plate_width": 38.60871099399213,
-    "rib_count": 1.0,
-    "rib_thickness": 3.8682372263667997,
-    "fillet_radius": 0.5411244517317384
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.8682372263667966
-  },
-  {
-   "params": {
-    "thickness": 7.758315658980419,
-    "plate_width": 55.04498097786133,
+    "fillet_radius": 5.86107200704572,
+    "plate_width": 47.9780152060907,
     "rib_count": 3.0,
-    "rib_thickness": 9.36348428954583,
-    "fillet_radius": 5.615593349753485
+    "rib_thickness": 6.332475016925543,
+    "thickness": 11.712113882345667
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 7.758315658980417
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 8.751997616758924,
-    "plate_width": 41.28652886985789,
-    "rib_count": 2.0,
-    "rib_thickness": 5.960578005728087,
-    "fillet_radius": 3.1335478816998634
-   },
+   "min_wall_mm": 7.273599722508471,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.960578005728087
-  },
-  {
    "params": {
-    "thickness": 5.025558765348903,
-    "plate_width": 50.61230664586704,
+    "fillet_radius": 4.949924823570844,
+    "plate_width": 79.69565094452186,
     "rib_count": 3.0,
-    "rib_thickness": 6.890293890651434,
-    "fillet_radius": 4.5052139762594265
+    "rib_thickness": 7.2735997225084725,
+    "thickness": 8.729439626143876
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.0255587653489
+   "reasons": []
   },
   {
+   "min_wall_mm": 3.2831614567599012,
+   "ok": true,
    "params": {
-    "thickness": 8.880669455804142,
-    "plate_width": 78.6176884347257,
+    "fillet_radius": 4.601004531997031,
+    "plate_width": 74.36540265283205,
     "rib_count": 1.0,
-    "rib_thickness": 2.3855787468912304,
-    "fillet_radius": 0.893532635253434
+    "rib_thickness": 3.2831614567598963,
+    "thickness": 7.123357905125909
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.385578746891229
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 7.6052253828018594,
-    "plate_width": 73.87120394732435,
-    "rib_count": 1.0,
-    "rib_thickness": 6.093054519058934,
-    "fillet_radius": 4.858640319530313
-   },
+   "min_wall_mm": 3.2735972363169963,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.093054519058934
-  },
-  {
    "params": {
-    "thickness": 4.834598062978821,
-    "plate_width": 44.935897921233234,
-    "rib_count": 2.0,
-    "rib_thickness": 8.791928979892601,
-    "fillet_radius": 2.543878819111607
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.834598062978821
-  },
-  {
-   "params": {
-    "thickness": 9.311543966170278,
-    "plate_width": 66.82090582876592,
+    "fillet_radius": 3.1403460974827704,
+    "plate_width": 48.32715486309196,
     "rib_count": 3.0,
-    "rib_thickness": 2.679785660283395,
-    "fillet_radius": 1.1778414356062112
+    "rib_thickness": 8.441886715334554,
+    "thickness": 3.2735972363169963
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.679785660283392
+   "reasons": []
   },
   {
+   "min_wall_mm": 6.652619279093158,
+   "ok": true,
    "params": {
-    "thickness": 8.454946537619154,
-    "plate_width": 55.69756231130387,
+    "fillet_radius": 5.943634396880946,
+    "plate_width": 72.07050310434583,
     "rib_count": 2.0,
-    "rib_thickness": 3.410207161651803,
-    "fillet_radius": 1.8782747488255862
+    "rib_thickness": 6.65261927909316,
+    "thickness": 7.388169355508516
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.4102071616517997
+   "reasons": []
   },
   {
+   "min_wall_mm": 4.835156034766849,
+   "ok": true,
    "params": {
-    "thickness": 4.958568196559248,
-    "plate_width": 58.475867479889715,
+    "fillet_radius": 5.566234685393503,
+    "plate_width": 42.38664507721371,
     "rib_count": 1.0,
-    "rib_thickness": 5.960206668474463,
-    "fillet_radius": 2.664839870813063
+    "rib_thickness": 7.174031313997084,
+    "thickness": 4.835156034766856
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.958568196559237
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 8.73275629529233,
-    "plate_width": 49.19883322531573,
-    "rib_count": 1.0,
-    "rib_thickness": 6.3537831145463075,
-    "fillet_radius": 5.968710815339518
-   },
+   "min_wall_mm": 3.695681299019244,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.353783114546306
-  },
-  {
    "params": {
-    "thickness": 7.717565706603151,
-    "plate_width": 34.52008948025991,
+    "fillet_radius": 4.892323342381834,
+    "plate_width": 73.99265523600542,
     "rib_count": 2.0,
-    "rib_thickness": 7.027588015857126,
-    "fillet_radius": 1.9713943455591145
+    "rib_thickness": 3.6956812990192462,
+    "thickness": 4.804272851700143
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.331181238185114
+   "reasons": []
   },
   {
+   "min_wall_mm": 2.708930074411319,
+   "ok": true,
    "params": {
-    "thickness": 11.215766010831887,
-    "plate_width": 77.97194189385357,
+    "fillet_radius": 1.4112930222510176,
+    "plate_width": 31.380300737090955,
     "rib_count": 1.0,
-    "rib_thickness": 9.75382833336337,
-    "fillet_radius": 3.8929645652370133
+    "rib_thickness": 2.7089300744113185,
+    "thickness": 5.675982462178413
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 9.224793375201708
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 11.70121040893686,
-    "plate_width": 64.33146018550089,
-    "rib_count": 1.0,
-    "rib_thickness": 5.560469856916093,
-    "fillet_radius": 5.583692914437105
-   },
+   "min_wall_mm": 6.327614469274134,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.560469856916096
-  },
-  {
    "params": {
-    "thickness": 11.740867753766532,
-    "plate_width": 49.11766564100873,
+    "fillet_radius": 5.776888744837461,
+    "plate_width": 69.37905037018771,
     "rib_count": 2.0,
-    "rib_thickness": 5.1779198148700125,
-    "fillet_radius": 5.505462924317047
+    "rib_thickness": 6.3276144692741365,
+    "thickness": 7.526968793112119
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.177919814870012
+   "reasons": []
   },
   {
+   "min_wall_mm": 3.0594370732258747,
+   "ok": true,
    "params": {
-    "thickness": 6.94316054237612,
-    "plate_width": 61.12012740555582,
+    "fillet_radius": 2.5464822062192267,
+    "plate_width": 31.616153438317152,
     "rib_count": 2.0,
-    "rib_thickness": 9.67539264035315,
-    "fillet_radius": 1.1555270282323118
+    "rib_thickness": 3.059437073225876,
+    "thickness": 10.235648066420847
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.943160542376115
+   "reasons": []
   },
   {
+   "min_wall_mm": 2.6517917470902312,
+   "ok": true,
    "params": {
-    "thickness": 8.406111730683527,
-    "plate_width": 50.41120488542916,
+    "fillet_radius": 2.857403567762435,
+    "plate_width": 55.28631104181326,
     "rib_count": 1.0,
-    "rib_thickness": 7.2840776619598575,
-    "fillet_radius": 2.027198388168141
+    "rib_thickness": 2.6517917470902326,
+    "thickness": 3.7456991566642976
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 7.284077661959855
+   "reasons": []
   },
   {
+   "min_wall_mm": 3.9811688683115514,
+   "ok": true,
    "params": {
-    "thickness": 6.409645540611381,
-    "plate_width": 57.96870619207954,
+    "fillet_radius": 3.0218774812138642,
+    "plate_width": 61.68933824421846,
     "rib_count": 1.0,
-    "rib_thickness": 6.226905252860371,
-    "fillet_radius": 3.6849544280446374
+    "rib_thickness": 5.1026223130579345,
+    "thickness": 3.981168868311557
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.226905252860372
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 3.2772755447606685,
-    "plate_width": 78.6545740088923,
-    "rib_count": 1.0,
-    "rib_thickness": 8.68265880706291,
-    "fillet_radius": 1.6363319862685155
-   },
+   "min_wall_mm": 5.430150196472936,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.277275544760665
-  },
-  {
    "params": {
-    "thickness": 5.563034522054299,
-    "plate_width": 57.116971537637426,
-    "rib_count": 2.0,
-    "rib_thickness": 4.4890852323614405,
-    "fillet_radius": 4.665808144061656
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.489085232361439
-  },
-  {
-   "params": {
-    "thickness": 10.491194375989917,
-    "plate_width": 52.31982603337269,
-    "rib_count": 1.0,
-    "rib_thickness": 6.363016030606951,
-    "fillet_radius": 3.199451039059579
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.363016030606949
-  },
-  {
-   "params": {
-    "thickness": 10.701279298187792,
-    "plate_width": 68.45336929296897,
+    "fillet_radius": 5.032054261420324,
+    "plate_width": 75.48184741687092,
     "rib_count": 3.0,
-    "rib_thickness": 9.031439207986377,
-    "fillet_radius": 1.6265195575524936
+    "rib_thickness": 5.430150196472938,
+    "thickness": 9.621589060615726
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 9.031439207986375
+   "reasons": []
   },
   {
+   "min_wall_mm": 5.998109423519286,
+   "ok": true,
    "params": {
-    "thickness": 10.295054517487085,
-    "plate_width": 75.20089023096453,
+    "fillet_radius": 4.240105304657675,
+    "plate_width": 37.1711524274582,
+    "rib_count": 3.0,
+    "rib_thickness": 6.827957179543351,
+    "thickness": 8.63846543033301
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 2.2222667380441288,
+   "ok": true,
+   "params": {
+    "fillet_radius": 4.651738135324058,
+    "plate_width": 58.67604895097417,
     "rib_count": 1.0,
-    "rib_thickness": 2.9445722442453244,
-    "fillet_radius": 4.60995879078424
+    "rib_thickness": 2.22226673804413,
+    "thickness": 8.255638094991568
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.944572244245324
+   "reasons": []
   },
   {
+   "min_wall_mm": 6.553654306540844,
+   "ok": true,
    "params": {
-    "thickness": 7.907583807913314,
-    "plate_width": 78.24726643931639,
+    "fillet_radius": 3.7194414203929425,
+    "plate_width": 67.34692472949548,
     "rib_count": 3.0,
-    "rib_thickness": 9.78815827664043,
-    "fillet_radius": 1.2512670711689415
+    "rib_thickness": 9.857138893478371,
+    "thickness": 6.553654306540844
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 7.907583807913308
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 7.503343264486979,
-    "plate_width": 58.62891435827274,
-    "rib_count": 2.0,
-    "rib_thickness": 5.497353464545755,
-    "fillet_radius": 4.224946018029028
-   },
+   "min_wall_mm": 5.219140129147934,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.4973534645457525
+   "params": {
+    "fillet_radius": 5.4757738511048375,
+    "plate_width": 34.312827222445094,
+    "rib_count": 3.0,
+    "rib_thickness": 5.219140129147936,
+    "thickness": 9.038388114493026
+   },
+   "reasons": []
   },
   {
+   "min_wall_mm": 3.3335493919321473,
+   "ok": true,
    "params": {
-    "thickness": 9.827491803136063,
-    "plate_width": 46.184391826705905,
+    "fillet_radius": 4.284638556745327,
+    "plate_width": 68.69371721117861,
     "rib_count": 1.0,
-    "rib_thickness": 5.538514656899431,
-    "fillet_radius": 2.9725367905659237
+    "rib_thickness": 7.7527148819074805,
+    "thickness": 3.333549391932153
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.538514656899429
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 5.743192693990902,
-    "plate_width": 49.97013737982703,
-    "rib_count": 3.0,
-    "rib_thickness": 7.467303071702423,
-    "fillet_radius": 3.207645230904404
-   },
+   "min_wall_mm": 6.200673393015251,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.743192693990902
-  },
-  {
    "params": {
-    "thickness": 8.829014176579648,
-    "plate_width": 48.87791059255065,
+    "fillet_radius": 5.479711187018356,
+    "plate_width": 35.31056427325387,
     "rib_count": 1.0,
-    "rib_thickness": 6.455108523599842,
-    "fillet_radius": 5.9715696277239685
+    "rib_thickness": 9.609550277294003,
+    "thickness": 8.479317799697927
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.455108523599843
+   "reasons": []
   },
   {
+   "min_wall_mm": 2.6222309901296286,
+   "ok": true,
    "params": {
-    "thickness": 8.719796615715904,
-    "plate_width": 66.11440542402227,
+    "fillet_radius": 3.8841732755227745,
+    "plate_width": 75.76371590968454,
     "rib_count": 3.0,
-    "rib_thickness": 8.63536999990824,
-    "fillet_radius": 3.310281143291562
+    "rib_thickness": 2.622230990129631,
+    "thickness": 10.163702459775726
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 8.635369999908237
+   "reasons": []
   },
   {
+   "min_wall_mm": 9.919641413828463,
+   "ok": true,
    "params": {
-    "thickness": 11.883163305444842,
-    "plate_width": 53.079048693490165,
+    "fillet_radius": 4.41117349505344,
+    "plate_width": 64.80026970643661,
     "rib_count": 3.0,
-    "rib_thickness": 5.271722730247769,
-    "fillet_radius": 4.595468397563024
+    "rib_thickness": 9.919641413828469,
+    "thickness": 10.540234809203232
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.271722730247769
+   "reasons": []
   },
   {
+   "min_wall_mm": 6.589855246992545,
+   "ok": true,
    "params": {
-    "thickness": 11.888325221004134,
-    "plate_width": 45.26682961839881,
+    "fillet_radius": 4.0148243579022065,
+    "plate_width": 75.46466005575552,
+    "rib_count": 3.0,
+    "rib_thickness": 6.589855246992546,
+    "thickness": 9.586203731062797
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 3.1743389570610767,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.953636130821622,
+    "plate_width": 74.46873741829135,
+    "rib_count": 3.0,
+    "rib_thickness": 3.174338957061078,
+    "thickness": 7.407296484466845
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 8.085981978165043,
+   "ok": true,
+   "params": {
+    "fillet_radius": 4.898136562077913,
+    "plate_width": 45.52936265461122,
     "rib_count": 1.0,
-    "rib_thickness": 5.595105148555857,
-    "fillet_radius": 4.1786223085243925
+    "rib_thickness": 9.933232033592494,
+    "thickness": 10.371802569792958
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.595105148555855
+   "reasons": []
   },
   {
+   "min_wall_mm": 4.9324531427105525,
+   "ok": true,
    "params": {
-    "thickness": 4.776250095924722,
-    "plate_width": 56.309534908652026,
+    "fillet_radius": 2.884757817272469,
+    "plate_width": 68.61576664860439,
     "rib_count": 3.0,
-    "rib_thickness": 5.113301132878434,
-    "fillet_radius": 2.8422820965701305
+    "rib_thickness": 4.932453142710552,
+    "thickness": 7.514726066217497
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.776250095924719
+   "reasons": []
   },
   {
+   "min_wall_mm": 4.444572912586756,
+   "ok": true,
    "params": {
-    "thickness": 6.647268645644871,
-    "plate_width": 73.06226544887753,
+    "fillet_radius": 3.163768554093044,
+    "plate_width": 76.94432390654232,
     "rib_count": 3.0,
-    "rib_thickness": 9.79588983856623,
-    "fillet_radius": 4.347270618665966
+    "rib_thickness": 4.444572912586757,
+    "thickness": 7.6106342781343335
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.647268645644867
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 11.707455066881785,
-    "plate_width": 33.38728632506059,
-    "rib_count": 3.0,
-    "rib_thickness": 3.9810510063383218,
-    "fillet_radius": 5.818524081767349
-   },
+   "min_wall_mm": 4.6079184567663765,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.9810510063383178
+   "params": {
+    "fillet_radius": 5.227191257727813,
+    "plate_width": 37.197142311223864,
+    "rib_count": 2.0,
+    "rib_thickness": 4.607918456766378,
+    "thickness": 8.85048228945098
+   },
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 5.617974040411996,
-    "plate_width": 31.038815977796524,
-    "rib_count": 3.0,
-    "rib_thickness": 7.0340962503007045,
-    "fillet_radius": 3.9855288102009516
-   },
+   "min_wall_mm": 8.026648927708516,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.6179740404119896
-  },
-  {
    "params": {
-    "thickness": 11.4340616358508,
-    "plate_width": 69.12368426854115,
+    "fillet_radius": 3.2389081912012068,
+    "plate_width": 64.51139367552493,
     "rib_count": 1.0,
-    "rib_thickness": 8.139998321140578,
-    "fillet_radius": 4.9842922409506585
+    "rib_thickness": 9.042747761035065,
+    "thickness": 8.026648927708523
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 8.139998321140572
+   "reasons": []
   },
   {
+   "min_wall_mm": 4.491553699978595,
+   "ok": true,
    "params": {
-    "thickness": 8.449161552571898,
-    "plate_width": 47.472504419334186,
+    "fillet_radius": 3.344971791726496,
+    "plate_width": 74.7348304326803,
     "rib_count": 2.0,
-    "rib_thickness": 8.386378926516773,
-    "fillet_radius": 2.761269638737152
+    "rib_thickness": 4.491553699978596,
+    "thickness": 6.0009533785308875
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 8.386378926516771
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 9.165291882293081,
-    "plate_width": 45.18344214263184,
-    "rib_count": 2.0,
-    "rib_thickness": 8.663802281579425,
-    "fillet_radius": 3.164986934013072
-   },
+   "min_wall_mm": 8.933840779601368,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 8.00730513336251
+   "params": {
+    "fillet_radius": 0.8269699169420903,
+    "plate_width": 51.32373939411244,
+    "rib_count": 1.0,
+    "rib_thickness": 9.591816127761074,
+    "thickness": 11.247652660950445
+   },
+   "reasons": []
   },
   {
+   "min_wall_mm": 9.02546328941253,
+   "ok": true,
    "params": {
-    "thickness": 7.203923654503658,
-    "plate_width": 32.26940299228596,
+    "fillet_radius": 1.7534516082436258,
+    "plate_width": 58.717211132599836,
     "rib_count": 3.0,
-    "rib_thickness": 2.7890407290904315,
-    "fillet_radius": 3.7484992468676563
+    "rib_thickness": 9.361652121653496,
+    "thickness": 10.978495356484025
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.7890407290904293
+   "reasons": []
   },
   {
+   "min_wall_mm": 3.2092483049526366,
+   "ok": true,
    "params": {
-    "thickness": 3.62778861222115,
-    "plate_width": 33.34994519384337,
+    "fillet_radius": 5.210601848657525,
+    "plate_width": 41.36548673276211,
     "rib_count": 2.0,
-    "rib_thickness": 2.157931099184677,
-    "fillet_radius": 3.289399783360528
+    "rib_thickness": 3.209248304952637,
+    "thickness": 3.787339909270001
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.1579310991846747
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 11.515143859793575,
-    "plate_width": 64.52237959692383,
-    "rib_count": 2.0,
-    "rib_thickness": 7.087779801422848,
-    "fillet_radius": 2.0168757500310726
-   },
+   "min_wall_mm": 3.4810431714482832,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 7.087779801422847
-  },
-  {
    "params": {
-    "thickness": 5.739629558324847,
-    "plate_width": 56.404639783392966,
-    "rib_count": 1.0,
-    "rib_thickness": 9.088202317592229,
-    "fillet_radius": 1.9798806561309688
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.739629558324846
-  },
-  {
-   "params": {
-    "thickness": 3.673962997591162,
-    "plate_width": 71.53387952981136,
+    "fillet_radius": 4.360320921735075,
+    "plate_width": 77.65605021283946,
     "rib_count": 3.0,
-    "rib_thickness": 7.270279608262071,
-    "fillet_radius": 3.0736514725786
+    "rib_thickness": 3.4810431714482855,
+    "thickness": 3.9180688037220026
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.6739629975911563
+   "reasons": []
   },
   {
+   "min_wall_mm": 5.163200567114099,
+   "ok": true,
    "params": {
-    "thickness": 8.018858362961794,
-    "plate_width": 32.487118977514506,
+    "fillet_radius": 2.0150860308933316,
+    "plate_width": 58.7109543788162,
     "rib_count": 2.0,
-    "rib_thickness": 7.224535985892202,
-    "fillet_radius": 4.423903491199125
+    "rib_thickness": 5.193227183723799,
+    "thickness": 5.1632005671141075
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 7.224535985892202
+   "reasons": []
   },
   {
+   "min_wall_mm": 3.4647711145363993,
+   "ok": true,
    "params": {
-    "thickness": 10.3350309953554,
-    "plate_width": 43.488031683806916,
+    "fillet_radius": 1.4609608070411,
+    "plate_width": 36.93573101498306,
+    "rib_count": 2.0,
+    "rib_thickness": 6.152127906267789,
+    "thickness": 3.4647711145364033
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 5.62115455384708,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.3579587303728442,
+    "plate_width": 79.83767123110736,
+    "rib_count": 1.0,
+    "rib_thickness": 5.62115455384708,
+    "thickness": 8.136442623858095
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 2.2594106022769993,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.0146740417487505,
+    "plate_width": 68.20619725041979,
+    "rib_count": 2.0,
+    "rib_thickness": 2.259410602276999,
+    "thickness": 5.737897432358912
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 3.588345454247,
+   "ok": true,
+   "params": {
+    "fillet_radius": 3.8246400331529844,
+    "plate_width": 52.58665742199438,
     "rib_count": 3.0,
-    "rib_thickness": 7.918759240634076,
-    "fillet_radius": 2.6590752160977247
+    "rib_thickness": 4.558791287942667,
+    "thickness": 3.5883454542470035
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 7.918759240634077
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 6.5974407684152325,
-    "plate_width": 54.18120011306093,
-    "rib_count": 2.0,
-    "rib_thickness": 8.933742917203997,
-    "fillet_radius": 2.313039581762907
-   },
+   "min_wall_mm": 8.593902731679176,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.597440768415221
-  },
-  {
    "params": {
-    "thickness": 5.00086705631694,
-    "plate_width": 78.18942085279161,
+    "fillet_radius": 3.979387004024618,
+    "plate_width": 50.78960577459991,
     "rib_count": 3.0,
-    "rib_thickness": 3.953819623219527,
-    "fillet_radius": 4.134621092438247
+    "rib_thickness": 8.593902731679178,
+    "thickness": 11.596891547206754
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.9538196232195255
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 10.665948890853969,
-    "plate_width": 73.42156448306592,
-    "rib_count": 2.0,
-    "rib_thickness": 4.532233233928539,
-    "fillet_radius": 2.874710925908245
-   },
+   "min_wall_mm": 9.018594937776975,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.532233233928539
-  },
-  {
    "params": {
-    "thickness": 9.854336941509235,
-    "plate_width": 69.2705977965487,
+    "fillet_radius": 4.743785585612415,
+    "plate_width": 53.844116856999385,
     "rib_count": 1.0,
-    "rib_thickness": 2.5803146735362112,
-    "fillet_radius": 4.527779571048635
+    "rib_thickness": 9.843294668967157,
+    "thickness": 9.018594937776975
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.58031467353621
+   "reasons": []
   },
   {
+   "min_wall_mm": 4.883991925844138,
+   "ok": true,
    "params": {
-    "thickness": 10.83947816310412,
-    "plate_width": 58.9573294831725,
+    "fillet_radius": 1.2571450641552329,
+    "plate_width": 59.26411047496473,
+    "rib_count": 2.0,
+    "rib_thickness": 5.659239339530073,
+    "thickness": 4.883991925844141
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 3.097998616257622,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.4117579686953936,
+    "plate_width": 67.9139131763007,
+    "rib_count": 1.0,
+    "rib_thickness": 9.951503066942006,
+    "thickness": 3.097998616257622
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 7.16628077439547,
+   "ok": true,
+   "params": {
+    "fillet_radius": 3.0512177837996295,
+    "plate_width": 61.77585809420221,
+    "rib_count": 2.0,
+    "rib_thickness": 8.039131678709925,
+    "thickness": 7.166280774395472
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 4.123402913993199,
+   "ok": true,
+   "params": {
+    "fillet_radius": 5.290927767335942,
+    "plate_width": 45.62506915232668,
+    "rib_count": 1.0,
+    "rib_thickness": 7.517711577014102,
+    "thickness": 4.123402913993204
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 6.152658534912226,
+   "ok": true,
+   "params": {
+    "fillet_radius": 4.954937906732646,
+    "plate_width": 49.83995550696663,
+    "rib_count": 1.0,
+    "rib_thickness": 6.152658534912228,
+    "thickness": 6.199574511016567
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 3.1134338765537373,
+   "ok": true,
+   "params": {
+    "fillet_radius": 3.677758952828789,
+    "plate_width": 63.623492135375166,
     "rib_count": 3.0,
-    "rib_thickness": 9.305160041626273,
-    "fillet_radius": 4.5053631463273645
+    "rib_thickness": 8.02888386451976,
+    "thickness": 3.1134338765537426
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 9.30516004162627
+   "reasons": []
   },
   {
+   "min_wall_mm": 4.211455374777567,
+   "ok": true,
    "params": {
-    "thickness": 8.456339139560475,
-    "plate_width": 43.09920156724435,
+    "fillet_radius": 5.226247950537435,
+    "plate_width": 70.38495167210186,
+    "rib_count": 1.0,
+    "rib_thickness": 5.875427551762514,
+    "thickness": 4.211455374777572
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 8.502841963756266,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.8654367379336028,
+    "plate_width": 62.45770969221587,
+    "rib_count": 2.0,
+    "rib_thickness": 8.502841963756268,
+    "thickness": 10.47359611910751
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 4.819437029861141,
+   "ok": true,
+   "params": {
+    "fillet_radius": 5.207056047944676,
+    "plate_width": 70.28056612658,
     "rib_count": 3.0,
-    "rib_thickness": 3.30028636089681,
-    "fillet_radius": 4.781547809090755
+    "rib_thickness": 4.819437029861143,
+    "thickness": 6.804891574305267
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.300286360896808
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 11.044831890178829,
-    "plate_width": 52.03406891267365,
-    "rib_count": 2.0,
-    "rib_thickness": 8.011010491893053,
-    "fillet_radius": 1.822714821525687
-   },
+   "min_wall_mm": 4.755337420407893,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 8.01101049189305
-  },
-  {
    "params": {
-    "thickness": 9.463423280832934,
-    "plate_width": 65.92384631983887,
-    "rib_count": 2.0,
-    "rib_thickness": 2.5458097521296397,
-    "fillet_radius": 1.7519083670045674
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.5458097521296374
-  },
-  {
-   "params": {
-    "thickness": 5.8923314916435885,
-    "plate_width": 76.4303158596062,
+    "fillet_radius": 1.9406342775923884,
+    "plate_width": 67.36604062429303,
     "rib_count": 1.0,
-    "rib_thickness": 2.3598452839459805,
-    "fillet_radius": 4.952127876030837
+    "rib_thickness": 6.926106868851189,
+    "thickness": 4.755337420407903
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.359845283945982
+   "reasons": []
   },
   {
+   "min_wall_mm": 3.7095458582715843,
+   "ok": true,
    "params": {
-    "thickness": 3.209550857543088,
-    "plate_width": 67.62131415924347,
+    "fillet_radius": 4.720064818658828,
+    "plate_width": 49.012763127774214,
+    "rib_count": 2.0,
+    "rib_thickness": 3.7095458582715866,
+    "thickness": 7.718483129015573
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 3.304715390772506,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.5042685876175947,
+    "plate_width": 66.66225359747746,
+    "rib_count": 1.0,
+    "rib_thickness": 3.3047153907725084,
+    "thickness": 5.777777512336544
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 5.016660791809236,
+   "ok": true,
+   "params": {
+    "fillet_radius": 0.6464533835036416,
+    "plate_width": 43.634943382336616,
+    "rib_count": 1.0,
+    "rib_thickness": 5.0166607918092385,
+    "thickness": 7.8716332043816815
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 3.9982833144401106,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.4244748198992832,
+    "plate_width": 63.72820127895913,
+    "rib_count": 2.0,
+    "rib_thickness": 7.520602907612503,
+    "thickness": 3.9982833144401195
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 7.690516160158366,
+   "ok": true,
+   "params": {
+    "fillet_radius": 3.546365381648605,
+    "plate_width": 60.09021800485935,
     "rib_count": 3.0,
-    "rib_thickness": 2.277707487014558,
-    "fillet_radius": 4.371579769305505
+    "rib_thickness": 7.690516160158368,
+    "thickness": 9.171782278708488
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.277707487014555
+   "reasons": []
   },
   {
+   "min_wall_mm": 5.740661870135308,
+   "ok": true,
    "params": {
-    "thickness": 10.334195029107166,
-    "plate_width": 78.20607933669449,
+    "fillet_radius": 1.0539669149040731,
+    "plate_width": 71.7427023229403,
+    "rib_count": 2.0,
+    "rib_thickness": 6.94318757101019,
+    "thickness": 5.740661870135311
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 3.2544255245836595,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.3790850624792717,
+    "plate_width": 33.398432110879,
+    "rib_count": 1.0,
+    "rib_thickness": 9.808348412394306,
+    "thickness": 3.2544255245836595
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 4.823419094473162,
+   "ok": true,
+   "params": {
+    "fillet_radius": 2.308505931474998,
+    "plate_width": 51.559087745088085,
+    "rib_count": 2.0,
+    "rib_thickness": 5.57128283643015,
+    "thickness": 4.823419094473164
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 4.887896836042367,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.659028150948642,
+    "plate_width": 32.373197688590096,
+    "rib_count": 2.0,
+    "rib_thickness": 8.034447564647733,
+    "thickness": 6.096586709973371
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 4.452404982667821,
+   "ok": true,
+   "params": {
+    "fillet_radius": 5.605468239584984,
+    "plate_width": 67.44641841404321,
     "rib_count": 3.0,
-    "rib_thickness": 5.53829898491163,
-    "fillet_radius": 4.146088463129679
+    "rib_thickness": 4.452404982667823,
+    "thickness": 8.408588243167115
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.53829898491163
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 5.47116986708793,
-    "plate_width": 60.662111823498066,
-    "rib_count": 1.0,
-    "rib_thickness": 2.761846794013092,
-    "fillet_radius": 2.6983816085956933
-   },
+   "min_wall_mm": 3.4043503416840313,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.7618467940130906
-  },
-  {
    "params": {
-    "thickness": 7.455205932619609,
-    "plate_width": 48.89471365161705,
-    "rib_count": 1.0,
-    "rib_thickness": 9.787505819303828,
-    "fillet_radius": 1.7965521589728066
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 7.455205932619601
-  },
-  {
-   "params": {
-    "thickness": 5.552773618423806,
-    "plate_width": 57.35097541657565,
-    "rib_count": 2.0,
-    "rib_thickness": 3.695256140929276,
-    "fillet_radius": 4.432142823325933
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.695256140929273
-  },
-  {
-   "params": {
-    "thickness": 5.971055332325372,
-    "plate_width": 59.68092937430204,
-    "rib_count": 1.0,
-    "rib_thickness": 9.955147271087906,
-    "fillet_radius": 0.7541987157223004
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.971055332325372
-  },
-  {
-   "params": {
-    "thickness": 10.17698440735822,
-    "plate_width": 72.87939126804412,
-    "rib_count": 2.0,
-    "rib_thickness": 9.11063846249268,
-    "fillet_radius": 5.163524867530135
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 8.869955212129197
-  },
-  {
-   "params": {
-    "thickness": 5.584939101856664,
-    "plate_width": 39.794214144322495,
-    "rib_count": 1.0,
-    "rib_thickness": 9.040241350187294,
-    "fillet_radius": 4.672082905122966
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.584939101856658
-  },
-  {
-   "params": {
-    "thickness": 4.37045771735603,
-    "plate_width": 75.68399601819246,
-    "rib_count": 1.0,
-    "rib_thickness": 5.098174223016396,
-    "fillet_radius": 5.319690880600077
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.370457717356028
-  },
-  {
-   "params": {
-    "thickness": 7.883179646090248,
-    "plate_width": 58.23720551263164,
-    "rib_count": 2.0,
-    "rib_thickness": 3.0398308682154678,
-    "fillet_radius": 3.045891006192909
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.0398308682154664
-  },
-  {
-   "params": {
-    "thickness": 10.55982309379141,
-    "plate_width": 75.3042175674593,
-    "rib_count": 1.0,
-    "rib_thickness": 6.295844856551394,
-    "fillet_radius": 3.386971202667297
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.295844856551393
-  },
-  {
-   "params": {
-    "thickness": 4.16032731075088,
-    "plate_width": 76.66903103649253,
-    "rib_count": 1.0,
-    "rib_thickness": 5.460079317750794,
-    "fillet_radius": 1.5456101123387056
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.16032731075088
-  },
-  {
-   "params": {
-    "thickness": 7.496958484780916,
-    "plate_width": 36.51558665358061,
-    "rib_count": 2.0,
-    "rib_thickness": 7.49417101246941,
-    "fillet_radius": 5.150925245550244
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.230368521486843
-  },
-  {
-   "params": {
-    "thickness": 8.96714569648824,
-    "plate_width": 49.48509638376719,
+    "fillet_radius": 4.8019999824673505,
+    "plate_width": 48.00663288137417,
     "rib_count": 3.0,
-    "rib_thickness": 4.14378535566299,
-    "fillet_radius": 1.9291350471140314
+    "rib_thickness": 5.404491087563368,
+    "thickness": 3.4043503416840313
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.143785355662987
+   "reasons": []
   },
   {
+   "min_wall_mm": 3.505269361204051,
+   "ok": true,
    "params": {
-    "thickness": 8.720475056676758,
-    "plate_width": 42.27129290259782,
+    "fillet_radius": 0.9527935337212478,
+    "plate_width": 71.76358015731651,
     "rib_count": 3.0,
-    "rib_thickness": 9.481327997920761,
-    "fillet_radius": 3.7477252406181463
+    "rib_thickness": 5.726643583164084,
+    "thickness": 3.505269361204051
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 8.720475056676756
+   "reasons": []
   },
   {
+   "min_wall_mm": 4.799685029243288,
+   "ok": true,
    "params": {
-    "thickness": 6.146532683493679,
-    "plate_width": 60.267637483051544,
+    "fillet_radius": 3.4188358993188808,
+    "plate_width": 33.80846108403177,
     "rib_count": 3.0,
-    "rib_thickness": 7.107049317489372,
-    "fillet_radius": 5.8302831600191105
+    "rib_thickness": 4.961233394020169,
+    "thickness": 4.799685029243289
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.14653268349367
+   "reasons": []
   },
   {
+   "min_wall_mm": 5.966149746784388,
+   "ok": true,
    "params": {
-    "thickness": 11.145422951721011,
-    "plate_width": 57.3462911742367,
+    "fillet_radius": 5.160392176224626,
+    "plate_width": 36.60805708701313,
+    "rib_count": 1.0,
+    "rib_thickness": 7.764143338811498,
+    "thickness": 7.447046380496859
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 2.8645226115365916,
+   "ok": true,
+   "params": {
+    "fillet_radius": 4.8315350946302615,
+    "plate_width": 60.322088676755655,
+    "rib_count": 2.0,
+    "rib_thickness": 2.864522611536594,
+    "thickness": 8.116987960313283
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 3.9592548712164666,
+   "ok": true,
+   "params": {
+    "fillet_radius": 4.2760974910688185,
+    "plate_width": 79.28544120378821,
     "rib_count": 3.0,
-    "rib_thickness": 3.594946724870704,
-    "fillet_radius": 5.340578771756789
+    "rib_thickness": 9.846070172595159,
+    "thickness": 3.9592548712164666
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.594946724870701
+   "reasons": []
   },
   {
+   "min_wall_mm": 6.2232318027530935,
+   "ok": true,
    "params": {
-    "thickness": 6.817077996427464,
-    "plate_width": 63.11928327012224,
+    "fillet_radius": 4.570426491487899,
+    "plate_width": 33.46979819921679,
+    "rib_count": 1.0,
+    "rib_thickness": 6.223231802753094,
+    "thickness": 11.279525049357582
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 4.3493834104108755,
+   "ok": true,
+   "params": {
+    "fillet_radius": 5.152577174635505,
+    "plate_width": 57.554358742912996,
+    "rib_count": 2.0,
+    "rib_thickness": 6.380731596083598,
+    "thickness": 4.3493834104108835
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 2.158200794797493,
+   "ok": true,
+   "params": {
+    "fillet_radius": 5.231303477102032,
+    "plate_width": 43.06321033249317,
     "rib_count": 3.0,
-    "rib_thickness": 4.136760100321951,
-    "fillet_radius": 3.8586450365642757
+    "rib_thickness": 2.1582007947974935,
+    "thickness": 10.342157314416543
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.13676010032195
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 11.751253126337204,
-    "plate_width": 33.61421080365057,
-    "rib_count": 1.0,
-    "rib_thickness": 9.811229413543174,
-    "fillet_radius": 1.3305536458112304
-   },
+   "min_wall_mm": 3.670325928849627,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 7.333281074903412
-  },
-  {
    "params": {
-    "thickness": 11.26782655589371,
-    "plate_width": 72.72843876037814,
-    "rib_count": 1.0,
-    "rib_thickness": 2.4224900387002712,
-    "fillet_radius": 1.0016994589414472
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.422490038700277
-  },
-  {
-   "params": {
-    "thickness": 10.317502220090898,
-    "plate_width": 53.4583413232594,
+    "fillet_radius": 4.594593100702182,
+    "plate_width": 50.16102346480547,
     "rib_count": 2.0,
-    "rib_thickness": 2.794256984274832,
-    "fillet_radius": 2.2197809720087696
+    "rib_thickness": 3.6703259288496275,
+    "thickness": 8.030134258098213
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.79425698427483
+   "reasons": []
   },
   {
+   "min_wall_mm": 8.928730506732597,
+   "ok": true,
    "params": {
-    "thickness": 4.139638593667637,
-    "plate_width": 31.65930220609522,
+    "fillet_radius": 5.218434071037252,
+    "plate_width": 50.78020520599192,
+    "rib_count": 1.0,
+    "rib_thickness": 9.471220897681189,
+    "thickness": 11.799460693003128
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 2.2615960588808215,
+   "ok": true,
+   "params": {
+    "fillet_radius": 4.684637597946662,
+    "plate_width": 55.834439099201006,
+    "rib_count": 2.0,
+    "rib_thickness": 2.261596058880828,
+    "thickness": 9.559657865450646
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 6.81036200057107,
+   "ok": true,
+   "params": {
+    "fillet_radius": 2.710262595626243,
+    "plate_width": 38.85046866920686,
     "rib_count": 3.0,
-    "rib_thickness": 3.025624984229421,
-    "fillet_radius": 2.6735354453229307
+    "rib_thickness": 6.90568971391998,
+    "thickness": 6.81036200057107
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.025624984229419
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 9.368826643294518,
-    "plate_width": 74.1157804601204,
-    "rib_count": 1.0,
-    "rib_thickness": 7.893004150659415,
-    "fillet_radius": 1.9849421605249584
-   },
+   "min_wall_mm": 4.244232055492945,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 7.893004150659418
-  },
-  {
    "params": {
-    "thickness": 5.250076295461811,
-    "plate_width": 46.27070608950603,
-    "rib_count": 2.0,
-    "rib_thickness": 2.2735465681371068,
-    "fillet_radius": 2.6132991114250874
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.2735465681371037
-  },
-  {
-   "params": {
-    "thickness": 9.5934555705567,
-    "plate_width": 45.66033465237238,
-    "rib_count": 1.0,
-    "rib_thickness": 4.0824002501113545,
-    "fillet_radius": 2.5910075376783057
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.0824002501113545
-  },
-  {
-   "params": {
-    "thickness": 4.0542246081139,
-    "plate_width": 63.889591434502776,
-    "rib_count": 1.0,
-    "rib_thickness": 5.398642888151788,
-    "fillet_radius": 1.849644968398394
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.054224608113894
-  },
-  {
-   "params": {
-    "thickness": 8.014597437148556,
-    "plate_width": 46.50535833948739,
-    "rib_count": 2.0,
-    "rib_thickness": 6.074561046577776,
-    "fillet_radius": 2.6510071997316835
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.074561046577776
-  },
-  {
-   "params": {
-    "thickness": 11.061507308909766,
-    "plate_width": 54.057620802777976,
-    "rib_count": 1.0,
-    "rib_thickness": 7.220599461476884,
-    "fillet_radius": 2.967364448164441
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 7.2205994614768825
-  },
-  {
-   "params": {
-    "thickness": 11.892275013236818,
-    "plate_width": 65.96907475739934,
+    "fillet_radius": 4.4778047660203395,
+    "plate_width": 30.155642955352555,
     "rib_count": 3.0,
-    "rib_thickness": 7.610290081505696,
-    "fillet_radius": 3.4459045318251547
+    "rib_thickness": 4.865553302271099,
+    "thickness": 9.275772220101267
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 7.610290081505695
+   "reasons": []
   },
   {
+   "min_wall_mm": 4.416773854487489,
+   "ok": true,
    "params": {
-    "thickness": 11.071365526453128,
-    "plate_width": 71.58085323540044,
+    "fillet_radius": 5.356656802470075,
+    "plate_width": 34.747103412178895,
+    "rib_count": 1.0,
+    "rib_thickness": 4.416773854487489,
+    "thickness": 7.7427712960992565
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 2.977232592438073,
+   "ok": true,
+   "params": {
+    "fillet_radius": 3.9631927884406863,
+    "plate_width": 44.3355824424935,
+    "rib_count": 1.0,
+    "rib_thickness": 2.9772325924380763,
+    "thickness": 7.888497872186823
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 5.1810226676709314,
+   "ok": true,
+   "params": {
+    "fillet_radius": 5.054744489230999,
+    "plate_width": 32.004768447067335,
     "rib_count": 2.0,
-    "rib_thickness": 7.945428619207853,
-    "fillet_radius": 1.5998580831060951
+    "rib_thickness": 5.552936860293584,
+    "thickness": 11.549595326773085
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 7.945428619207852
+   "reasons": []
   },
   {
+   "min_wall_mm": 4.095935861905985,
+   "ok": true,
    "params": {
-    "thickness": 6.503146795106671,
-    "plate_width": 46.211019120134445,
+    "fillet_radius": 2.223279889840202,
+    "plate_width": 47.28494120294438,
     "rib_count": 2.0,
-    "rib_thickness": 4.763034291646883,
-    "fillet_radius": 3.6619811531658897
+    "rib_thickness": 4.095935861905984,
+    "thickness": 6.837133365996321
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.763034291646881
+   "reasons": []
   },
   {
+   "min_wall_mm": 9.018883784685965,
+   "ok": true,
    "params": {
-    "thickness": 3.3921715669666614,
-    "plate_width": 70.74743382594147,
+    "fillet_radius": 2.9622895086714918,
+    "plate_width": 50.2493950295584,
+    "rib_count": 2.0,
+    "rib_thickness": 9.018883784685968,
+    "thickness": 11.14419083115766
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 9.600253722921439,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.190228464017884,
+    "plate_width": 52.84828514632531,
+    "rib_count": 1.0,
+    "rib_thickness": 9.60025372292144,
+    "thickness": 10.060116772551844
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 4.180925202997595,
+   "ok": true,
+   "params": {
+    "fillet_radius": 3.2758533457361763,
+    "plate_width": 38.021369330926234,
+    "rib_count": 2.0,
+    "rib_thickness": 8.134196674209239,
+    "thickness": 4.180925202997596
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 7.359104022509988,
+   "ok": true,
+   "params": {
+    "fillet_radius": 4.970387431712122,
+    "plate_width": 72.14499190428802,
+    "rib_count": 2.0,
+    "rib_thickness": 7.35910402250999,
+    "thickness": 7.482500627043108
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 5.95475528496967,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.8840152790176332,
+    "plate_width": 34.38298016690952,
+    "rib_count": 1.0,
+    "rib_thickness": 8.783515105263355,
+    "thickness": 11.262351627574503
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 8.855392921620671,
+   "ok": true,
+   "params": {
+    "fillet_radius": 4.369246240107773,
+    "plate_width": 57.01304698790344,
     "rib_count": 3.0,
-    "rib_thickness": 6.269454259493957,
-    "fillet_radius": 2.796735257959108
+    "rib_thickness": 8.855392921620673,
+    "thickness": 9.306534353100192
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.3921715669666614
+   "reasons": []
   },
   {
+   "min_wall_mm": 2.6217165711486285,
+   "ok": true,
    "params": {
-    "thickness": 5.869193741482087,
-    "plate_width": 43.63346961337651,
+    "fillet_radius": 2.271712308247527,
+    "plate_width": 60.966709193400256,
     "rib_count": 3.0,
-    "rib_thickness": 7.988110215670026,
-    "fillet_radius": 3.2558127160918895
+    "rib_thickness": 2.6217165711486308,
+    "thickness": 4.6210481560653545
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.869193741482087
+   "reasons": []
   },
   {
+   "min_wall_mm": 2.681279010740534,
+   "ok": true,
    "params": {
-    "thickness": 7.735155575698434,
-    "plate_width": 37.43782494854583,
+    "fillet_radius": 2.858118309927327,
+    "plate_width": 30.446955287595795,
+    "rib_count": 1.0,
+    "rib_thickness": 2.6812790107405364,
+    "thickness": 11.515371521225216
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 5.822896012318492,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.2388623280982256,
+    "plate_width": 72.97758853360713,
     "rib_count": 3.0,
-    "rib_thickness": 4.6045834293786685,
-    "fillet_radius": 2.301604488135166
+    "rib_thickness": 5.822896012318493,
+    "thickness": 8.287182575314883
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.604583429378667
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 3.6196152572804974,
-    "plate_width": 78.97057908758978,
-    "rib_count": 2.0,
-    "rib_thickness": 5.633137161307617,
-    "fillet_radius": 2.5029097542307883
-   },
+   "min_wall_mm": 3.957537806577131,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.6196152572804956
-  },
-  {
    "params": {
-    "thickness": 9.674735536633202,
-    "plate_width": 49.02638629661101,
+    "fillet_radius": 4.1000029386980135,
+    "plate_width": 74.79849846968499,
     "rib_count": 1.0,
-    "rib_thickness": 9.378314589200464,
-    "fillet_radius": 4.907522229914019
+    "rib_thickness": 3.9575378065771325,
+    "thickness": 11.350640895666563
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 8.756908546352674
+   "reasons": []
   },
   {
+   "min_wall_mm": 5.0985068318036415,
+   "ok": true,
    "params": {
-    "thickness": 4.211230944384152,
-    "plate_width": 56.185586114292036,
+    "fillet_radius": 1.5425343296840117,
+    "plate_width": 33.40338827440823,
+    "rib_count": 2.0,
+    "rib_thickness": 6.0459361642349485,
+    "thickness": 8.479045070187933
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 6.494655238657184,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.2378443870213194,
+    "plate_width": 44.71078444667313,
+    "rib_count": 1.0,
+    "rib_thickness": 6.494655238657183,
+    "thickness": 11.68490029360077
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 6.793453057947917,
+   "ok": true,
+   "params": {
+    "fillet_radius": 3.2889395858107644,
+    "plate_width": 37.66067084292818,
+    "rib_count": 2.0,
+    "rib_thickness": 8.356626862664793,
+    "thickness": 9.37935569931912
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 4.3383927732293435,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.2976441721514926,
+    "plate_width": 64.78821100323515,
+    "rib_count": 1.0,
+    "rib_thickness": 4.338392773229346,
+    "thickness": 10.126389351896592
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 3.3808369586448515,
+   "ok": true,
+   "params": {
+    "fillet_radius": 2.7475047088813267,
+    "plate_width": 37.185333689905164,
+    "rib_count": 1.0,
+    "rib_thickness": 3.380836958644851,
+    "thickness": 8.863906179282333
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 2.7741921673998626,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.3047862331759545,
+    "plate_width": 50.346099869913274,
+    "rib_count": 2.0,
+    "rib_thickness": 2.774192167399865,
+    "thickness": 5.1727687207184605
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 6.735931317750921,
+   "ok": true,
+   "params": {
+    "fillet_radius": 3.9077270750287454,
+    "plate_width": 56.243608475619766,
+    "rib_count": 2.0,
+    "rib_thickness": 8.859875985015252,
+    "thickness": 6.735931317750927
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 2.0480602391677665,
+   "ok": true,
+   "params": {
+    "fillet_radius": 3.8754582065079153,
+    "plate_width": 69.64278385271322,
     "rib_count": 3.0,
-    "rib_thickness": 8.824795007258505,
-    "fillet_radius": 1.8855519168951882
+    "rib_thickness": 2.0480602391677687,
+    "thickness": 5.268297716535814
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.211230944384151
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 5.2082843208778336,
-    "plate_width": 58.68919400373437,
-    "rib_count": 2.0,
-    "rib_thickness": 4.892622112667815,
-    "fillet_radius": 5.682724568121192
-   },
+   "min_wall_mm": 3.280769311118045,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.892622112667811
+   "params": {
+    "fillet_radius": 2.1240883753065463,
+    "plate_width": 33.13550926159798,
+    "rib_count": 1.0,
+    "rib_thickness": 8.466224113959097,
+    "thickness": 3.2807693111180534
+   },
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 8.79150800653706,
-    "plate_width": 50.12873042650084,
-    "rib_count": 2.0,
-    "rib_thickness": 6.786091326460536,
-    "fillet_radius": 2.3724842215084
-   },
+   "min_wall_mm": 4.6302489542502085,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.786091326460537
+   "params": {
+    "fillet_radius": 4.958133696086268,
+    "plate_width": 54.39607486432701,
+    "rib_count": 1.0,
+    "rib_thickness": 4.630248954250209,
+    "thickness": 7.897092442911551
+   },
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 7.567878875957264,
-    "plate_width": 31.453616152836005,
-    "rib_count": 2.0,
-    "rib_thickness": 7.497937573261981,
-    "fillet_radius": 3.595265420032602
-   },
+   "min_wall_mm": 5.568937766467321,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 7.497937573261981
-  },
-  {
    "params": {
-    "thickness": 11.16125635068754,
-    "plate_width": 39.23001720246854,
-    "rib_count": 2.0,
-    "rib_thickness": 9.513565762517466,
-    "fillet_radius": 3.908373562809658
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 8.737232674607803
-  },
-  {
-   "params": {
-    "thickness": 10.305552548863005,
-    "plate_width": 78.92980327669825,
+    "fillet_radius": 5.570275675408224,
+    "plate_width": 42.34966768633281,
     "rib_count": 3.0,
-    "rib_thickness": 4.1258337327633985,
-    "fillet_radius": 1.088156779288471
+    "rib_thickness": 5.568937766467324,
+    "thickness": 11.398337422790812
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.125833732763396
+   "reasons": []
   },
   {
+   "min_wall_mm": 5.120587046597996,
+   "ok": true,
    "params": {
-    "thickness": 5.35527811647176,
-    "plate_width": 61.60705438674104,
+    "fillet_radius": 0.7578169310593817,
+    "plate_width": 60.44155843613939,
     "rib_count": 3.0,
-    "rib_thickness": 7.128257577329681,
-    "fillet_radius": 5.2033270888065015
+    "rib_thickness": 5.120587046597998,
+    "thickness": 5.51091803733614
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.35527811647176
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 10.147910257098399,
-    "plate_width": 40.86903648199102,
-    "rib_count": 1.0,
-    "rib_thickness": 6.091809920181874,
-    "fillet_radius": 2.8764940546465785
-   },
+   "min_wall_mm": 4.744224872987998,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.0918099201818725
-  },
-  {
    "params": {
-    "thickness": 8.313232319898479,
-    "plate_width": 75.00065999017272,
-    "rib_count": 2.0,
-    "rib_thickness": 7.68222730204178,
-    "fillet_radius": 2.0606382318559415
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 7.68222730204178
-  },
-  {
-   "params": {
-    "thickness": 11.021533450510125,
-    "plate_width": 59.90390006214952,
-    "rib_count": 1.0,
-    "rib_thickness": 5.403552618753532,
-    "fillet_radius": 4.215801857556263
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.403552618753529
-  },
-  {
-   "params": {
-    "thickness": 7.9002868325531725,
-    "plate_width": 77.23676189363951,
-    "rib_count": 2.0,
-    "rib_thickness": 7.806548003714864,
-    "fillet_radius": 4.977178060445272
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 7.806548003714865
-  },
-  {
-   "params": {
-    "thickness": 11.983439570566446,
-    "plate_width": 42.8280592737013,
-    "rib_count": 1.0,
-    "rib_thickness": 2.06623886506455,
-    "fillet_radius": 3.425935765630221
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.066238865064547
-  },
-  {
-   "params": {
-    "thickness": 6.426448960815028,
-    "plate_width": 73.80359518791579,
-    "rib_count": 1.0,
-    "rib_thickness": 5.229944563856399,
-    "fillet_radius": 5.354833117167473
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.229944563856402
-  },
-  {
-   "params": {
-    "thickness": 10.166086898777856,
-    "plate_width": 59.22987991034877,
-    "rib_count": 1.0,
-    "rib_thickness": 4.81461017436633,
-    "fillet_radius": 5.933350052844697
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.814610174366332
-  },
-  {
-   "params": {
-    "thickness": 3.057611180155312,
-    "plate_width": 78.0260987949946,
+    "fillet_radius": 4.788593606203479,
+    "plate_width": 51.62761635166504,
     "rib_count": 3.0,
-    "rib_thickness": 7.530675807123094,
-    "fillet_radius": 0.530288930790487
+    "rib_thickness": 4.744224872988001,
+    "thickness": 5.301374031958148
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 3.0576111801553005
+   "reasons": []
   },
   {
+   "min_wall_mm": 4.572626812813264,
+   "ok": true,
    "params": {
-    "thickness": 4.080401825880886,
-    "plate_width": 45.132681843821686,
+    "fillet_radius": 1.4429026630106938,
+    "plate_width": 47.09764177103983,
     "rib_count": 3.0,
-    "rib_thickness": 4.5244161469216175,
-    "fillet_radius": 4.77112821852161
+    "rib_thickness": 6.518940871850769,
+    "thickness": 4.572626812813271
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.080401825880879
+   "reasons": []
   },
   {
+   "min_wall_mm": 6.830988274489935,
+   "ok": true,
    "params": {
-    "thickness": 8.805430495349421,
-    "plate_width": 79.68958368576199,
+    "fillet_radius": 1.7501364773259345,
+    "plate_width": 67.45987520889027,
+    "rib_count": 1.0,
+    "rib_thickness": 7.538880996467472,
+    "thickness": 6.830988274489941
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 6.821842039864401,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.7990966266526605,
+    "plate_width": 48.59610611034456,
+    "rib_count": 1.0,
+    "rib_thickness": 7.104620887628398,
+    "thickness": 6.821842039864401
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 4.411291745417937,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.4346739401600737,
+    "plate_width": 49.43082136226953,
     "rib_count": 2.0,
-    "rib_thickness": 6.205017710413734,
-    "fillet_radius": 3.4812231411631673
+    "rib_thickness": 7.186502090660215,
+    "thickness": 4.411291745417941
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.205017710413734
+   "reasons": []
   },
   {
+   "min_wall_mm": 4.345021154035915,
+   "ok": true,
    "params": {
-    "thickness": 10.367107960142976,
-    "plate_width": 77.66843673507299,
+    "fillet_radius": 5.9023692690561855,
+    "plate_width": 55.7087522164272,
+    "rib_count": 1.0,
+    "rib_thickness": 8.202815709403403,
+    "thickness": 4.345021154035916
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 3.2920861257111356,
+   "ok": true,
+   "params": {
+    "fillet_radius": 2.383423517491177,
+    "plate_width": 46.96153351139431,
     "rib_count": 2.0,
-    "rib_thickness": 6.822154857514216,
-    "fillet_radius": 3.695827101861512
+    "rib_thickness": 3.2920861257111405,
+    "thickness": 11.482904531565856
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.822154857514216
+   "reasons": []
   },
   {
+   "min_wall_mm": 5.356923638482523,
+   "ok": true,
    "params": {
-    "thickness": 7.0727003866225,
-    "plate_width": 36.54718410459062,
+    "fillet_radius": 3.2422046151120485,
+    "plate_width": 72.2263470576901,
     "rib_count": 2.0,
-    "rib_thickness": 6.690141268988063,
-    "fillet_radius": 3.524969568467142
+    "rib_thickness": 7.385969917849325,
+    "thickness": 5.35692363848253
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.238615283488008
+   "reasons": []
   },
   {
+   "min_wall_mm": 3.0718009994512223,
+   "ok": true,
    "params": {
-    "thickness": 11.789217328808984,
-    "plate_width": 38.148561884739905,
+    "fillet_radius": 5.228080240322269,
+    "plate_width": 65.60327630426578,
+    "rib_count": 2.0,
+    "rib_thickness": 4.375576688923829,
+    "thickness": 3.0718009994512276
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 2.482651863479522,
+   "ok": true,
+   "params": {
+    "fillet_radius": 0.5587302225381677,
+    "plate_width": 61.67370046504929,
     "rib_count": 3.0,
-    "rib_thickness": 2.076846539648235,
-    "fillet_radius": 2.832979012643874
+    "rib_thickness": 2.482651863479523,
+    "thickness": 9.044385396351531
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 2.076846539648232
+   "reasons": []
   },
   {
+   "min_wall_mm": 3.2137989904753526,
+   "ok": true,
    "params": {
-    "thickness": 8.953935020366137,
-    "plate_width": 31.81248946799455,
+    "fillet_radius": 4.015197675929061,
+    "plate_width": 60.41548113045631,
     "rib_count": 2.0,
-    "rib_thickness": 5.217111067864595,
-    "fillet_radius": 5.6508770072792185
+    "rib_thickness": 3.213798990475352,
+    "thickness": 11.84516425008866
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.654190338733986
+   "reasons": []
   },
   {
+   "min_wall_mm": 7.20720475619293,
+   "ok": true,
    "params": {
-    "thickness": 11.057974046164158,
-    "plate_width": 63.48381445494693,
+    "fillet_radius": 0.8494477445017503,
+    "plate_width": 53.43329173234903,
+    "rib_count": 3.0,
+    "rib_thickness": 7.207204756192932,
+    "thickness": 8.090958997339678
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 5.745235618587979,
+   "ok": true,
+   "params": {
+    "fillet_radius": 0.8560698931683453,
+    "plate_width": 54.58588595910837,
+    "rib_count": 2.0,
+    "rib_thickness": 9.397633476949384,
+    "thickness": 5.745235618587985
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 5.48822122183853,
+   "ok": true,
+   "params": {
+    "fillet_radius": 4.635371448082183,
+    "plate_width": 32.649727266546286,
     "rib_count": 1.0,
-    "rib_thickness": 9.401309197546919,
-    "fillet_radius": 5.154889632213868
+    "rib_thickness": 9.59069506674911,
+    "thickness": 11.92211860893167
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 9.401309197546917
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 6.450745734720504,
-    "plate_width": 53.218232122047844,
-    "rib_count": 2.0,
-    "rib_thickness": 7.0866933911659595,
-    "fillet_radius": 5.187403594313651
-   },
+   "min_wall_mm": 3.912658734705199,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 6.450745734720495
-  },
-  {
    "params": {
-    "thickness": 9.917717077053126,
-    "plate_width": 49.422941079790995,
+    "fillet_radius": 0.8357017453615825,
+    "plate_width": 59.246887851316366,
     "rib_count": 1.0,
-    "rib_thickness": 5.869792959362075,
-    "fillet_radius": 1.2958238630262713
+    "rib_thickness": 4.276991028166438,
+    "thickness": 3.912658734705201
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 5.869792959362072
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 4.334342793848157,
-    "plate_width": 79.75023238810672,
-    "rib_count": 2.0,
-    "rib_thickness": 4.942127576940299,
-    "fillet_radius": 1.1991528700491352
-   },
+   "min_wall_mm": 2.7279037877518335,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.334342793848147
-  },
-  {
    "params": {
-    "thickness": 10.075413261237026,
-    "plate_width": 77.48147465203951,
-    "rib_count": 2.0,
-    "rib_thickness": 4.063364800158408,
-    "fillet_radius": 3.325835854411297
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.063364800158406
-  },
-  {
-   "params": {
-    "thickness": 9.655678069493057,
-    "plate_width": 64.56602702799256,
-    "rib_count": 2.0,
-    "rib_thickness": 4.687227295458179,
-    "fillet_radius": 5.5268383448710106
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.687227295458178
-  },
-  {
-   "params": {
-    "thickness": 4.939178492420804,
-    "plate_width": 71.48104954189678,
-    "rib_count": 2.0,
-    "rib_thickness": 7.7294395223332995,
-    "fillet_radius": 1.0025748003604005
-   },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.939178492420804
-  },
-  {
-   "params": {
-    "thickness": 4.165231137389366,
-    "plate_width": 78.32573985666161,
+    "fillet_radius": 0.5211409920675367,
+    "plate_width": 63.42280864279023,
     "rib_count": 1.0,
-    "rib_thickness": 7.841323734887602,
-    "fillet_radius": 1.0679575643891885
+    "rib_thickness": 2.727903787751832,
+    "thickness": 9.331674029114861
    },
-   "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.165231137389365
+   "reasons": []
   },
   {
-   "params": {
-    "thickness": 4.401415417478111,
-    "plate_width": 68.73518889850698,
-    "rib_count": 1.0,
-    "rib_thickness": 5.193039217571039,
-    "fillet_radius": 4.479280732802245
-   },
+   "min_wall_mm": 5.154451434485667,
    "ok": true,
-   "reasons": [],
-   "min_wall_mm": 4.401415417478101
+   "params": {
+    "fillet_radius": 3.3911819407953065,
+    "plate_width": 33.23962036450835,
+    "rib_count": 3.0,
+    "rib_thickness": 5.903207499096045,
+    "thickness": 11.616849176288358
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 2.518975882512804,
+   "ok": true,
+   "params": {
+    "fillet_radius": 0.5512548393478212,
+    "plate_width": 62.21160135101,
+    "rib_count": 1.0,
+    "rib_thickness": 2.518975882512808,
+    "thickness": 3.2564176573646946
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 6.540326173000598,
+   "ok": true,
+   "params": {
+    "fillet_radius": 2.5040793829283396,
+    "plate_width": 37.44198246838603,
+    "rib_count": 2.0,
+    "rib_thickness": 9.835866862162373,
+    "thickness": 11.748933397677016
+   },
+   "reasons": []
+  },
+  {
+   "min_wall_mm": 7.393375165554006,
+   "ok": true,
+   "params": {
+    "fillet_radius": 1.7562975741345994,
+    "plate_width": 57.63837952674995,
+    "rib_count": 3.0,
+    "rib_thickness": 7.393375165554008,
+    "thickness": 9.969691177746427
+   },
+   "reasons": []
   }
- ]
+ ],
+ "family": "bracket",
+ "n": 200,
+ "pass_rate": 1.0,
+ "passed": 200,
+ "reasons": {},
+ "seconds": 12.2,
+ "seed": 1
 }
