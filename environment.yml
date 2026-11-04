@@ -16,6 +16,8 @@ dependencies:
   - scipy
   - pydantic
   # optimization
+  - imageio
+  - imageio-ffmpeg  # MP4 export of scenes; ffmpeg runs as a separate program
   - optuna >=5,<7  # constraints_func removed in 7 (docs/environment.md)
   - pymoo
   - ax-platform
