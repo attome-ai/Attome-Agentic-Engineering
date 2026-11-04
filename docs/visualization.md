@@ -12,7 +12,7 @@ comes from a stored engine run. Screenshots: `docs/screenshots/report_p2_demo_*.
 | G4 Pareto explorer | Every evaluation, the fine-mesh Pareto designs, recommended ring with its trust grade, baseline square, a bar per Pareto design showing how far it moved from the search mesh to the fine mesh; click loads the design in 3D and in the comparison | Grades for every Pareto design (needs a trust run each), drag-to-steer, 3-objective view |
 | G5 Baseline vs optimized | Toggle between selected and baseline, and a side-by-side view (one camera, one colour scale over both, probe on either half, `report.html#split`); comparison table with changes and pass/fail | Translucent overlay, test photos and curves |
 | G6 Agent timeline | Steps with outcome and detail from the study log | Live streaming, time travel, replay |
-| I1 Report | Self-contained interactive HTML with spec card, trust panel, assumptions | Arabic, run history browser (PDF export and the hash-chained audit log are built: `--pdf`, `report.html#print`, `verify_log`) |
+| I1 Report | Self-contained interactive HTML with spec card, trust panel, assumptions | Arabic for the longer explanatory notes (headings, controls, tables and labels are translated: the عربي button or `report.html#ar`, right-to-left with numbers kept left-to-right; translations to be reviewed by a native speaker); the run history browser is in the workbench (PDF export and the hash-chained audit log are built: `--pdf`, `report.html#print`, `verify_log`) |
 
 ## Hands-on workbench (`python -m structura.app`)
 
