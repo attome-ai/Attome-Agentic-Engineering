@@ -1,0 +1,15 @@
+{
+  "device": "cpu",
+  "calls": 40,
+  "runs": [
+    {
+      "seed": 0,
+      "wall_s": 799.4,
+      "evaluation_s": 111.1,
+      "model_s_per_trial": 19.29,
+      "hv_at_calls": 653.5008922621838
+    }
+  ],
+  "mean_model_s_per_trial": 19.29,
+  "mean_hv": 653.5008922621838
+}

@@ -1,0 +1,29 @@
+{
+  "device": "cuda",
+  "calls": 40,
+  "runs": [
+    {
+      "seed": 0,
+      "wall_s": 1054.4,
+      "evaluation_s": 139.0,
+      "model_s_per_trial": 25.49,
+      "hv_at_calls": 623.9707613074223
+    },
+    {
+      "seed": 1,
+      "wall_s": 1297.1,
+      "evaluation_s": 118.7,
+      "model_s_per_trial": 31.68,
+      "hv_at_calls": 723.7761623162362
+    },
+    {
+      "seed": 2,
+      "wall_s": 1557.4,
+      "evaluation_s": 114.4,
+      "model_s_per_trial": 38.22,
+      "hv_at_calls": 636.1069345316862
+    }
+  ],
+  "mean_model_s_per_trial": 31.796666666666667,
+  "mean_hv": 661.2846193851149
+}

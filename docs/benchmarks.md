@@ -403,3 +403,18 @@ instead of 2.9); the spec's 1.5 load factor covers it. Video: `runs/videos/brack
 An earlier version modelled the crate as a massless force: deflections were right but the motion ran at the bracket's
 own 770 Hz instead of 22 Hz. Fixed by the carried mass. The shelf board and crate are drawn rigid and follow a line fit
 to the solved displacement of the arm's top face.
+
+## BoTorch on the GPU (RTX 5090) against the CPU (`benchmarks/botorch_device.py`)
+
+20 kg bracket, 40 calls, 6 mm mesh, Ax qNEHVI. Model seconds per trial = wall clock minus evaluation time (4 in
+parallel), per trial; the machine was shared with other jobs during both runs.
+
+| Device | Seeds | Model seconds per trial | Hypervolume at 40 calls |
+|---|---|---|---|
+| CUDA (RTX 5090) | 3 | 31.8 (25.5 / 31.7 / 38.2) | 661 (624 / 724 / 636) |
+| CPU (Ryzen 9 9950X3D) | 1 | 19.3 | 654 |
+
+The GPU does not speed up model fitting at this size (a few dozen points, five parameters): transfer and kernel launch
+overhead outweigh the work. The CPU stays the default (`STRUCTURA_TORCH_DEVICE` unset) and the optimizer-choice rule
+(D5) is unchanged. Over three seeds BoTorch reaches a hypervolume of 661 at 40 calls against about 565-573 for random
+search and NSGA-II: still better per solver call, by less than the single-seed 733 suggested.
