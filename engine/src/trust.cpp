@@ -209,7 +209,8 @@ nlohmann::json build_trust(const DesignSpec& spec, const Values& free, const Tru
 
   // Sharp-corner probe (D10): three uniform meshes cannot see a singularity, because none of them resolves it. Refine
   // locally twice, the second time to half the element size. A real peak settles; a sharp re-entrant corner keeps growing.
-  bool singular = false;
+  bool singular = false, probe_incomplete = false;
+  std::string probe_error;
   bool stress_required = false;
   std::string stress_case;
   for (auto& c : fine["checks"]) {
@@ -219,7 +220,7 @@ nlohmann::json build_trust(const DesignSpec& spec, const Values& free, const Tru
       stress_case = c.value("load_case", std::string());
     }
   }
-  if (o.peak_probe && stress_required && !spec.load_cases.empty()) {
+  if (o.peak_probe && stress_required && !spec.load_cases.empty()) try {
     const SpecLoadCase* slc = &spec.load_cases.front();
     for (auto& x : spec.load_cases)
       if (x.lc.name == stress_case) slc = &x;
@@ -259,12 +260,19 @@ nlohmann::json build_trust(const DesignSpec& spec, const Values& free, const Tru
                    std::to_string(a2.result.peak_at[1]).substr(0, 5) + ", " + std::to_string(a2.result.peak_at[2]).substr(0, 5) +
                    ") mm has no finite linear-elastic value; a real part yields locally there, and a static safety factor does not cover fatigue or brittle cracking from that corner.");
     t["assumptions"] = as;
+  } catch (const std::exception& e) {  // a check that could not finish is reported as not run, and it blocks grade A
+    probe_incomplete = true;
+    probe_error = e.what();
+    t["peak_probe"] = {{"completed", false}, {"error", probe_error}, {"singular", nullptr},
+                       {"meaning", "local refinement of the peak stress did not finish, so it is unknown whether the peak settles"}};
+    checks.push_back({{"check", "peak stress settles under local refinement"}, {"passed", nullptr}, {"detail", "did not finish: " + probe_error}});
+    t["independent_checks"] = checks;
   }
 
   // grade with its written rule
   bool val_ok = vs.value("ran", false) && vs.value("all_passed", false);
   std::string grade = "C";
-  if (all_pass && all_proven && independent_ok && val_ok && worst_gci_gov < 0.05 && !singular) grade = "A";
+  if (all_pass && all_proven && independent_ok && val_ok && worst_gci_gov < 0.05 && !singular && !probe_incomplete) grade = "A";
   else if (all_pass && independent_ok && val_ok && worst_gci_gov <= 0.10) grade = "B";
   t["grade"] = grade;
   t["grade_rule"] = "A: every requirement passes and is proven (margin larger than its numerical error), every independent check "
@@ -281,6 +289,7 @@ nlohmann::json build_trust(const DesignSpec& spec, const Values& free, const Tru
   if (!independent_ok) why.push_back("an independent check fails");
   if (!val_ok) why.push_back("the validation suite has not passed in full");
   if (worst_gci_gov >= 0.05) why.push_back("numerical error on a governing value is " + pct(worst_gci_gov));
+  if (probe_incomplete) why.push_back("local refinement of the peak stress did not finish (" + probe_error + "), so grade A is not available");
   if (singular) why.push_back("the peak stress is at a sharp corner and keeps growing under local refinement, so the safety factor is a value at the stated mesh size");
   t["reasons"] = why;
 

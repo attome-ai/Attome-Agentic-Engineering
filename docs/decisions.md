@@ -129,7 +129,7 @@ that its stress is a value at the stated mesh size. (2) Bracket family version 3
 6 mm tip with a 3 mm fillet, at both the arm end and the wall end. On the same design (before the wall-end fillet) this gives 266 g, a settled peak of 10 MPa (safety factor 2.5) and 0.39 mm
 deflection, against 251 g, 21 MPa and 0.71 mm with the short rib and small fillet (`docs/benchmarks.md`).
 
-**Still open.** The sharp edges along each rib's flank remain, and they cap most bracket designs at grade B (peak growth of about 15-20% on halving).
+**Still open.** The sharp edges along each rib's flank remain, and they cap most bracket designs at grade B (peak growth of about 15-20% on halving). Tried on the 169.6 g design: fillets on those edges under the arm. 0.8 mm: the peak settles at about 13.3 MPa (safety factor 1.88, against 2.10 reported without them), but the gate pass rate falls to 87%. 0.5 mm: gate pass rate 97%, but one evaluation goes from 6.8 s and 107,000 unknowns to 94 s and 798,000, and the local-refinement solve hit its 600 s limit, because the mesher sizes elements to the small radius. Fillets on the wall-side edges do not build. **Owner decision needed:** recommended is to search on the family as it is, then verify the front on a family with the 0.5 mm fillets and a coarser curvature setting, delivering that geometry.
 
 **Consequence.** Every bracket result from family version 2 is superseded and re-run. The grade rule changes; the owner
 should review this decision, because it changes headline numbers.
