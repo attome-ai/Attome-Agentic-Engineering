@@ -64,14 +64,21 @@ def run_one(b: dict, budget: int) -> dict:
             return rec
         vf = stage("verify", lambda: verify_front(study, coarse_mesh=search, factor=factor))
         rec["front"] = f"{vf['still_feasible']} of {vf['front_size']} still feasible on the finer mesh"
-        light = min((r for r in vf["front"] if r.get("feasible_fine")), key=lambda r: r["fine"][0], default=None)
-        if light is None:
+        ranked = sorted((r for r in vf["front"] if r.get("feasible_fine")), key=lambda r: r["fine"][0])
+        if not ranked:
             rec["outcome"] = "no design stays feasible on the finer mesh"
             rec["success"] = False
             return rec
-        rec["design"] = {"params": light["params"], "objectives_fine": light["fine"]}
-        t = stage("trust", lambda: engine.call("trust", spec=str(spec), set=[f"{k}={float(v)}" for k, v in light["params"].items()],
-                                              out=str(out / "trust"), **{"fine-size": trust_size}, timeout=3600))
+        # deliver the lightest *proven* design: verify in order of mass, take the first graded A or B (at most three tries)
+        rec["verification_attempts"] = []
+        t = None
+        for i, light in enumerate(ranked[:3]):
+            t = stage("trust", lambda: engine.call("trust", spec=str(spec), set=[f"{k}={float(v)}" for k, v in light["params"].items()],
+                                                  out=str(out / f"trust{i}"), **{"fine-size": trust_size}, timeout=3600))
+            rec["verification_attempts"].append({"objectives_fine": light["fine"], "grade": t.get("grade"), "reasons": t.get("reasons")})
+            rec["design"] = {"params": light["params"], "objectives_fine": light["fine"]}
+            if t.get("grade") in ("A", "B"):
+                break
         rec["grade"] = t.get("grade")
         rec["reasons"] = t.get("reasons")
         rec["outcome"] = f"verified design, grade {t.get('grade')}"

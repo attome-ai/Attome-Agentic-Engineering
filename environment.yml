@@ -16,8 +16,6 @@ dependencies:
   - scipy
   - pydantic
   # optimization
-  - imageio
-  - imageio-ffmpeg  # MP4 export of scenes; ffmpeg runs as a separate program
   - optuna >=5,<7  # constraints_func removed in 7 (docs/environment.md)
   - pymoo
   - ax-platform
@@ -25,9 +23,14 @@ dependencies:
   - salib
   # results and visualization export
   - pyvista
+  - imageio
+  - imageio-ffmpeg  # MP4 export of scenes; ffmpeg runs as a separate program
+  # agent server (MCP)
+  - mcp =2.3
   # tests
   - pytest
-  # C++ engine build (MSVC from Visual Studio 2022 on Windows)
+  # C++ engine build (MSVC and CMake from Visual Studio 2022 on Windows, set up by scripts/build_engine.cmd)
+  - occt =7.8.1  # OpenCASCADE: LGPL-2.1 with exception, linked dynamically
   - ninja
   - nlohmann_json
   - doctest
