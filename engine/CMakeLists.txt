@@ -13,7 +13,7 @@ find_package(nlohmann_json REQUIRED)
 find_package(doctest REQUIRED)
 
 set(OCCT_TOOLKITS TKernel TKMath TKG2d TKG3d TKGeomBase TKBRep TKGeomAlgo TKTopAlgo TKPrim TKBO TKBool
-    TKFillet TKOffset TKShHealing TKMesh TKXSBase TKDESTEP TKDE TKXCAF TKLCAF TKCAF TKCDF TKV3d TKService)
+    TKFillet TKOffset TKShHealing TKMesh TKXSBase TKDESTEP TKDESTL TKDE TKXCAF TKLCAF TKCAF TKCDF TKV3d TKService)
 
 add_library(structura STATIC
   src/expr.cpp
@@ -29,6 +29,7 @@ add_library(structura STATIC
   src/mesh.cpp
   src/step_io.cpp
   src/fea.cpp
+  src/export.cpp
 )
 set_target_properties(structura PROPERTIES OUTPUT_NAME structura_core)
 target_include_directories(structura PUBLIC include ${OpenCASCADE_INCLUDE_DIR})
@@ -48,6 +49,7 @@ add_executable(engine_tests
   tests/test_gate.cpp
   tests/test_mesh.cpp
   tests/test_fea.cpp
+  tests/test_export.cpp
 )
 target_link_libraries(engine_tests PRIVATE structura doctest::doctest)
 

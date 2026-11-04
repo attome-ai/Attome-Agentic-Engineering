@@ -20,6 +20,7 @@
 
 #include "structura/compile.hpp"
 #include "structura/design.hpp"
+#include "structura/export.hpp"
 #include "structura/fea.hpp"
 #include "structura/gate.hpp"
 #include "structura/mesh.hpp"
@@ -139,7 +140,7 @@ int run(const Args& a) {
     Design d(g, v);
     CompiledPart part = d.build();
     d.save((fs::path(out) / "design").string());
-    write_step(part.shape, (fs::path(out) / "design" / "part.step").string());
+    export_bundle(part.shape, (fs::path(out) / "design").string());
     GateLimits lim = job.contains("gate") ? GateLimits::from_json(job["gate"]) : GateLimits{};
     if (!lim.design_space) lim.design_space = part.design_space();
     GateResult gr = gate(part.shape, lim);
@@ -166,6 +167,7 @@ int run(const Args& a) {
       LoadCase lc = LoadCase::from_json(jl);
       Result r = solve_static(m, mat, lc, (fs::path(out) / ("solve_" + lc.name)).string(), so);
       r.save((fs::path(out) / ("result_" + lc.name)).string());
+      write_vtu(m, r, (fs::path(out) / ("result_" + lc.name) / "result.vtu").string());
       cases[lc.name] = r.summary();
     }
     res["material"] = {{"id", mat.id}, {"E", mat.E}, {"nu", mat.nu}, {"density", mat.density}, {"yield", mat.yield}, {"source", mat.source}, {"verify", mat.verify}};
