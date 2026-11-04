@@ -37,5 +37,9 @@
   "G1 (first release)": "2026-11-04",
   "G4 (first release)": "2026-11-04",
   "I1 (first release)": "2026-11-04",
-  "C2 (steady thermal in specs, heat balance)": "2026-11-04"
+  "C2 (steady thermal in specs, heat balance)": "2026-11-04",
+  "C2 (fin-channel convection correlation)": "2026-11-04",
+  "H1 (FDM/CNC rules, cost model, process advice, report panel)": "2026-11-04",
+  "H3 (test protocol and predictions; physical test pending)": "2026-11-04",
+  "P5 (proposal draft from stored runs)": "2026-11-04"
 }

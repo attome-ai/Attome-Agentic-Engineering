@@ -186,3 +186,46 @@ fine-mesh bundles of the 20 kg demo (`benchmarks/h3_predictions.json`):
 | Recommended (trial 183) | 0.755 mm | 389.9 N/mm | 111.06 vs 111.06 N mm |
 
 Ratio 6.5×. Protocol and pass criteria: `docs/test-protocol-h3.md`.
+
+## Fan-cooled heat sink with the fin-channel correlation (C2), and budget convergence (D8)
+
+`benchmarks/heatsink_demo.py --spec docs/examples/heatsink_10w_fan.json --name heatsink_fan_demo[_300|_600] --evals N`.
+Convection from the plate-fin channel correlation (Teertstra et al. 1999) at an assumed 1.5 m/s approach velocity,
+recomputed for every design from its fin spacing (typically 20-26 W/m^2K for this family). Same requirement (peak
+temperature <= 75 C), same seed.
+
+| Budget | Lightest design meeting 75 C (fine mesh) | Peak temperature | Front designs feasible on the fine mesh | Wall clock |
+|---|---|---|---|---|
+| 150 | 55.8 g (9 fins) | 52.7 C | 17 of 17 | 400 s |
+| 300 | **34.4 g** (5 fins, 1.3 mm, 13.8 mm tall, 2.0 mm base) | 71.3 C | 27 of 27 | 497 s |
+| 600 | 34.6 g (5 fins) | 69.2 C | 62 of 62 | |
+
+Baseline (4 mm base, 8 fins 2 x 25 mm): 103.7 g, 48.4 C. Converged result: **34.4 g, -67%**, trust grade A (heat balance
+and mesh convergence pass). The 150-evaluation result was verified and still 62% heavier than the optimum, because
+the search had sampled only one design between 35 and 55 g. That led to decision D8 (double the budget before calling
+a result converged).
+
+With the correlation the old 44.3 g fixed-h design reaches 78.9 C: the correlation gives 22.5 W/m^2K for its wide
+4-fin channels, below the 25 W/m^2K that had been assumed.
+
+## Manufacturing check and cost (H1, `structura manufacture`)
+
+Recommended 20 kg bracket (trial 183), PETG, inputs from `data/processes.json` (all stated assumptions):
+
+| Process | Fits | Closest rule | Time | Cost |
+|---|---|---|---|---|
+| FDM, printed upright (+z) | yes | build volume 48% used | 14.7 h | 30.4 USD (material 8.3, machine 22.1) |
+| CNC 3-axis, two setups | no | 5 sharp internal corners along the tool; 1.4% of the surface undercut | 2.7 h | 190 USD |
+
+Support printed upright: about 520 cm^3, 2.8 times the part (the arm overhangs). The least-support direction is +x;
+the strength analysis assumed +z layers, so a re-analysis is needed before changing the orientation.
+Unit tests on shapes with known answers: support volume of a 40 x 10 mm shelf at 45 mm = 18,000 mm^3 exactly;
+undercut area from the top = 950 mm^2 within 8%; the four sharp corners of a square pocket.
+
+## Budget convergence of the headline results (D8)
+
+| Result | Budget | Best objective | Double budget | Change | Converged |
+|---|---|---|---|---|---|
+| 20 kg bracket, lightest proven design | 200 | 234.1 g (grade A) | 400: 233.6 g (grade B: margin 1.3% below its numerical error) | -0.2% | yes |
+| Heat sink, fan correlation | 300 | 34.4 g (grade A) | 600: 34.6 g | +0.5% | yes |
+| Heat sink, fixed h = 25 W/m^2K | 150 | 44.3 g | 300: 42.0 g | -5.2% | no (superseded by the correlation spec) |

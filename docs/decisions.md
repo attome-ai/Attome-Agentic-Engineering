@@ -91,3 +91,14 @@ and 0 of 3 front designs stayed feasible; 3 mm and 4.5 mm agree within about 1%.
 the 20 kg brief: 3 of 4 front designs stay feasible on the fine mesh, the ranking does not change, and the recommended
 design (234 g, safety factor 2.06) gets trust grade A. The cache key now includes every family file and the materials
 table, so geometry changes never serve stale results.
+
+## D8. A reported optimum must survive doubling the search budget (2026-11-04)
+
+**Evidence.** Fan-cooled heat sink (`docs/examples/heatsink_10w_fan.json`), same seed and pipeline: the lightest design
+that meets 75 C was 55.8 g after 150 evaluations and 34.4 g after 300 (-38%). At 150 the search had sampled only one
+design between 35 and 55 g; every number in that result was verified (grade A) and still not the optimum. Verification
+proves a design meets the brief; it does not prove the search found the best one.
+
+**Decision.** A headline result (proposal, demo, report) states its budget and is re-run at double the budget; it is
+reported as converged only if the best objective changes by less than 2% between the two. Otherwise the larger run is
+reported and the check repeats. Runs: `benchmarks/heatsink_fan_demo*.json`.

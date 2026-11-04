@@ -47,6 +47,15 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
     cache = Path(study_dir) / "report_bundles"
     front = pareto.front(study)
     rec = decide.recommend(study)
+    trust = None
+    if trust_dir and (Path(trust_dir) / "trust.json").exists():
+        trust = json.loads((Path(trust_dir) / "trust.json").read_text())
+    if trust and trust.get("params"):  # the recommended design is the one the trust record verified
+        def same(p):
+            return all(abs(float(p.params.get(k, 1e300)) - float(v)) <= 1e-4 * max(1.0, abs(float(v))) for k, v in trust["params"].items())
+        match = next((p for p in front if same(p)), None)
+        if match:
+            rec = {"trial": match.number, "params": match.params, "values": list(match.values)}
     chosen = sorted(front, key=lambda p: p.values[0])
     if len(chosen) > max_designs:  # keep the ends and the recommended one, then spread the rest
         keep = {chosen[0].number, chosen[-1].number, rec["trial"] if rec else -1}
@@ -64,9 +73,6 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
     for t in sorted(study.get_trials(deepcopy=False), key=lambda t: t.number):
         m = t.user_attrs.get("metrics") or {}
         hist.append({"n": t.number, "status": t.user_attrs.get("status", t.state.name), "feasible": bool(t.user_attrs.get("feasible")), **m})
-    trust = None
-    if trust_dir and (Path(trust_dir) / "trust.json").exists():
-        trust = json.loads((Path(trust_dir) / "trust.json").read_text())
     timeline = []
     if study_id:
         from structura.agent import studies as S

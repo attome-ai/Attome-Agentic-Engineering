@@ -50,6 +50,11 @@ TEST_CASE("H1-T3: CNC finds the four sharp internal corners of a square pocket; 
   double m = P["cnc"]["stock_margin_mm"]["value"];
   CHECK(r["stock_volume_mm3"].get<double>() == doctest::Approx((50 + 2 * m) * (50 + 2 * m) * (20 + 2 * m)));
   CHECK(r["removed_volume_mm3"].get<double>() == doctest::Approx(r["stock_volume_mm3"].get<double>() - (50 * 50 * 20 - 20 * 20 * 10)));
+  // a comb (fins on a base, fused, so the fin ends and the base end form one non-convex face) has no internal corner
+  // along z: the fin-to-base junctions run along x
+  TopoDS_Shape comb = box(0, 0, 0, 60, 60, 3);
+  for (int i = 0; i < 4; ++i) comb = BRepAlgoAPI_Fuse(comb, box(0, i * 19.0, 3, 60, i * 19.0 + 3, 20)).Shape();
+  CHECK(cnc_report(comb, "AL6061T6", P)["sharp_internal_corners"].get<int>() == 0);
   // a plain box has no internal corners
   CHECK(cnc_report(box(0, 0, 0, 100, 50, 20), "AL6061T6", P)["sharp_internal_corners"].get<int>() == 0);
 }

@@ -9,6 +9,7 @@
 
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepAdaptor_Surface.hxx>
+#include <BRepClass3d_SolidClassifier.hxx>
 #include <BRepClass_FaceClassifier.hxx>
 #include <BRepGProp_Face.hxx>
 #include <BRepIntCurveSurface_Inter.hxx>
@@ -72,6 +73,7 @@ struct CornerScan {
   std::optional<double> min_internal_radius;    // smallest concave fillet radius parallel to an approach direction
   int small_internal_radii = 0;                 // such fillets smaller than the tool radius
   int holes = 0;                                // concave cylinders spanning at least half a turn (drilled)
+  nlohmann::json sharp_points = nlohmann::json::array();  // midpoint and length of each sharp internal edge
 };
 
 CornerScan scan_corners(const TopoDS_Shape& shape, const std::vector<std::array<double, 3>>& approach, double tool_r) {
@@ -123,11 +125,16 @@ CornerScan scan_corners(const TopoDS_Shape& shape, const std::vector<std::array<
     gp_Vec n1 = normal_at(f1, p), n2 = normal_at(f2, p);
     if (n1.Magnitude() < 0.5 || n2.Magnitude() < 0.5) continue;
     if (std::abs(n1.Dot(n2)) > 0.995) continue;  // tangent (smooth) junction
-    gp_Vec d2(p, centre(f2));
-    d2 -= t * d2.Dot(t);
-    if (d2.Magnitude() < 1e-9) continue;
-    d2.Normalize();
-    if (n1.Dot(d2) > 0.1) ++out.sharp_internal_along_tool;
+    // concave (internal) iff a point just off the edge along n1 - n2 lies inside the material: at an internal corner the
+    // material fills three quadrants around the edge, at an external corner only one
+    gp_Vec off = n1 - n2;
+    off.Normalize();
+    gp_Pnt q(p.X() + 0.05 * off.X(), p.Y() + 0.05 * off.Y(), p.Z() + 0.05 * off.Z());
+    BRepClass3d_SolidClassifier cls(shape, q, 1e-6);
+    if (cls.State() == TopAbs_IN) {
+      ++out.sharp_internal_along_tool;
+      out.sharp_points.push_back({{"at", {p.X(), p.Y(), p.Z()}}, {"length_mm", edge_length(e)}});
+    }
   }
   return out;
 }
@@ -331,6 +338,7 @@ nlohmann::json cnc_report(const TopoDS_Shape& shape, const std::string& material
           {"rules", rules},
           {"undercut_area_mm2", under},
           {"sharp_internal_corners", cs.sharp_internal_along_tool},
+          {"sharp_internal_corner_edges", cs.sharp_points},
           {"internal_radii_below_tool", cs.small_internal_radii},
           {"drilled_holes", cs.holes},
           {"stock_volume_mm3", c["stock_volume_mm3"]},

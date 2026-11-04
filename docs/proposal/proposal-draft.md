@@ -158,19 +158,30 @@ from a three-level grid convergence study (Roache's GCI), and the margin on R1 (
 (1.5%), so the requirement is proven rather than merely met. 3 of the 4 Pareto designs stayed feasible on the finer
 mesh, and their ranking did not change.
 
-### 4.4 Second physics on the same pipeline: a 10 W heat sink
+Converged (decision D8): the same run with 400 evaluations found 233.6 g (−0.2%); that design meets the brief but
+only at grade B (its safety-factor margin, 1.3%, is smaller than its numerical error), so the proven 234.1 g design
+stays the recommendation (`benchmarks/p2_demo_400.json`).
 
-Source: `benchmarks/heatsink_demo.json`, `runs/heatsink_demo/`; command `python benchmarks/heatsink_demo.py`. About
-4 minutes, 150 evaluations.
+### 4.4 Second physics on the same pipeline: a fan-cooled 10 W heat sink
+
+Source: `benchmarks/heatsink_fan_demo_300.json` (converged, checked by `benchmarks/heatsink_fan_demo_600.json`),
+`runs/heatsink_fan_demo_300/`; command `python benchmarks/heatsink_demo.py --spec docs/examples/heatsink_10w_fan.json
+--name heatsink_fan_demo_300 --evals 300`. About 8 minutes.
 
 | | Mass | Peak temperature | Requirement (≤ 75 °C) |
 |---|---|---|---|
-| Hand baseline (4 mm base, 8 fins 2 × 25 mm) | 103.7 g | 49.2 °C | pass, large margin |
-| Lightest optimized design (2.5 mm base, 4 fins 2.5 × 12 mm) | **44.3 g (−57%)** | 74.6 °C | pass, **trust grade A** |
+| Hand baseline (4 mm base, 8 fins 2 × 25 mm) | 103.7 g | 48.4 °C | pass, large margin |
+| Optimized (2.0 mm base, 5 fins 1.3 × 13.8 mm) | **34.4 g (−67%)** | 71.3 °C | pass, **trust grade A** |
 
-13 of 13 Pareto designs stayed feasible on the finer mesh. Heat balance (heat convected out against 10 W in):
-error 2×10⁻⁸. Stated assumption: a fixed convection coefficient of 25 W/m²K (low end of forced convection); a
-fin-array correlation and later CFD replace it.
+Convection is not a guessed number: the coefficient comes from the plate-fin channel correlation of Teertstra et al.
+(1999), recomputed for every design from its fin spacing, at a stated fan velocity of 1.5 m/s (to be confirmed
+against a fan datasheet). 27 of 27 Pareto designs stayed feasible on the finer mesh; the heat balance closes to
+better than 10⁻⁷.
+
+**Convergence (D8).** 150 evaluations gave 55.8 g, 300 gave 34.4 g and 600 gave 34.6 g. The 150-evaluation design
+was verified and still 62% heavier than the optimum: verification proves a design meets the brief, not that the search
+found the best one, so every headline result is re-run at double the budget. An earlier run with a fixed coefficient
+of 25 W/m²K gave 44.3 g at 150 and 42.0 g at 300 evaluations (not converged, superseded by the correlation).
 
 ### 4.5 Infeasible briefs are reported, not faked
 
@@ -219,8 +230,10 @@ an expensive-evaluation case.
 
 ### 5.1 Software (working today)
 
-- The interactive study reports for the bracket (`runs/p2_demo/report.html`, 9.6 MB) and the heat sink
-  (`runs/heatsink_demo/report.html`, 8.9 MB) open offline in any browser. Screenshots: `docs/screenshots/`.
+- The interactive study reports for the bracket (`runs/p2_demo/report.html`, 9.6 MB) and the fan-cooled heat sink
+  (`runs/heatsink_fan_demo_300/report.html`, 11.7 MB) open offline in any browser. Each shows the stress or
+  temperature field, the clickable Pareto front, the trust record, the optimization history, the agent timeline and
+  how to make the part (FDM and CNC fit, time and cost). Screenshots: `docs/screenshots/`.
 - Claude drives the full flow through the MCP server registered in `.mcp.json`: list families, derive loads, rank
   questions, create the study, accept the spec, check feasibility, run the optimization, verify, build the report.
 
@@ -265,8 +278,8 @@ From `docs/agentic-engineering-roadmap.html`:
 - **Physical test predictions** (`benchmarks/h3_predictions.json`, `python benchmarks/gauge_point.py`): stiffness at
   the arm end 59.8 N/mm (baseline) against 389.9 N/mm (recommended), ratio 6.5×. Protocol: `docs/test-protocol-h3.md`.
 - **Before 10 January:** physical test, video, Hephaestus-CCX benchmark, measurements on an 8 GB laptop.
-- **11–24 January (P6):** improve an uploaded STEP part (keep its holes, make it lighter), print rules and cost model
-  for FDM/CNC, a fin-array convection correlation, a surrogate for faster screening.
+- **11–24 January (P6):** improve an uploaded STEP part (keep its holes, make it lighter), a surrogate for faster
+  screening. (Print rules, the FDM/CNC cost model and the fin-channel correlation are already built.)
 - **25 January – 3 February (P7):** demo hardening: precomputed cache, offline mode, rehearsals.
 
 ## Evidence index
@@ -279,7 +292,8 @@ From `docs/agentic-engineering-roadmap.html`:
 | Optimizer comparison | `benchmarks/optimizer_compare_at40.json` | `python benchmarks/optimizer_at_budget.py --calls 40` |
 | 20 kg bracket | `benchmarks/p2_demo.json` | `python benchmarks/p2_demo.py` |
 | 100 kg bracket (infeasible) | `benchmarks/bracket_100kg_demo.json`, `benchmarks/bracket_100kg_feasibility.json` | `python benchmarks/p2_demo.py --spec docs/examples/bracket_100kg.json --name bracket_100kg_demo` |
-| Heat sink | `benchmarks/heatsink_demo.json` | `python benchmarks/heatsink_demo.py` |
+| Heat sink (fan, correlation) | `benchmarks/heatsink_fan_demo_300.json`, `_600.json` | `python benchmarks/heatsink_demo.py --spec docs/examples/heatsink_10w_fan.json --name heatsink_fan_demo_300 --evals 300` |
+| Bracket at double budget | `benchmarks/p2_demo_400.json` | `python benchmarks/p2_demo.py --evals 400 --name p2_demo_400` |
 | Reports | `runs/*/report.html` | `python -m structura.report.build ...` |
 
 ## Before submission
