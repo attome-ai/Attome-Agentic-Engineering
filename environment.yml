@@ -16,7 +16,7 @@ dependencies:
   - scipy
   - pydantic
   # optimization
-  - optuna
+  - optuna >=5,<7  # constraints_func removed in 7 (docs/environment.md)
   - pymoo
   - ax-platform
   - botorch

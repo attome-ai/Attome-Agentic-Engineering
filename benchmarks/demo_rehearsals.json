@@ -1,0 +1,63 @@
+[
+  {
+    "time": "2026-11-04T07:11:28+00:00",
+    "machine": "DESKTOP-DR9R8SQ",
+    "processor": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+    "budget": 200,
+    "study_id": "demo-20261104-100350",
+    "total_seconds": 457.7,
+    "outcome": "ok",
+    "steps": [
+      {
+        "step": "create_study",
+        "seconds": 0.0,
+        "ok": true
+      },
+      {
+        "step": "accept_spec",
+        "seconds": 0.0,
+        "ok": true
+      },
+      {
+        "step": "check_feasibility",
+        "seconds": 3.9,
+        "ok": true
+      },
+      {
+        "step": "evaluate baseline",
+        "seconds": 2.3,
+        "ok": true
+      },
+      {
+        "step": "run_optimization",
+        "seconds": 0.0,
+        "ok": true
+      },
+      {
+        "step": "optimization (background)",
+        "seconds": 350.0,
+        "ok": true
+      },
+      {
+        "step": "get_results",
+        "seconds": 0.0,
+        "ok": true
+      },
+      {
+        "step": "verify",
+        "seconds": 21.9,
+        "ok": true
+      },
+      {
+        "step": "manufacturing_advice",
+        "seconds": 0.4,
+        "ok": true
+      },
+      {
+        "step": "build_report",
+        "seconds": 79.0,
+        "ok": true
+      }
+    ]
+  }
+]

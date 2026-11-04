@@ -52,3 +52,11 @@ machine, and the minimum-hardware run is a separate measurement.
   gmsh on PATH). A single task's cases: `engine_tests.exe -tc="C1-T2*"`.
 - First full build: about 2 minutes on the development machine; the engine test suite runs in about 46 s, most of it
   the meshing failure-ladder case.
+
+## Known deprecation: Optuna `constraints_func` (2026-11-04)
+
+Optuna 5.0 deprecates `constraints_func` on the samplers (`structura/optimize/study.py`, `decide.py`); it is removed in
+7.0. The replacement, `Trial.set_constraint(key, value)`, writes `constraints:<key>` system attributes, but the 5.0
+NSGA-II after-trial strategy still branches on `constraints_func is not None`, so it is not yet verified that the
+replacement alone drives feasibility-aware selection. Migrate only with an A/B run on the 20 kg bracket (same seed and
+budget) showing the same feasible front; until then the environment pins Optuna below 7.

@@ -229,3 +229,24 @@ undercut area from the top = 950 mm^2 within 8%; the four sharp corners of a squ
 | 20 kg bracket, lightest proven design | 200 | 234.1 g (grade A) | 400: 233.6 g (grade B: margin 1.3% below its numerical error) | -0.2% | yes |
 | Heat sink, fan correlation | 300 | 34.4 g (grade A) | 600: 34.6 g | +0.5% | yes |
 | Heat sink, fixed h = 25 W/m^2K | 150 | 44.3 g | 300: 42.0 g | -5.2% | no (superseded by the correlation spec) |
+
+## Live demo rehearsal (P7, `scripts/demo.py`)
+
+Preflight (`scripts/demo.py preflight`): engine, CalculiX and gmsh found, viewer vendored (no network needed), fallback
+report present, validation 7 of 7. Rehearsal 2026-11-04 on the development machine, 20 kg brief through the MCP tool
+functions, 200 evaluations (`benchmarks/demo_rehearsals.json`):
+
+| Step | Seconds |
+|---|---|
+| create study, accept spec | 0 |
+| feasibility check (two corners) | 3.9 |
+| baseline evaluation | 2.3 |
+| optimization, 200 evaluations in the background | 350 |
+| verify (three mesh levels, grade A) | 21.9 |
+| manufacturing advice | 0.4 |
+| report (fine-mesh bundles of the front) | 79 |
+| **total** | **458 (7.6 min)** |
+
+Recommended: 231.4 g, safety factor 2.22, grade A, FDM. NSGA-II runs in parallel, so a live run is not
+bit-identical to the stored P2 run (234.1 g); both meet the brief with grade A. On a 4-core laptop the optimization
+will take longer: rehearse there and lower --budget if needed (D8: report the budget used).
