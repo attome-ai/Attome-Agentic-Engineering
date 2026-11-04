@@ -1,0 +1,42 @@
+{
+  "id": "H2",
+  "size": "S",
+  "summary": "Export STEP, STL, the result field as VTU and the design's script and parameters.",
+  "reuse": [],
+  "prereq": [
+    "C1"
+  ],
+  "tasks": [
+    {
+      "id": "H2-T1",
+      "area": "CAD",
+      "size": "S",
+      "task": "Export a design bundle folder.",
+      "where": "new file structura/export.py, tests/test_export.py",
+      "read_first": [
+        "structura/designs.py",
+        "structura/results.py"
+      ],
+      "steps": [
+        "1. export(design, result, out_dir) writes part.step, part.stl (0.05 mm tolerance), result.vtu (meshio, with von Mises and displacement) and design.json.",
+        "2. Test that every file exists and the STEP re-imports as one valid solid."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_export.py -q",
+        "all passed"
+      ],
+      "done_when": "A design bundle opens in ParaView and a slicer.",
+      "do_not": [
+        "do not export a design whose gate or solve failed"
+      ],
+      "stop_and_ask_if": "the STEP re-import is not a single valid solid.",
+      "after": []
+    }
+  ],
+  "acceptance": [
+    "Bundle files open in ParaView and a slicer"
+  ],
+  "risks": [
+    "STL tolerance too coarse distorts thin ribs; tolerance is set below a tenth of the minimum wall."
+  ]
+}

@@ -1,0 +1,138 @@
+{
+  "id": "A2",
+  "size": "L",
+  "summary": "Versioned DesignSpec with units, vetted materials, several load cases evaluated at their worst combination, a feasibility check before optimizing, executable checkers and requirement traceability.",
+  "reuse": [],
+  "prereq": [
+    "C1"
+  ],
+  "tasks": [
+    {
+      "id": "A2-T1",
+      "area": "Data",
+      "size": "M",
+      "task": "Define DesignSpec, the materials table and the checkers.",
+      "where": "new files structura/spec.py, structura/materials.py, structura/checks.py, tests/test_spec.py",
+      "read_first": [
+        "docs/feature-plan.md",
+        "docs/research/competitive-landscape-2026-11.md",
+        "structura/results.py"
+      ],
+      "steps": [
+        "1. DesignSpec: template, fixed params, free params with bounds, loads (face, vector N), supports, material id, objectives (minimize mass, maximize min safety factor), limits (max_von_mises_MPa or min_safety_factor, max_disp_mm, max_mass_g), print direction.",
+        "2. materials.py: PETG, PLA, Al 6061-T6, S235 with E, nu, density, yield and the source URL for each value.",
+        "3. checks.py: each limit compiles to a function Result -> Check(name, value, limit, margin, passed).",
+        "4. Reject specs with unknown materials, missing units or bounds outside the template's bounds.",
+        "5. Example spec file docs/examples/bracket_100kg.json for 981 N."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_spec.py -q",
+        "all passed"
+      ],
+      "done_when": "A spec file loads, validates and evaluates its checks on a Result.",
+      "do_not": [
+        "do not let a spec override material values"
+      ],
+      "stop_and_ask_if": "a material value cannot be sourced.",
+      "after": []
+    },
+    {
+      "id": "A2-T2",
+      "area": "Data",
+      "size": "M",
+      "task": "Add named load cases and worst-case evaluation to the spec.",
+      "where": "structura/spec.py, structura/optimize/evaluate.py, structura/materials.py",
+      "read_first": [
+        "structura/spec.py",
+        "structura/checks.py"
+      ],
+      "steps": [
+        "1. Spec holds a list of named load cases (service, drop_equivalent), each with loads, supports and an optional magnitude range.",
+        "2. materials.py gets a print knock-down factor per material for the weak print direction, with its source URL.",
+        "3. evaluate() solves every case at the high end of its range with the knocked-down strength and returns the governing case per check.",
+        "4. Test: a bracket that passes the service case but fails the drop case is reported as failing, with drop_equivalent as governing."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_spec.py -q",
+        "all passed"
+      ],
+      "done_when": "A design passes only when every load case passes at its worst combination.",
+      "do_not": [
+        "do not average results across load cases"
+      ],
+      "stop_and_ask_if": "a knock-down factor cannot be sourced.",
+      "after": [
+        "A2-T1",
+        "D1-T1"
+      ]
+    },
+    {
+      "id": "A2-T3",
+      "area": "Verify",
+      "size": "M",
+      "task": "Add the feasibility check that runs before optimization.",
+      "where": "new file structura/feasibility.py, tests/test_feasibility.py",
+      "read_first": [
+        "structura/spec.py",
+        "structura/templates/bracket.py"
+      ],
+      "steps": [
+        "1. For each template write closed-form bounds: minimum mass at the required safety factor from beam bending of the governing section.",
+        "2. feasible(spec) returns ok, or the violated limit with the nearest feasible value and the formula used.",
+        "3. Compare the estimate with 30 solved designs and record the estimate's error in docs/benchmarks.md.",
+        "4. The study runner refuses to start when feasible() fails, and returns the message to the agent."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_feasibility.py -q",
+        "all passed"
+      ],
+      "done_when": "Impossible specs are stopped before any solve, with the nearest feasible limit.",
+      "do_not": [
+        "do not present the beam estimate as a verified result"
+      ],
+      "stop_and_ask_if": "the estimate is wrong by more than 30% against the solved designs.",
+      "after": [
+        "A2-T2"
+      ]
+    },
+    {
+      "id": "A2-T4",
+      "area": "Data",
+      "size": "S",
+      "task": "Give every requirement an id and keep spec versions with diffs.",
+      "where": "structura/spec.py, new file structura/trace.py",
+      "read_first": [
+        "structura/spec.py",
+        "structura/checks.py"
+      ],
+      "steps": [
+        "1. Each requirement gets an id (R1, R2, ...) and an optional source span from the brief.",
+        "2. trace(spec, result) returns rows: requirement id, brief text, spec field, checker, value, margin, evidence file.",
+        "3. Saving an edited spec writes spec.v<n>.json; diff(a, b) lists changed fields with old and new values.",
+        "4. Test the trace and the diff on the example bracket spec."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_trace.py -q",
+        "all passed"
+      ],
+      "done_when": "Every requirement is traceable to its evidence and spec changes are diffable.",
+      "do_not": [
+        "do not renumber requirement ids between versions"
+      ],
+      "stop_and_ask_if": "a requirement cannot be mapped to a checker.",
+      "after": [
+        "A2-T1"
+      ]
+    }
+  ],
+  "acceptance": [
+    "Every limit produces a pass/fail with margin",
+    "Material values carry sources",
+    "Every load case evaluated at its worst combination",
+    "Impossible specs stopped before solving",
+    "Trace table for every requirement"
+  ],
+  "risks": [
+    "Printed PETG strength varies with orientation; the spec records the print direction and the report states the assumption."
+  ]
+}

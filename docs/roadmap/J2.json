@@ -1,0 +1,45 @@
+{
+  "id": "J2",
+  "size": "S",
+  "summary": "Verify every licence the stack depends on from its LICENSE file, record it, and set the subprocess rule for GPL tools before any code depends on them.",
+  "reuse": [
+    "docs/research/competitive-landscape-2026-11.md: stack table with licences marked ‡ where unverified"
+  ],
+  "prereq": [],
+  "tasks": [
+    {
+      "id": "J2-T1",
+      "area": "Docs",
+      "size": "S",
+      "task": "Write docs/licences.md with every dependency's licence verified from its repository LICENSE file.",
+      "where": "new file docs/licences.md",
+      "read_first": [
+        "docs/research/competitive-landscape-2026-11.md"
+      ],
+      "steps": [
+        "1. List every dependency in environment.yml plus Three.js and Plotly.",
+        "2. Open each project's LICENSE file on its official repository and record name, version, licence, URL of the LICENSE file and the date checked.",
+        "3. Mark GPL tools (CalculiX, gmsh) with the rule 'subprocess only, never imported into distributed code'.",
+        "4. Add an 'Excluded' section: FluidX3D (licence forbids commercial use and AI training), TetGen and Palabos (AGPL), JAX-FEM (GPL-3, commercial use needs the author).",
+        "5. Write any licence that differs from the research report at the top under 'Corrections to the research'."
+      ],
+      "verify": [
+        "python -c \"import pathlib,re;t=pathlib.Path('docs/licences.md').read_text(encoding='utf-8');print(len(re.findall(r'^\\| ',t,re.M)))\"",
+        "prints a row count at least equal to the number of dependencies plus the header rows"
+      ],
+      "done_when": "Every dependency has a verified licence row with a LICENSE URL and date.",
+      "do_not": [
+        "do not copy a licence from the research report without opening the LICENSE file"
+      ],
+      "stop_and_ask_if": "a dependency's licence forbids hosted or commercial use.",
+      "after": []
+    }
+  ],
+  "acceptance": [
+    "docs/licences.md lists every dependency with a verified LICENSE URL",
+    "GPL subprocess rule and exclusions are written down"
+  ],
+  "risks": [
+    "Licences change between versions; record the version checked."
+  ]
+}

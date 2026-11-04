@@ -1,0 +1,107 @@
+{
+  "id": "D1",
+  "size": "L",
+  "summary": "Evaluation function, study runner, a method portfolio (BoTorch qNEHVI or NSGA-II/III), mixed parameters, feasibility-aware constraints, Sobol screening, a stopping rule and the benchmark against baselines.",
+  "reuse": [],
+  "prereq": [
+    "A2"
+  ],
+  "tasks": [
+    {
+      "id": "D1-T1",
+      "area": "Optimize",
+      "size": "M",
+      "task": "Write the evaluation function and the Optuna study runner.",
+      "where": "new files structura/optimize/evaluate.py, structura/optimize/study.py, tests/test_study.py",
+      "read_first": [
+        "structura/spec.py",
+        "structura/checks.py",
+        "structura/solve/calculix.py"
+      ],
+      "steps": [
+        "1. evaluate(spec, params, mesh_size) runs build → gate → mesh → solve → checks and returns objectives, constraint violations and a status (ok, gate_fail, mesh_fail, solve_fail).",
+        "2. study.run(spec, n_trials, sampler) creates an Optuna study with SQLite storage in runs/<study_id>/study.db and records status and checks as trial attributes.",
+        "3. Failed evaluations are recorded as failed trials with their reason, never as good scores.",
+        "4. Test with 20 trials on the bracket spec."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_study.py -q",
+        "all passed"
+      ],
+      "done_when": "A 20-trial study completes and every trial has a status.",
+      "do_not": [
+        "do not call an LLM inside evaluate or the sampler"
+      ],
+      "stop_and_ask_if": "more than 20% of trials fail for one reason.",
+      "after": []
+    },
+    {
+      "id": "D1-T2",
+      "area": "Optimize",
+      "size": "M",
+      "task": "Add the method portfolio with mixed parameters and feasibility-aware constraints.",
+      "where": "new file structura/optimize/portfolio.py, tests/test_portfolio.py",
+      "read_first": [
+        "structura/optimize/study.py",
+        "structura/spec.py"
+      ],
+      "steps": [
+        "1. Add ax-platform and botorch to environment.yml and record their licences in docs/licences.md.",
+        "2. portfolio.choose(spec, budget) returns 'botorch_qnehvi' when budget < 200 and objectives <= 3, otherwise 'nsga2' (2 objectives) or 'nsga3' (3-4), with the reason as text.",
+        "3. Run the BoTorch path through Ax with integer and choice parameters for rib_count and material, and outcome constraints from the spec's limits.",
+        "4. Log the chosen method and reason to the study log.",
+        "5. Test both paths on the bracket spec with 30 evaluations."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_portfolio.py -q",
+        "all passed"
+      ],
+      "done_when": "Both methods run on the bracket with integer parameters and constraints, and the choice is logged.",
+      "do_not": [
+        "do not let the LLM choose numeric parameter values inside the loop"
+      ],
+      "stop_and_ask_if": "Ax cannot express a constraint the spec needs.",
+      "after": [
+        "D1-T1"
+      ]
+    },
+    {
+      "id": "D1-T3",
+      "area": "Optimize",
+      "size": "M",
+      "task": "Add Sobol screening, parameter freezing and the stopping rule, then run the benchmark.",
+      "where": "new files structura/optimize/screening.py, benchmarks/optimizer_compare.py",
+      "read_first": [
+        "structura/optimize/portfolio.py",
+        "structura/optimize/evaluate.py"
+      ],
+      "steps": [
+        "1. screening.sobol(spec, n) runs a Saltelli sample on coarse meshes with SALib and returns first-order and total indices per parameter.",
+        "2. Parameters with total index below 0.02 are frozen at their best sampled value; the list and reason go to the study log.",
+        "3. Stop when hypervolume improves less than 1% over the last 20 evaluations or the budget ends; log which.",
+        "4. benchmarks/optimizer_compare.py runs random search, NSGA-II, Optuna's default sampler and the portfolio with 200 evaluations and three seeds on the bracket, and writes hypervolume against solver calls to benchmarks/optimizer_compare.json."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python benchmarks/optimizer_compare.py --evals 200 --seeds 3",
+        "writes benchmarks/optimizer_compare.json with all four methods"
+      ],
+      "done_when": "The four-way comparison is recorded, whichever method wins.",
+      "do_not": [
+        "do not drop seeds or methods from the comparison"
+      ],
+      "stop_and_ask_if": "the portfolio does not beat NSGA-II on hypervolume at equal solver calls; report it and ask before tuning.",
+      "after": [
+        "D1-T2"
+      ]
+    }
+  ],
+  "acceptance": [
+    "Every trial stored with status, objectives and checks",
+    "Method choice logged with reason",
+    "Sobol screening freezes negligible parameters",
+    "Four-way benchmark stored with three seeds"
+  ],
+  "risks": [
+    "Long solves stall the study; a per-trial timeout marks them failed."
+  ]
+}

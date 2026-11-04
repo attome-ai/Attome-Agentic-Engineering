@@ -1,0 +1,170 @@
+{
+  "id": "F2",
+  "size": "M",
+  "summary": "Stand up the validation suite first: environment, cantilever against beam theory, NAFEMS LE10 timing at three densities, thermal slab, and a CalculiX vs scikit-fem cross-check. Tasks T1-T2 run in P0; T3-T4 run once the P1 pipeline exists.",
+  "reuse": [
+    "docs/research/competitive-landscape-2026-11.md: LE10 reference −5.38 MPa, FeenoX timing as the only public reference point"
+  ],
+  "prereq": [],
+  "tasks": [
+    {
+      "id": "F2-T1",
+      "area": "Ops",
+      "size": "S",
+      "task": "Create environment.yml and a smoke test that runs cadquery, gmsh and ccx on the demo laptop.",
+      "where": "new files environment.yml, tests/test_smoke.py",
+      "read_first": [
+        "docs/research/competitive-landscape-2026-11.md"
+      ],
+      "steps": [
+        "1. Download the micromamba executable into the micromamba folder of the user profile.",
+        "2. Write environment.yml (name attome-ae, channel conda-forge): python=3.12, cadquery, build123d, gmsh, calculix, meshio, pyvista, optuna, pymoo, scikit-fem, numpy, scipy, pydantic, pytest.",
+        "3. Create the environment with micromamba create -y -f environment.yml.",
+        "4. Write tests/test_smoke.py: build a 10x10x10 mm CadQuery box, export STEP, mesh it with the gmsh executable, solve a one-element cube with ccx against the analytical elongation, and assert each step succeeds (ccx -v exits 201 by design).",
+        "5. Record the installed versions of ccx and gmsh in docs/environment.md."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_smoke.py -q",
+        "1 passed"
+      ],
+      "done_when": "The smoke test passes on the demo laptop from a fresh environment.",
+      "do_not": [
+        "do not build CalculiX from source",
+        "do not pin versions that conda-forge does not provide for win-64"
+      ],
+      "stop_and_ask_if": "conda-forge has no working win-64 calculix build; then propose WSL2 with the exact commands.",
+      "after": []
+    },
+    {
+      "id": "F2-T2",
+      "area": "Tests",
+      "size": "M",
+      "task": "Solve NAFEMS LE10 with ccx at three mesh densities and record error and runtime.",
+      "where": "new files benchmarks/le10/le10.py, benchmarks/le10/README.md, docs/benchmarks.md",
+      "read_first": [
+        "docs/research/competitive-landscape-2026-11.md",
+        "docs/environment.md"
+      ],
+      "steps": [
+        "1. Build the LE10 thick elliptic plate geometry with CadQuery from the published NAFEMS dimensions.",
+        "2. Mesh with gmsh at three sizes (coarse, medium, fine) using second-order tetrahedra.",
+        "3. Write the CalculiX deck with the LE10 boundary conditions and 1 MPa pressure on the top face.",
+        "4. Run ccx, read sigma_yy at point D from the .dat output, compute the error against −5.38 MPa.",
+        "5. Time each run (wall clock) and record nodes, elements, DOF, sigma_yy, error % and seconds in docs/benchmarks.md."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python benchmarks/le10/le10.py",
+        "prints three rows; fine-mesh error under 2%"
+      ],
+      "done_when": "docs/benchmarks.md has a measured LE10 table for the demo laptop.",
+      "do_not": [
+        "do not use linear tetrahedra for the stress result",
+        "do not quote FeenoX numbers as our numbers"
+      ],
+      "stop_and_ask_if": "the fine-mesh error is above 5% after checking the node-order mapping.",
+      "after": [
+        "F2-T1"
+      ]
+    },
+    {
+      "id": "F2-T3",
+      "area": "Tests",
+      "size": "M",
+      "task": "Add the cantilever and thermal slab cases and run the whole suite with pytest.",
+      "where": "new files tests/validation/test_cantilever.py, tests/validation/test_thermal_slab.py, tests/validation/test_le10.py",
+      "read_first": [
+        "benchmarks/le10/le10.py",
+        "docs/feature-plan.md"
+      ],
+      "steps": [
+        "1. Cantilever: 100x10x10 mm steel beam, 100 N tip load, compare tip deflection with P*L^3/(3*E*I) through structura.solve.calculix.",
+        "2. Thermal slab: 1D conduction through a 10 mm plate with fixed temperatures, compare the mid-plane temperature with the linear solution.",
+        "3. Wrap LE10 as a pytest that asserts the medium-mesh error is under 3%.",
+        "4. Mark all three with @pytest.mark.validation."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest -m validation -q",
+        "3 passed"
+      ],
+      "done_when": "The validation suite passes and runs in under five minutes.",
+      "do_not": [
+        "do not loosen a tolerance to make a case pass"
+      ],
+      "stop_and_ask_if": "a case fails by more than its tolerance after one fix attempt.",
+      "after": [
+        "F2-T2",
+        "C1-T2"
+      ]
+    },
+    {
+      "id": "F2-T4",
+      "area": "Verify",
+      "size": "M",
+      "task": "Cross-check CalculiX against scikit-fem on the same bracket mesh.",
+      "where": "new files structura/solve/skfem_check.py, tests/validation/test_crosscheck.py",
+      "read_first": [
+        "structura/solve/calculix.py",
+        "structura/results.py"
+      ],
+      "steps": [
+        "1. Read the gmsh mesh with meshio and assemble linear elasticity with scikit-fem on quadratic tetrahedra.",
+        "2. Apply the same fixed faces and load as the CalculiX deck from the bracket template's physical groups.",
+        "3. Compare maximum displacement and the displacement at the load face centroid.",
+        "4. Assert both differ by less than 3%."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/validation/test_crosscheck.py -q",
+        "1 passed"
+      ],
+      "done_when": "CalculiX and scikit-fem agree within 3% on displacement for the bracket.",
+      "do_not": [
+        "do not change the CalculiX deck to match scikit-fem"
+      ],
+      "stop_and_ask_if": "the two solvers disagree by more than 10%.",
+      "after": [
+        "F2-T3",
+        "C3-T1"
+      ]
+    },
+    {
+      "id": "F2-T5",
+      "area": "Tests",
+      "size": "M",
+      "task": "Add LE1, Euler buckling, modal and fin cases, golden results and the generated validation report.",
+      "where": "new files tests/validation/test_le1.py, tests/validation/test_buckling_modal.py, tests/validation/test_fin.py, tests/validation/golden/, scripts/validation_report.py, docs/validation.md",
+      "read_first": [
+        "tests/validation/test_le10.py",
+        "structura/solve/calculix.py"
+      ],
+      "steps": [
+        "1. NAFEMS LE1 elliptic membrane: assert sigma_yy at point D within 3% of 92.7 MPa on the medium mesh.",
+        "2. Euler column (pinned-pinned): buckling load factor within 3% of pi^2*E*I/L^2 divided by the applied load.",
+        "3. Cantilever modal: first natural frequency within 3% of the Euler-Bernoulli value.",
+        "4. Single straight fin with fixed base temperature and film coefficient: tip temperature within 3% of the analytical fin solution.",
+        "5. Store the demo designs' key results in tests/validation/golden/ and fail when any moves by more than 0.5%.",
+        "6. scripts/validation_report.py runs the suite and writes docs/validation.md with reference, our value, error, mesh size and runtime per case."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest -m validation -q && micromamba run -n attome-ae python scripts/validation_report.py",
+        "all passed; docs/validation.md regenerated"
+      ],
+      "done_when": "Every structural and thermal case passes and the public report is generated from the run.",
+      "do_not": [
+        "do not edit docs/validation.md by hand",
+        "do not update golden results without a written reason in the commit message"
+      ],
+      "stop_and_ask_if": "a NAFEMS case misses its tolerance after checking units and node order.",
+      "after": [
+        "F2-T3"
+      ]
+    }
+  ],
+  "acceptance": [
+    "Smoke test, cantilever, thermal slab, LE10 and cross-check pass with pytest -m validation",
+    "docs/benchmarks.md holds measured LE10 runtimes for three densities",
+    "docs/validation.md generated from the suite with LE1, LE10, buckling, modal and thermal cases"
+  ],
+  "risks": [
+    "A wrong node-order mapping passes displacement checks but gives wrong stress; LE10 checks stress directly."
+  ]
+}

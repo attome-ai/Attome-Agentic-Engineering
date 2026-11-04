@@ -1,0 +1,106 @@
+{
+  "id": "D3",
+  "size": "L",
+  "summary": "Screen before solving, content-hash cache, parallel solves, coarse-to-fine re-solve and an in-process scikit-fem screening path.",
+  "reuse": [],
+  "prereq": [
+    "D1"
+  ],
+  "tasks": [
+    {
+      "id": "D3-T1",
+      "area": "Optimize",
+      "size": "S",
+      "task": "Cache evaluations by content hash.",
+      "where": "new file structura/optimize/cache.py",
+      "read_first": [
+        "structura/designs.py",
+        "structura/optimize/evaluate.py"
+      ],
+      "steps": [
+        "1. Key = sha256(design hash, mesh size, element order, solver version, spec hash).",
+        "2. Store Result and checks under runs/cache/<key>/; evaluate() returns the cached entry when the key exists.",
+        "3. Test that a repeated trial is served from cache in under 0.1 s."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_cache.py -q",
+        "all passed"
+      ],
+      "done_when": "Repeated evaluations are cached and identical.",
+      "do_not": [
+        "do not cache failed solves caused by timeouts"
+      ],
+      "stop_and_ask_if": "a cached result differs from a fresh solve.",
+      "after": []
+    },
+    {
+      "id": "D3-T2",
+      "area": "Optimize",
+      "size": "M",
+      "task": "Run evaluations in parallel and re-solve the front on a fine mesh.",
+      "where": "structura/optimize/study.py, structura/optimize/verify_front.py",
+      "read_first": [
+        "structura/optimize/study.py",
+        "docs/benchmarks.md"
+      ],
+      "steps": [
+        "1. Run trials with n_jobs equal to physical cores minus one, each ccx with OMP_NUM_THREADS=1.",
+        "2. verify_front(study) re-solves every Pareto design with mesh size halved and records the change in each objective.",
+        "3. Write evaluations per minute and the coarse-to-fine objective changes into docs/benchmarks.md."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m structura.optimize.verify_front runs/demo",
+        "prints coarse vs fine objectives for each front design"
+      ],
+      "done_when": "Throughput and coarse-to-fine drift are measured and written down.",
+      "do_not": [
+        "do not report coarse-mesh numbers as final"
+      ],
+      "stop_and_ask_if": "the front's ranking changes on the fine mesh for more than one design.",
+      "after": [
+        "D3-T1"
+      ]
+    },
+    {
+      "id": "D3-T3",
+      "area": "Solver",
+      "size": "M",
+      "task": "Add screening before solving and the scikit-fem fast path.",
+      "where": "structura/optimize/evaluate.py, new file structura/solve/skfem_fast.py",
+      "read_first": [
+        "structura/feasibility.py",
+        "structura/solve/skfem_check.py",
+        "structura/optimize/evaluate.py"
+      ],
+      "steps": [
+        "1. evaluate() calls feasible() and gate() before meshing and returns status screened_out with the reason when either fails.",
+        "2. skfem_fast.solve(mesh, bc) assembles linear elasticity once per mesh topology and reuses the factorization across load cases.",
+        "3. Use skfem_fast for screening evaluations only; every front design is still solved by CalculiX.",
+        "4. Record evaluations per minute and cache hit rate for a 200-evaluation study in docs/benchmarks.md."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_evaluate.py -q",
+        "all passed"
+      ],
+      "done_when": "Screened designs cost milliseconds and throughput is measured.",
+      "do_not": [
+        "do not report a scikit-fem screening result as a final number"
+      ],
+      "stop_and_ask_if": "skfem_fast and CalculiX differ by more than 3% on the bracket.",
+      "after": [
+        "D3-T2",
+        "F2-T4",
+        "A2-T3"
+      ]
+    }
+  ],
+  "acceptance": [
+    "Cache, parallel run and fine re-solve in place",
+    "Throughput measured",
+    "Screened-out designs never reach the mesher",
+    "Throughput and cache hit rate measured"
+  ],
+  "risks": [
+    "Parallel runs exhaust memory on fine meshes; fine re-solves run one at a time."
+  ]
+}

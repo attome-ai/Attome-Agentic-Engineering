@@ -1,0 +1,74 @@
+{
+  "id": "C1",
+  "size": "M",
+  "summary": "CalculiX static solve: deck writer from gmsh arrays, subprocess run, .frd/.dat parser into the result schema.",
+  "reuse": [],
+  "prereq": [
+    "C3",
+    "C4"
+  ],
+  "tasks": [
+    {
+      "id": "C1-T1",
+      "area": "Data",
+      "size": "S",
+      "task": "Define the solver-independent result schema.",
+      "where": "new file structura/results.py",
+      "read_first": [
+        "docs/feature-plan.md"
+      ],
+      "steps": [
+        "1. Pydantic model Result: mass_t, max_von_mises_MPa, max_disp_mm, reaction_sum_N (vector), node fields (displacement vector, von Mises), units dict, solver, solver_version, mesh_report, runtime_s.",
+        "2. Write to and read from .npz plus JSON."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_results.py -q",
+        "all passed"
+      ],
+      "done_when": "Results round-trip with units.",
+      "do_not": [
+        "do not store a number without its unit key"
+      ],
+      "stop_and_ask_if": "a field needed by F1 cannot be represented.",
+      "after": []
+    },
+    {
+      "id": "C1-T2",
+      "area": "Solver",
+      "size": "M",
+      "task": "Write the deck, run ccx and parse results for a static case.",
+      "where": "new files structura/solve/calculix.py, tests/test_calculix.py",
+      "read_first": [
+        "structura/results.py",
+        "structura/bc.py",
+        "structura/mesh/gmsh_mesh.py"
+      ],
+      "steps": [
+        "1. Write *NODE and *ELEMENT, TYPE=C3D10 directly from the mesh arrays, remapping gmsh second-order node order to CalculiX order.",
+        "2. Write *MATERIAL from structura/materials.py, *SOLID SECTION, boundary sets and loads from bc.py, *STEP *STATIC, *NODE FILE U, *EL FILE S, *NODE PRINT RF.",
+        "3. Run ccx in a temp directory with subprocess, a timeout and OMP_NUM_THREADS from config.",
+        "4. Parse the .frd for U and S, compute von Mises per node, and the .dat for reaction forces; fill Result.",
+        "5. Test on the cantilever: tip deflection within 2% of beam theory."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_calculix.py -q",
+        "all passed"
+      ],
+      "done_when": "A bracket design returns a full Result with reactions balancing the load within 0.5%.",
+      "do_not": [
+        "do not write the deck through meshio's Abaqus writer"
+      ],
+      "stop_and_ask_if": "the cantilever error is above 2% with a converged mesh.",
+      "after": [
+        "C1-T1"
+      ]
+    }
+  ],
+  "acceptance": [
+    "Cantilever within 2%",
+    "Reaction forces balance applied load within 0.5%"
+  ],
+  "risks": [
+    "Unit mismatch gives plausible wrong numbers; units are fixed to mm-N-MPa-tonne and asserted in tests."
+  ]
+}

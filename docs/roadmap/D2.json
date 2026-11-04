@@ -1,0 +1,75 @@
+{
+  "id": "D2",
+  "size": "L",
+  "summary": "Feasible Pareto front with hypervolume and trust status, a recommended knee point, plain-language steering and trade-off explanations.",
+  "reuse": [],
+  "prereq": [
+    "D1"
+  ],
+  "tasks": [
+    {
+      "id": "D2-T1",
+      "area": "Optimize",
+      "size": "M",
+      "task": "Run multi-objective search and extract the feasible Pareto front.",
+      "where": "new files structura/optimize/pareto.py, benchmarks/search_compare.py",
+      "read_first": [
+        "structura/optimize/study.py"
+      ],
+      "steps": [
+        "1. Use Optuna NSGAIISampler with constraints_func from the spec's limits; objectives mass (min) and min safety factor (max).",
+        "2. pareto.front(study) returns feasible non-dominated trials; hypervolume per generation with pymoo's HV indicator.",
+        "3. benchmarks/search_compare.py runs random search and NSGA-II with 200 evaluations each, three seeds, and writes hypervolume curves to benchmarks/search_compare.json."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python benchmarks/search_compare.py --evals 200 --seeds 3",
+        "writes benchmarks/search_compare.json with both methods"
+      ],
+      "done_when": "The comparison is recorded, whichever method wins.",
+      "do_not": [
+        "do not drop seeds that make NSGA-II look worse"
+      ],
+      "stop_and_ask_if": "NSGA-II does not beat random search on hypervolume; report it and ask before tuning.",
+      "after": []
+    },
+    {
+      "id": "D2-T2",
+      "area": "Optimize",
+      "size": "M",
+      "task": "Add the recommended knee point, plain-language steering and trade-off explanations.",
+      "where": "new files structura/optimize/decide.py, tests/test_decide.py",
+      "read_first": [
+        "structura/optimize/pareto.py",
+        "structura/optimize/screening.py"
+      ],
+      "steps": [
+        "1. knee(front) returns the design with the largest change in trade-off slope between neighbours on the normalized front.",
+        "2. steer(study, text) turns a preference sentence into a reference point through the agent tool, re-runs 30 evaluations focused on that region, and logs the reference point.",
+        "3. explain(a, b) lists the parameters that differ, their Sobol indices and the objective changes, as data the agent turns into a paragraph.",
+        "4. Tests: knee on a synthetic convex front, steer moves new designs toward the reference point, explain lists only differing parameters."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_decide.py -q",
+        "all passed"
+      ],
+      "done_when": "A study proposes a knee point, accepts a steering sentence and explains any two designs.",
+      "do_not": [
+        "do not let steering change the spec's hard limits"
+      ],
+      "stop_and_ask_if": "steering text cannot be mapped to objectives without guessing; then the agent asks the user.",
+      "after": [
+        "D2-T1",
+        "D1-T3"
+      ]
+    }
+  ],
+  "acceptance": [
+    "Feasible Pareto front extracted",
+    "Random vs NSGA-II comparison stored with three seeds",
+    "Knee point proposed with explanation",
+    "Steering re-focuses the search and is logged"
+  ],
+  "risks": [
+    "Two objectives may barely conflict for one template; the heat sink (C2) gives a second, stronger trade-off."
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "id": "B4",
+  "size": "M",
+  "summary": "Validity gate before meshing with safe auto-repair and a mesh-ability predictor; target at least 99% of gated designs mesh.",
+  "reuse": [],
+  "prereq": [
+    "B3"
+  ],
+  "tasks": [
+    {
+      "id": "B4-T1",
+      "area": "CAD",
+      "size": "S",
+      "task": "Write the geometry gate and run it on 200 random bracket designs.",
+      "where": "new files structura/geometry/gate.py, tests/test_gate.py",
+      "read_first": [
+        "structura/templates/base.py",
+        "structura/templates/bracket.py"
+      ],
+      "steps": [
+        "1. gate(shape, spec_limits) returns GateResult(ok, reasons, volume_mm3, solids).",
+        "2. Checks: shape.isValid(), exactly one solid, volume > 0, inside design_space, outside keep-out zones, minimum wall thickness by ray sampling at 200 points, minimum feature size against the target mesh size, overhang angle for the print direction, minimum hole diameter.",
+        "3. Sample 200 random in-bounds bracket designs and write the pass rate and the failure reasons to benchmarks/gate_sweep.json."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_gate.py -q",
+        "all passed; benchmarks/gate_sweep.json written"
+      ],
+      "done_when": "Every failing design has a named reason; the pass rate is recorded.",
+      "do_not": [
+        "do not repair geometry inside gate(); repair is a separate step (B4-T2) whose result is gated again"
+      ],
+      "stop_and_ask_if": "the pass rate on in-bounds designs is under 90%; then the bounds are wrong.",
+      "after": []
+    },
+    {
+      "id": "B4-T2",
+      "area": "CAD",
+      "size": "M",
+      "task": "Add safe auto-repair and re-gate the repaired shape.",
+      "where": "new files structura/geometry/repair.py, tests/test_repair.py",
+      "read_first": [
+        "structura/geometry/gate.py"
+      ],
+      "steps": [
+        "1. repair(shape, reasons) removes fillets and faces smaller than the minimum feature size, merges sliver faces with OCCT ShapeUpgrade_UnifySameDomain and sews small gaps.",
+        "2. Every repair writes an entry (operation, faces affected, volume change %) to the design log.",
+        "3. Reject a repair that changes volume by more than 2% or touches a frozen interface face.",
+        "4. Run gate() again on the repaired shape and return both results."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_repair.py -q",
+        "all passed"
+      ],
+      "done_when": "Repairable failures pass the gate after repair, with every change logged.",
+      "do_not": [
+        "do not repair frozen interface faces"
+      ],
+      "stop_and_ask_if": "repair changes volume by more than 2% on more than 5% of the sweep.",
+      "after": [
+        "B4-T1"
+      ]
+    },
+    {
+      "id": "B4-T3",
+      "area": "Mesh",
+      "size": "M",
+      "task": "Train the mesh-ability predictor and measure gate-pass to mesh-success.",
+      "where": "new files structura/geometry/meshability.py, benchmarks/gate_mesh_sweep.py",
+      "read_first": [
+        "structura/geometry/gate.py",
+        "structura/mesh/gmsh_mesh.py"
+      ],
+      "steps": [
+        "1. benchmarks/gate_mesh_sweep.py samples 500 bracket designs, runs gate, repair and mesh, and stores geometric features (smallest face area, face count, minimum edge length, thickness ratio) with the mesh outcome.",
+        "2. Fit a logistic regression on those features; store the model and its precision and recall.",
+        "3. Use the predictor before gmsh: a predicted failure is coarsened once or repaired before meshing.",
+        "4. Write the gate-pass to mesh-success rate with and without the predictor to docs/benchmarks.md."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python benchmarks/gate_mesh_sweep.py --n 500",
+        "prints gate-pass to mesh-success rate; target at least 99%"
+      ],
+      "done_when": "The rate is measured and recorded, whichever value it reaches.",
+      "do_not": [
+        "do not drop failing samples from the sweep"
+      ],
+      "stop_and_ask_if": "the rate is below 97% after the predictor; report the failure reasons and ask.",
+      "after": [
+        "B4-T2",
+        "C4-T1"
+      ]
+    }
+  ],
+  "acceptance": [
+    "Gate rejects invalid, multi-solid, out-of-space and unprintable shapes with reasons",
+    "Repairs are logged and re-gated",
+    "Gate-pass to mesh-success rate measured on 500 designs"
+  ],
+  "risks": [
+    "Ray-sampled wall thickness misses thin spots; it is a guard, the mesh quality check is the second guard."
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "id": "F1",
+  "size": "L",
+  "summary": "Trust record per design: requirement margins, GCI error bars from three mesh levels, equilibrium, energy and hand-calc checks, plain-language assumptions, a rule-based confidence grade and a reproducible evidence bundle.",
+  "reuse": [],
+  "prereq": [
+    "A2",
+    "D3"
+  ],
+  "tasks": [
+    {
+      "id": "F1-T1",
+      "area": "Verify",
+      "size": "M",
+      "task": "Build the trust record for a design.",
+      "where": "new file structura/trust.py, tests/test_trust.py",
+      "read_first": [
+        "structura/checks.py",
+        "structura/results.py",
+        "structura/optimize/verify_front.py"
+      ],
+      "steps": [
+        "1. trust(design, spec) runs the checks on the fine-mesh result, a two-level mesh-convergence check on peak stress and max displacement, and the reaction equilibrium error.",
+        "2. Record solver and version, units, mesh reports, assumptions from the spec and the validation-suite status (last pytest -m validation result with date).",
+        "3. Mark status verified only when every check ran and passed; otherwise not_verified with reasons.",
+        "4. Write trust.json beside the design bundle."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_trust.py -q",
+        "all passed"
+      ],
+      "done_when": "Every delivered design has a trust.json with all checks run.",
+      "do_not": [
+        "do not mark verified when any check is missing"
+      ],
+      "stop_and_ask_if": "mesh convergence on peak stress exceeds 10% between levels for the chosen design.",
+      "after": []
+    },
+    {
+      "id": "F1-T2",
+      "area": "Verify",
+      "size": "M",
+      "task": "Add GCI error bars, energy and hand-calculation checks, the confidence grade and the reproducible evidence bundle.",
+      "where": "structura/trust.py, new files structura/gci.py, structura/handcalc.py, scripts/reproduce.py",
+      "read_first": [
+        "structura/trust.py",
+        "structura/feasibility.py"
+      ],
+      "steps": [
+        "1. gci.estimate(values, sizes) computes the Grid Convergence Index from three mesh levels for each governing value.",
+        "2. A requirement whose margin is smaller than its GCI error is reported as not_proven, not passed.",
+        "3. Check strain energy against the external work of applied loads within 1%.",
+        "4. handcalc.py gives the beam-theory estimate for the governing section of each family; flag the design when FEA and the estimate differ by more than a factor of 2.",
+        "5. Grade A when every check ran and passed, GCI below 5% on governing values and the validation suite passed; B when GCI is up to 10%; otherwise C. Write the rule into trust.json.",
+        "6. scripts/reproduce.py <design dir> re-runs the evidence bundle and asserts the reported numbers match within 0.1%."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_trust.py -q && micromamba run -n attome-ae python scripts/reproduce.py runs/demo/best",
+        "all passed; reproduce prints match"
+      ],
+      "done_when": "Every delivered design has error bars, independent checks, a grade with its rule and reproduces from its bundle.",
+      "do_not": [
+        "do not let any agent tool write to trust.json"
+      ],
+      "stop_and_ask_if": "GCI cannot be computed because the three levels do not converge monotonically for the demo design.",
+      "after": [
+        "F1-T1"
+      ]
+    }
+  ],
+  "acceptance": [
+    "trust.json present for every delivered design",
+    "No design shows verified with a missing check",
+    "Margins smaller than the error are shown as not proven",
+    "Evidence bundle reproduces the numbers"
+  ],
+  "risks": [
+    "Peak stress at re-entrant corners does not converge; the record uses stress at a defined distance from fillets and says so."
+  ]
+}

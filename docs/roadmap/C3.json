@@ -1,0 +1,45 @@
+{
+  "id": "C3",
+  "size": "S",
+  "summary": "Map the spec's loads and supports to template face names, then to gmsh physical groups and CalculiX node sets.",
+  "reuse": [],
+  "prereq": [
+    "B3",
+    "C4"
+  ],
+  "tasks": [
+    {
+      "id": "C3-T1",
+      "area": "Solver",
+      "size": "S",
+      "task": "Turn named faces into physical groups and CalculiX sets.",
+      "where": "new file structura/bc.py, tests/test_bc.py",
+      "read_first": [
+        "structura/templates/base.py",
+        "structura/mesh/gmsh_mesh.py"
+      ],
+      "steps": [
+        "1. bc.groups(template, shape) returns {group_name: [face ids]} from named_faces.",
+        "2. After meshing, write *NSET and *SURFACE blocks for each group from the gmsh physical groups.",
+        "3. Distribute a total force over load_face nodes with *CLOAD weighted by nodal area, and check the sum equals the requested force within 0.1%.",
+        "4. Test with the bracket: fixed mount_holes, 1000 N on load_face."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_bc.py -q",
+        "all passed"
+      ],
+      "done_when": "Loads and supports land on the named faces with the exact total force.",
+      "do_not": [
+        "do not select faces by index outside a template"
+      ],
+      "stop_and_ask_if": "a template face name resolves to zero faces for in-bounds parameters.",
+      "after": []
+    }
+  ],
+  "acceptance": [
+    "Applied force sums to the spec value within 0.1%"
+  ],
+  "risks": [
+    "Nodal force lumping on quadratic elements is not uniform; use *DLOAD pressure when the face area is known."
+  ]
+}

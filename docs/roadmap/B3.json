@@ -1,0 +1,105 @@
+{
+  "id": "B3",
+  "size": "L",
+  "summary": "The design-graph grammar: typed features with bounds and named faces, a compiler to CadQuery, part families as saved graphs (bracket first), and content hashes.",
+  "reuse": [],
+  "prereq": [
+    "F2"
+  ],
+  "tasks": [
+    {
+      "id": "B3-T1",
+      "area": "CAD",
+      "size": "L",
+      "task": "Define the grammar features and the compiler from design graph to CadQuery.",
+      "where": "new files structura/grammar/features.py, structura/grammar/graph.py, structura/grammar/compile.py, tests/test_grammar.py",
+      "read_first": [
+        "docs/feature-plan.md",
+        "docs/environment.md"
+      ],
+      "steps": [
+        "1. In features.py define one Pydantic schema per feature: plate, extrude_sketch, boss, hole, hole_pattern, rib, pocket, fillet, chamfer, shell, linear_pattern, circular_pattern, sweep_path, fin_array; each with parameters (unit, low, high), parent face reference and named output faces.",
+        "2. In graph.py define DesignGraph: ordered features, free-parameter list, validation that every parent reference exists and every value is inside its bounds.",
+        "3. In compile.py build the CadQuery solid feature by feature and return the solid plus a map from named faces to OCCT faces.",
+        "4. Write a test per feature that compiles it at the low and high corner of its bounds and checks for one valid solid.",
+        "5. Write a test that an out-of-bounds value or a missing parent fails validation before any geometry is built."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_grammar.py -q",
+        "all passed"
+      ],
+      "done_when": "Every feature compiles at its bound corners and invalid graphs are rejected before building.",
+      "do_not": [
+        "do not expose a raw-code feature in the grammar",
+        "do not let compile() catch and hide CadQuery errors"
+      ],
+      "stop_and_ask_if": "a feature cannot compile at some in-bounds corner; then its bounds are wrong.",
+      "after": []
+    },
+    {
+      "id": "B3-T2",
+      "area": "CAD",
+      "size": "M",
+      "task": "Define the template interface on top of graphs and the bracket family as a saved graph.",
+      "where": "new files structura/templates/base.py, structura/templates/bracket.py, structura/families/bracket.json, tests/test_bracket_template.py",
+      "read_first": [
+        "structura/grammar/graph.py",
+        "structura/grammar/compile.py"
+      ],
+      "steps": [
+        "1. In base.py define Template: name, version, graph, free parameters (name, unit, low, high, default), build(params) -> solid, named_faces(shape) -> dict.",
+        "2. Write structura/families/bracket.json: plate with hole_pattern (two mounting holes), vertical plate, rib with linear_pattern, fillet; free parameters thickness, rib_count, rib_thickness, fillet_radius, plate_width.",
+        "3. bracket.py loads the JSON into a Template; named faces mount_holes, load_face, design_space.",
+        "4. Tests: default build is one valid solid, named faces are non-empty, out-of-bounds input raises with the parameter name."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_bracket_template.py -q",
+        "all passed"
+      ],
+      "done_when": "The bracket family builds from its graph for default and corner parameters with named faces.",
+      "do_not": [
+        "do not hand-code bracket geometry in Python; it lives in the graph"
+      ],
+      "stop_and_ask_if": "a combination inside bounds gives an invalid solid.",
+      "after": [
+        "B3-T1"
+      ]
+    },
+    {
+      "id": "B3-T3",
+      "area": "CAD",
+      "size": "S",
+      "task": "Store each design as graph, parameters and hash.",
+      "where": "new files structura/designs.py, tests/test_designs.py",
+      "read_first": [
+        "structura/templates/base.py"
+      ],
+      "steps": [
+        "1. Define Design (template name, template version, graph, params, created_at) with a sha256 hash over the canonical graph JSON and params rounded to 6 significant digits.",
+        "2. design.save(dir) writes graph.json, params.json and the compiled CadQuery script; load(dir) restores it.",
+        "3. Test that equal graphs and params give equal hashes and any change gives a new hash."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_designs.py -q",
+        "all passed"
+      ],
+      "done_when": "Designs round-trip through disk with stable hashes.",
+      "do_not": [
+        "do not hash unrounded floats"
+      ],
+      "stop_and_ask_if": "the hash differs between two runs with equal inputs.",
+      "after": [
+        "B3-T2"
+      ]
+    }
+  ],
+  "acceptance": [
+    "Every grammar feature compiles at its bound corners",
+    "Bracket family defined only as a graph",
+    "Designs have stable content hashes"
+  ],
+  "risks": [
+    "The grammar grows without end; the first release is the fourteen features listed and new ones need an owner decision.",
+    "Fillets fail on thin ribs; bounds keep fillet radius below half the rib thickness and the gate (B4) repairs the rest."
+  ]
+}

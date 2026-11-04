@@ -1,0 +1,46 @@
+{
+  "id": "C4",
+  "size": "M",
+  "summary": "gmsh meshing in a subprocess with a fixed fallback ladder and recorded quality.",
+  "reuse": [],
+  "prereq": [
+    "B4"
+  ],
+  "tasks": [
+    {
+      "id": "C4-T1",
+      "area": "Mesh",
+      "size": "M",
+      "task": "Mesh a STEP file in a gmsh subprocess with physical groups and the fallback ladder.",
+      "where": "new files structura/mesh/gmsh_mesh.py, structura/mesh/gmsh_worker.py, tests/test_mesh.py",
+      "read_first": [
+        "structura/templates/bracket.py",
+        "docs/licences.md"
+      ],
+      "steps": [
+        "1. gmsh_worker.py is a standalone script: it reads a job JSON (step path, size, order, groups by face id), meshes and writes nodes and elements as .npz plus a report JSON.",
+        "2. gmsh_mesh.mesh(step, size, groups) runs the worker with subprocess and a 120 s timeout.",
+        "3. Ladder: algorithm HXT, then Delaunay, then Frontal; then size x1.5; stop after the fourth failure and return the errors.",
+        "4. Report element count, node count, minimum scaled Jacobian, algorithm used and attempts.",
+        "5. Tests: the bracket default meshes; a deliberately broken STEP returns a failure with four logged attempts."
+      ],
+      "verify": [
+        "micromamba run -n attome-ae python -m pytest tests/test_mesh.py -q",
+        "all passed"
+      ],
+      "done_when": "Meshing returns a mesh or a logged failure, never hangs.",
+      "do_not": [
+        "do not import gmsh in structura/ outside gmsh_worker.py"
+      ],
+      "stop_and_ask_if": "more than 5% of gate-passing bracket designs fail all four attempts.",
+      "after": []
+    }
+  ],
+  "acceptance": [
+    "Mesh report recorded for every attempt",
+    "gmsh only runs in a subprocess"
+  ],
+  "risks": [
+    "Small faces from fillets force tiny elements; the gate's minimum feature size keeps them out."
+  ]
+}
