@@ -153,8 +153,16 @@ def propose_relaxation(study_id: str, mesh_size: float = 6.0, margin: float = 0.
     f = engine.call("feasibility", spec=str(path), **{"mesh-size": mesh_size, "threads": 4})
     if f["feasible"]:
         return _ok(feasible=True, message="the spec is already feasible; nothing to relax")
-    changes = []
+    changes, load_options = [], []
     for prob in f["problems"]:
+        if prob.get("quantity") == "safety_factor" and prob.get("op") == ">=" and "best_achievable" in prob:
+            # linear statics: the safety factor scales with 1/load, so the strongest design meets the limit at this load fraction
+            scale = float(prob["best_achievable"]) / float(prob["limit"])
+            load_options.append({"id": prob["id"], "load_fraction": round(scale, 4),
+                                 "load_cases": {lc["name"]: [round(x * scale, 2) for ld in lc.get("loads", []) for x in ld.get("force", [])]
+                                                for lc in spec.get("load_cases", [])},
+                                 "why": f"the strongest design in the bounds reaches safety factor {float(prob['best_achievable']):.3g}; it meets "
+                                        f"{prob['limit']} at {100 * scale:.0f}% of the brief's load (linear analysis: safety factor scales with 1/load)"})
         if "best_achievable" not in prob:
             continue
         best = float(prob["best_achievable"])
@@ -170,9 +178,9 @@ def propose_relaxation(study_id: str, mesh_size: float = 6.0, margin: float = 0.
     spec["version"] = int(spec.get("version", 1)) + 1
     newp = S.save_spec(study_id, spec)
     S.log(study_id, "propose_relaxation", "drafted", changes=changes, spec_version=newp.name)
-    return _ok(feasible=False, proposed_spec_version=newp.name, changes=changes, needs_acceptance=True,
-               alternatives=["change the material (list it in data/materials.json)", "widen the free-parameter bounds",
-                             "choose another part family"])
+    return _ok(feasible=False, proposed_spec_version=newp.name, changes=changes, needs_acceptance=True, load_options=load_options,
+               alternatives=["reduce the load (see load_options)", "change the material (list it in data/materials.json)",
+                             "widen the free-parameter bounds", "choose another part family"])
 
 
 # ------------------------------------------------------------------ geometry

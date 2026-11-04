@@ -49,9 +49,10 @@ LGPL-2.1 **only** (with the Open CASCADE exception), not "or later".
 | PyTorch | 2.8.0 | BSD-3-Clause | https://raw.githubusercontent.com/pytorch/pytorch/main/LICENSE | 2026-11-04 |
 | SALib | 1.6.0 | MIT | https://raw.githubusercontent.com/SALib/SALib/main/LICENSE.md | 2026-11-04 |
 | three.js (report viewer, vendored UMD build) | 0.149.0 | MIT | https://raw.githubusercontent.com/mrdoob/three.js/dev/LICENSE | 2026-11-04 |
+| MCP Python SDK (agent server, E1) | 2.3.0 | MIT (package metadata) | https://raw.githubusercontent.com/modelcontextprotocol/python-sdk/main/LICENSE | 2026-11-04 |
 | plotly.js (dashboard) | not yet installed | MIT | https://raw.githubusercontent.com/plotly/plotly.js/master/LICENSE | 2026-11-04 |
 
-Planned later and to be verified when added: FastAPI (I2), the MCP Python SDK (E1),
+Planned later and to be verified when added: FastAPI (I2),
 Netgen and fTetWild (C4 fallbacks), OpenFOAM, SU2 and XLB (C5).
 
 ## Excluded

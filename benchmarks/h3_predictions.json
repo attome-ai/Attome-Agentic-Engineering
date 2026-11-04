@@ -1,0 +1,24 @@
+[
+  {
+    "bundle": "runs\\p2_demo\\opt\\report_bundles\\baseline",
+    "load_case": "service",
+    "force_N": 294.300000000117,
+    "load_nodes": 130,
+    "gauge_disp_mm": 4.918555647998841,
+    "stiffness_N_per_mm": 59.83463867484261,
+    "max_disp_mm": 4.962966988446,
+    "mass_g": 96.34706346510676,
+    "safety_factor": 0.36861156741806606
+  },
+  {
+    "bundle": "runs\\p2_demo\\opt\\report_bundles\\trial_183",
+    "load_case": "service",
+    "force_N": 294.299999999954,
+    "load_nodes": 339,
+    "gauge_disp_mm": 0.7547284451468913,
+    "stiffness_N_per_mm": 389.94157685772,
+    "max_disp_mm": 0.7761600309940779,
+    "mass_g": 234.14283165503397,
+    "safety_factor": 2.0642307046289945
+  }
+]

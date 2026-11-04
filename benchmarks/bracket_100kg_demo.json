@@ -1,0 +1,82 @@
+{
+  "spec": "docs\\examples\\bracket_100kg.json",
+  "evaluations": 200,
+  "method": "nsga2",
+  "method_reason": "evaluations are cheap (4.5 s each against about 43 s of model fitting per trial): NSGA-II runs many evaluations in parallel for the same wall clock",
+  "optimize_seconds": 181.9,
+  "baseline": {
+    "params": {
+      "thickness": 6,
+      "plate_width": 50,
+      "rib_count": 1,
+      "rib_thickness": 4,
+      "fillet_radius": 3
+    },
+    "status": "ok",
+    "metrics": {
+      "mass_g": 96.34706346510676,
+      "max_disp_mm": 24.814884035697464,
+      "max_von_mises_MPa": 339.1102777486403,
+      "safety_factor": 0.07372233058217958
+    },
+    "feasible": false,
+    "checks": [
+      {
+        "id": "R1",
+        "limit": 2.0,
+        "load_case": "service",
+        "margin": -0.9631388347089103,
+        "op": ">=",
+        "passed": false,
+        "quantity": "safety_factor",
+        "unit": "1",
+        "value": 0.07372233058217958
+      },
+      {
+        "id": "R2",
+        "limit": 3.0,
+        "load_case": "service",
+        "margin": -7.271628011899154,
+        "op": "<=",
+        "passed": false,
+        "quantity": "max_disp_mm",
+        "unit": "mm",
+        "value": 24.814884035697464
+      },
+      {
+        "id": "R3",
+        "limit": 250.0,
+        "load_case": "service",
+        "margin": 0.6146117461395729,
+        "op": "<=",
+        "passed": true,
+        "quantity": "mass_g",
+        "unit": "g",
+        "value": 96.34706346510676
+      }
+    ]
+  },
+  "front_size": 0,
+  "front_ranking_changed_on_fine_mesh": false,
+  "front_still_feasible_on_fine_mesh": "0 of 0",
+  "lightest_at_least_as_safe_as_baseline": null,
+  "recommended_knee": null,
+  "any_feasible": false,
+  "best_safety_factor_reached": {
+    "trial": 187,
+    "params": {
+      "fillet_radius": 0.8664630625951479,
+      "plate_width": 78.18154028706519,
+      "rib_count": 3,
+      "rib_thickness": 8.250917879707162,
+      "thickness": 11.645792850562
+    },
+    "metrics": {
+      "mass_g": 323.92785530805594,
+      "max_disp_mm": 2.6853894697132037,
+      "max_von_mises_MPa": 45.07190002786104,
+      "safety_factor": 0.5546693169035771
+    }
+  },
+  "knee_trust": null
+}

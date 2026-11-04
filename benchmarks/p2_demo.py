@@ -24,13 +24,16 @@ BASELINE = {"thickness": 6, "plate_width": 50, "rib_count": 1, "rib_thickness": 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--evals", type=int, default=200)
+    ap.add_argument("--spec", default=str(SPEC), help="brief spec (default: the 20 kg bracket)")
+    ap.add_argument("--name", default="p2_demo", help="writes runs/NAME/ and benchmarks/NAME.json")
     a = ap.parse_args()
-    out = ROOT / "runs" / "p2_demo"
+    SPEC_ = Path(a.spec).resolve()
+    out = ROOT / "runs" / a.name
     shutil.rmtree(out, ignore_errors=True)
-    spec = load_spec(SPEC)
+    spec = load_spec(SPEC_)
     t0 = time.perf_counter()
     base = evaluate(spec, BASELINE, mesh_size=3, threads=4, use_cache=False)
-    study = portfolio.run(SPEC, budget=a.evals, seed=7, study_dir=out / "opt", mesh_size=4, n_jobs=8)
+    study = portfolio.run(SPEC_, budget=a.evals, seed=7, study_dir=out / "opt", mesh_size=4, n_jobs=8)
     t_opt = time.perf_counter() - t0
     front = pareto.front(study)
     vf = verify_front(study, coarse_mesh=4, factor=0.75)
@@ -41,10 +44,10 @@ def main():
     cands = [r for r in vf["front"] if r.get("feasible_fine") and r["fine"][1] >= max(base_sf, 0)]
     best_light = min(cands, key=lambda r: r["fine"][0]) if cands else None
     knee_params = {k: float(v) for k, v in rec["params"].items()} if rec else None
-    trust = engine.call("trust", spec=str(SPEC), set=[f"{k}={v}" for k, v in knee_params.items()], out=str(out / "trust"),
+    trust = engine.call("trust", spec=str(SPEC_), set=[f"{k}={v}" for k, v in knee_params.items()], out=str(out / "trust"),
                         **{"fine-size": 3}, timeout=3600) if knee_params else None
     res = {
-        "spec": str(SPEC.relative_to(ROOT)), "evaluations": len(study.trials), "method": study.user_attrs.get("method"),
+        "spec": str(SPEC_.relative_to(ROOT)), "evaluations": len(study.trials), "method": study.user_attrs.get("method"),
         "method_reason": study.user_attrs.get("method_reason"), "optimize_seconds": round(t_opt, 1),
         "baseline": {"params": BASELINE, "status": base.status, "metrics": base.raw.get("metrics"), "feasible": base.feasible,
                      "checks": base.raw.get("checks")},
@@ -52,9 +55,13 @@ def main():
         "front_still_feasible_on_fine_mesh": f"{vf['still_feasible']} of {vf['front_size']}",
         "lightest_at_least_as_safe_as_baseline": best_light,
         "recommended_knee": rec,
+        "any_feasible": any(t.user_attrs.get("feasible") for t in study.trials),
+        "best_safety_factor_reached": max(({"trial": t.number, "params": t.params, "metrics": t.user_attrs.get("metrics")}
+                                           for t in study.trials if (t.user_attrs.get("metrics") or {}).get("safety_factor") is not None),
+                                          key=lambda r: r["metrics"]["safety_factor"], default=None),
         "knee_trust": {k: trust.get(k) for k in ("grade", "status", "reasons", "requirements", "numerical_error")} if trust else None,
     }
-    (ROOT / "benchmarks" / "p2_demo.json").write_text(json.dumps(res, indent=2))
+    (ROOT / "benchmarks" / f"{a.name}.json").write_text(json.dumps(res, indent=2))
     print(json.dumps({k: res[k] for k in ("evaluations", "method", "front_size", "front_ranking_changed_on_fine_mesh",
                                            "front_still_feasible_on_fine_mesh")}, indent=1))
     print("baseline", base.status, base.raw.get("metrics"), "feasible", base.feasible)

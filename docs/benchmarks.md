@@ -159,3 +159,30 @@ Front: 13 designs, all still feasible on the fine mesh. Default design's trust r
 0.002%, heat balance (heat convected out against 10 W in) 2e-8. About 4 minutes on the development machine.
 The fixed convection coefficient is an approximation stated in the trust record's assumptions; a fin-array correlation
 and later CFD (C5) replace it.
+
+## Infeasible brief: 100 kg PETG bracket (`benchmarks/p2_demo.py --spec docs/examples/bracket_100kg.json --name bracket_100kg_demo`)
+
+Same family and pipeline as the 20 kg demo, 981 N service load, SF >= 2 required. Measured 2026-11-04, 182 s of
+optimization.
+
+| | Mass | Safety factor | Result |
+|---|---|---|---|
+| Hand baseline | 96 g | 0.07 | fails |
+| Best of 200 NSGA-II evaluations | 324 g | 0.55 | fails; 0 of 200 feasible |
+| Strongest corner of the bounds (`benchmarks/bracket_100kg_feasibility.json`) | 354 g | 0.67 | fails: no design in the family can meet the brief |
+
+The corner check bounds what the search can reach (the search, trading mass against the 250 g cap, did not reach that
+corner). `propose_relaxation` now also reports the load at which the strongest design meets the requirement: 33% of
+the brief's load, about 33 kg (linear statics: safety factor scales with 1/load).
+
+## Physical-test predictions (H3, `benchmarks/gauge_point.py`)
+
+Arm-end displacement at 294.3 N (service load at factor 1.5), force-weighted over the loaded nodes, from the stored
+fine-mesh bundles of the 20 kg demo (`benchmarks/h3_predictions.json`):
+
+| Design | Arm-end displacement | Stiffness | Strain energy check (F d / 2 vs CalculiX) |
+|---|---|---|---|
+| Baseline | 4.919 mm | 59.8 N/mm | 723.77 vs 723.77 N mm |
+| Recommended (trial 183) | 0.755 mm | 389.9 N/mm | 111.06 vs 111.06 N mm |
+
+Ratio 6.5×. Protocol and pass criteria: `docs/test-protocol-h3.md`.

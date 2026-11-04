@@ -111,5 +111,7 @@ def test_propose_relaxation_for_the_100kg_brief(tmp_path, monkeypatch):
     assert r["ok"] and not r["feasible"] and r["needs_acceptance"]
     ch = {c["id"]: c for c in r["changes"]}
     assert "R1" in ch and ch["R1"]["new"] < 2.0
+    lo = r["load_options"][0]
+    assert lo["id"] == "R1" and 0 < lo["load_fraction"] < 1  # the strongest design meets SF 2 at about a third of 100 kg
     assert not srv.S.accepted(sid)  # a proposal never inherits the old acceptance
     assert srv.run_optimization(sid, budget=4)["error"] == "approval"

@@ -1,0 +1,53 @@
+{
+  "direction": {
+    "fillet_radius": "more material at high",
+    "plate_width": "more material at high",
+    "rib_count": "more material at high",
+    "rib_thickness": "more material at high",
+    "thickness": "more material at high"
+  },
+  "feasible": false,
+  "least_material": {
+    "metrics": {
+      "mass_g": 32.60074093649536,
+      "max_disp_mm": 164.500021371929,
+      "max_von_mises_MPa": 1778.2223102846367,
+      "safety_factor": 0.014058984557447318
+    },
+    "params": {
+      "fillet_radius": 0.5,
+      "plate_width": 30.0,
+      "rib_count": 1.0,
+      "rib_thickness": 2.0,
+      "thickness": 3.0
+    },
+    "status": "ok"
+  },
+  "method": "evaluate the most-material and least-material corners of the free parameters",
+  "most_material": {
+    "metrics": {
+      "mass_g": 354.149565170465,
+      "max_disp_mm": 2.309177769134029,
+      "max_von_mises_MPa": 37.54302377637156,
+      "safety_factor": 0.6659026760581347
+    },
+    "params": {
+      "fillet_radius": 6.0,
+      "plate_width": 80.0,
+      "rib_count": 3.0,
+      "rib_thickness": 10.0,
+      "thickness": 12.0
+    },
+    "status": "ok"
+  },
+  "problems": [
+    {
+      "best_achievable": 0.6659026760581347,
+      "id": "R1",
+      "limit": 2.0,
+      "op": ">=",
+      "quantity": "safety_factor",
+      "reason": "even the strongest design in the spec's bounds gives 0.666 against the requirement safety_factor >= 2"
+    }
+  ]
+}
