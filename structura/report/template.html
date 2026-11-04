@@ -65,6 +65,7 @@ footer{color:var(--muted);font-size:.8rem;margin-top:20px}
           <button data-f="vm" aria-pressed="true">Von Mises</button><button data-f="disp" aria-pressed="false">Displacement</button><button data-f="safety" aria-pressed="false">Safety</button>
         </div>
         <label>Deformation × <input type="range" id="scale" min="0" max="1" step="0.01" value="0"> <span id="scaleval">0</span></label>
+        <button type="button" id="play" title="Animate the load being applied" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;padding:3px 10px;cursor:pointer;font:inherit">▶ load</button>
         <label><input type="checkbox" id="ghost" checked> undeformed ghost</label>
         <label><input type="checkbox" id="marks" checked> loads &amp; supports</label>
         <div class="seg" id="whichseg" role="group" aria-label="Design"><button data-w="sel" aria-pressed="true">Selected</button><button data-w="base" aria-pressed="false">Baseline</button><button data-w="split" aria-pressed="false">Side by side</button></div>
@@ -309,7 +310,7 @@ function show(design, label){
   const thermal = !!design.skin.scalar;
   $("#viewnote").textContent = thermal ? "Drag to rotate, wheel to zoom, shift-drag to pan. Colour: temperature on the surface of the part (hover to read it)." : "Drag to rotate, wheel to zoom, shift-drag to pan. Safety view: green above the required safety factor, amber within 10% of it, red below (local yield / von Mises).";
   if (kinds.length) $("#viewnote").textContent += (thermal ? " Arrow: heat input." : " Orange arrow: applied load. Blue: supports (dark fully held, light held in one direction).");
-  $("#fieldseg").style.display = thermal ? "none" : ""; $("#scale").parentElement.style.display = thermal ? "none" : ""; $("#ghost").parentElement.style.display = thermal ? "none" : "";
+  $("#fieldseg").style.display = thermal ? "none" : ""; $("#scale").parentElement.style.display = thermal ? "none" : ""; $("#play").style.display = thermal ? "none" : ""; $("#ghost").parentElement.style.display = thermal ? "none" : "";
   colorize(); deform(); resize();
 }
 function colorize(){
@@ -372,6 +373,17 @@ $("#whichseg").addEventListener("click", e => {const b = e.target.closest("butto
   if (which === "base" && D.baseline) show(D.baseline, "Baseline (hand design)"); else show(selected, label(selected))});
 $("#scale").addEventListener("input", deform); $("#marks").addEventListener("change", e => {if (marks) {marks.visible = e.target.checked; draw()}});
 $("#ghost").addEventListener("change", deform);
+// load-up animation (G2): ramp the deformation scale from zero to its maximum and back, eased
+let playing = null;
+$("#play").addEventListener("click", () => {
+  if (playing) {cancelAnimationFrame(playing); playing = null; $("#play").textContent = "▶ load"; return}
+  const sl = $("#scale"), top = parseFloat(sl.max) || 1, t0 = performance.now(), period = 3200;
+  $("#play").textContent = "■ stop";
+  const step = now => {
+    const ph = ((now - t0) % period) / period, ease = 0.5 - 0.5*Math.cos(2*Math.PI*ph);
+    sl.value = (top * ease).toFixed(3); deform(); playing = requestAnimationFrame(step)};
+  playing = requestAnimationFrame(step);
+});
 
 // ---------------------------------------------------------------- Pareto explorer
 let selected = rec;
