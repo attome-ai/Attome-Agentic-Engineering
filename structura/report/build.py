@@ -72,7 +72,7 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
     hist = []
     for t in sorted(study.get_trials(deepcopy=False), key=lambda t: t.number):
         m = t.user_attrs.get("metrics") or {}
-        hist.append({"n": t.number, "status": t.user_attrs.get("status", t.state.name), "feasible": bool(t.user_attrs.get("feasible")), **m})
+        hist.append({"n": t.number, "status": t.user_attrs.get("status", t.state.name), "feasible": bool(t.user_attrs.get("feasible")), "params": {k: float(v) for k, v in t.params.items()}, **m})
     timeline = []
     if study_id:
         from structura.agent import studies as S

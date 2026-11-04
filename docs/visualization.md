@@ -6,9 +6,9 @@ comes from a stored engine run. Screenshots: `docs/screenshots/report_p2_demo_*.
 
 | Feature | Built | Still to do |
 |---|---|---|
-| G1 3D viewer with fields | Von Mises, displacement and safety view on the skin mesh (engine `write_skin`), viridis colormap with legend in real units, hover probe with value, location and local safety factor, own orbit controls, light/dark | Contour bands and isolines, peak labels pinned in 3D, load and support symbols, agent annotations in 3D, measured 200k-triangle load time |
-| G2 Deformation, modes, clip, probe | Deformation slider with undeformed ghost, probe | Load-up animation, mode-shape animation, clip plane, pinned probes |
-| G3 History | Safety factor per evaluation with the required band, lightest-feasible-so-far line, failed evaluations marked | Live streaming, shape morph replay, parallel coordinates, Sobol bar chart, thumbnail gallery |
+| G1 3D viewer with fields | Von Mises, displacement, safety and temperature on the skin mesh, viridis colormap with legend in real units, hover probe, own orbit controls, light/dark; load arrows, support boxes (fully held / one direction) and heat-input arrows from the engine's markers | Contour bands and isolines, peak labels pinned in 3D, agent annotations in 3D, measured 200k-triangle load time |
+| G2 Deformation, modes, clip, probe | Deformation slider with undeformed ghost, probe | Load-up animation, mode-shape animation, pinned probes; clip plane only with volume data (the report carries the surface mesh, so a browser cut would show surface values inside; use the VTU in ParaView) |
+| G3 History | Objective per evaluation with the requirement band, best-feasible-so-far line, failed evaluations marked; brushable parallel coordinates of every evaluation (parameters and results) | Live streaming, shape morph replay, Sobol bar chart, thumbnail gallery |
 | G4 Pareto explorer | Every evaluation, the fine-mesh Pareto designs, recommended ring, baseline square; click loads the design in 3D and in the comparison | Error bars and grades per point, drag-to-steer, 3-objective view |
 | G5 Baseline vs optimized | Toggle between selected and baseline in the same camera, comparison table with changes and pass/fail | Two synchronized viewers, translucent overlay, test photos and curves |
 | G6 Agent timeline | Steps with outcome and detail from the study log | Live streaming, time travel, replay |

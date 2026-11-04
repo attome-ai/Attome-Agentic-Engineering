@@ -94,6 +94,12 @@ footer{color:var(--muted);font-size:.8rem;margin-top:20px}
     </section>
   </div>
 
+  <section class="card" style="margin-top:14px">
+    <h2>Every evaluated design: parameters and results</h2>
+    <svg id="pcp" viewBox="0 0 900 300" width="100%" role="img" aria-label="Parallel coordinates of all evaluated designs" style="touch-action:none"></svg>
+    <p class="muted" style="font-size:.8rem;margin:.3rem 0 0" id="pcpnote"></p>
+  </section>
+
   <section class="card" style="margin-top:14px" id="mfgcard">
     <h2>Making the recommended design</h2>
     <div class="tblw"><table id="mfg"></table></div>
@@ -145,6 +151,49 @@ if (D.manufacturing) {
            `the least support is along ${dirs[best] || best} (re-run the analysis in that direction before changing it: printed strength depends on layer direction). ` : "") +
     "Every rate and price is a stated assumption in data/processes.json; replace them with your own printer, shop and supplier numbers.";
 } else $("#mfgcard").style.display = "none";
+// ---------------------------------------------------------------- parallel coordinates (G3): every evaluation, brushable
+(function(){
+  const ok = D.history.filter(h => h.status === "ok" && h.params);
+  if (!ok.length) {$("#pcp").closest("section").style.display = "none"; return}
+  const pk = Object.keys(ok[0].params), units = {mass_g: "g", safety_factor: "", max_disp_mm: "mm", max_von_mises_MPa: "MPa", peak_temperature: "degC", cost: "USD"};
+  const rk = [...new Set([...D.objectives.map(o => o.quantity), "max_disp_mm"])].filter(k => ok.some(h => h[k] != null));
+  const axes = [...pk.map(k => ({k, get: h => h.params[k], label: k.replace(/_/g, " ")})), ...rk.map(k => ({k, get: h => h[k], label: qn(k) + (units[k] ? ` (${units[k]})` : "")}))];
+  const W = 900, H = 300, T = 34, B = 26, L = 56, R = 64, X = i => L + i*(W - L - R)/(axes.length - 1);
+  for (const a of axes) {const v = ok.map(a.get).filter(x => x != null); a.lo = Math.min(...v); a.hi = Math.max(...v); if (a.hi === a.lo) a.hi = a.lo + 1;
+    a.Y = x => H - B - (x - a.lo)/(a.hi - a.lo)*(H - T - B); a.brush = null}
+  const rec = D.designs.find(d => d.recommended), recN = rec ? rec.trial : null;
+  const svg = $("#pcp");
+  function inside(h){return axes.every(a => !a.brush || (a.get(h) != null && a.get(h) >= Math.min(...a.brush) && a.get(h) <= Math.max(...a.brush)))}
+  function render(){
+    let s = "", n = 0;
+    const line = h => axes.map((a, i) => `${X(i).toFixed(1)},${a.Y(a.get(h)).toFixed(1)}`).join(" ");
+    for (const h of ok) {const on = inside(h); n += on && h.feasible;
+      if (h.n === recN) continue;
+      s += `<polyline points="${line(h)}" fill="none" stroke="${on ? (h.feasible ? cssv('--accent') : cssv('--muted')) : cssv('--line')}" stroke-width="1" opacity="${on ? (h.feasible ? 0.7 : 0.12) : 0.06}"/>`}
+    const r = ok.find(h => h.n === recN);
+    if (r) s += `<polyline points="${line(r)}" fill="none" stroke="#d9480f" stroke-width="2.6"><title>recommended design (trial ${recN})</title></polyline>`;
+    axes.forEach((a, i) => {
+      s += `<line x1="${X(i)}" x2="${X(i)}" y1="${T}" y2="${H-B}" stroke="${cssv('--ink')}" stroke-width="1"/>`;
+      if (a.brush) s += `<rect x="${X(i)-7}" y="${Math.min(...a.brush.map(a.Y))}" width="14" height="${Math.abs(a.Y(a.brush[0]) - a.Y(a.brush[1]))}" fill="${cssv('--accent')}" opacity="0.25" stroke="${cssv('--accent')}"/>`;
+      s += `<text x="${X(i)}" y="${T-18}" text-anchor="middle" font-size="11" font-weight="600">${esc(a.label)}</text>`;
+      s += `<text x="${X(i)+4}" y="${T+4}" font-size="10">${f3(a.hi)}</text><text x="${X(i)+4}" y="${H-B+12}" font-size="10">${f3(a.lo)}</text>`;
+      s += `<rect class="ax" data-i="${i}" x="${X(i)-12}" y="${T}" width="24" height="${H-T-B}" fill="transparent" style="cursor:ns-resize"/>`});
+    svg.innerHTML = s;
+    const brushed = axes.filter(a => a.brush).length;
+    $("#pcpnote").textContent = `${ok.length} evaluated designs, one line each: teal feasible, grey not, orange the recommended design. ` +
+      (brushed ? `${n} feasible designs inside the selected ranges. Double-click an axis to clear its range.` : "Drag along an axis to keep only designs in that range.");
+  }
+  let drag = null;
+  const toVal = (a, e) => {const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; const y = p.matrixTransform(svg.getScreenCTM().inverse()).y;
+    return a.lo + (H - B - Math.min(H - B, Math.max(T, y)))/(H - T - B)*(a.hi - a.lo)};
+  svg.addEventListener("pointerdown", e => {const t = e.target.closest(".ax"); if (!t) return; const a = axes[+t.dataset.i]; const v = toVal(a, e);
+    drag = a; a.brush = [v, v]; svg.setPointerCapture(e.pointerId)});
+  svg.addEventListener("pointermove", e => {if (!drag) return; drag.brush[1] = toVal(drag, e); render()});
+  svg.addEventListener("pointerup", () => {if (drag && Math.abs(drag.brush[0] - drag.brush[1]) < 1e-9*(drag.hi - drag.lo + 1)) drag.brush = null; drag = null; render()});
+  svg.addEventListener("dblclick", e => {const t = e.target.closest(".ax"); if (t) {axes[+t.dataset.i].brush = null; render()}});
+  render();
+})();
+
 $("#spec").innerHTML = "<tr><th>Id</th><th>Requirement</th><th>Source</th></tr>" + D.spec.requirements.map(r =>
   `<tr><td>${esc(r.id)}</td><td>${esc(r.quantity)} ${esc(r.op)} ${esc(r.value)} ${r.unit === "1" ? "" : esc(r.unit)}</td><td class="muted">${esc(r.source)}</td></tr>`).join("");
 $("#assump").innerHTML = (D.trust && D.trust.assumptions || []).map(a => `<li>${esc(a)}</li>`).join("");
