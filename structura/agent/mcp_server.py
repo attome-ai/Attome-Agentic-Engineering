@@ -16,7 +16,7 @@ import uuid
 from pathlib import Path
 
 import optuna
-from mcp.server.mcpserver import MCPServer
+from mcp.server.mcpserver import Image, MCPServer
 
 from structura import engine
 from structura.agent import loads as L
@@ -36,7 +36,8 @@ INSTRUCTIONS = """You are driving the Attome AE engineering engine. Workflow:
 6. verify the chosen design and report its trust grade; build_report and give the user the file.
 Geometry, in order of preference: an existing family (list_families); a design graph from the grammar (compose_design,
 describe_grammar); for the user's own part, upload_part then add_face / add_lightening_pocket; only when the grammar
-cannot express the shape, freeform_cad with CadQuery code (fixed geometry, gated like any other part).
+cannot express the shape, freeform_cad with CadQuery code (fixed geometry, gated like any other part). For a new
+design, propose several candidates (compose_candidates), look at the best with render_views, then optimize it.
 Never state a number the tools did not return. Never tune parameters yourself inside a loop: that is the optimizer's job."""
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -406,6 +407,30 @@ def compose_candidates(study_id: str, candidates: list[dict], mesh_size: float =
           ranking=[(r["name"], r["stage"], r.get("feasible")) for r in rows])
     return _ok(ranked=rows, winner=rows[0] if rows and rows[0]["stage"] == "solved" else None,
                note="ranked at default parameters on a coarse mesh: a screening, not a verdict; optimize the winner, then verify")
+
+
+@mcp.tool(description="Look at a design before solving it (B1 visual review): renders front, back, left, right, top and isometric "
+                      "views with the overall size, from a family (+ params) or a design graph. Returns the image and its file path. "
+                      "Check it against the brief: right overall shape, holes where expected, no stray or floating bodies, plausible "
+                      "proportions. Reject and revise candidates that do not match before spending solver time on them.")
+def render_views(family: str | None = None, params: dict | None = None, graph: dict | None = None, title: str = ""):
+    from structura.agent.render import render
+    out = ROOT / "runs" / "renders" / uuid.uuid4().hex[:10]
+    sets = [f"{k}={v}" for k, v in (params or {}).items()]
+    try:
+        if graph is not None:
+            out.mkdir(parents=True, exist_ok=True)
+            gp = out / "graph_in.json"
+            gp.write_text(json.dumps(graph))
+            engine.call("build", graph=str(gp), set=sets, out=str(out))
+        elif family:
+            engine.call("build", family=family, set=sets, out=str(out))
+        else:
+            return _err("render", "give a family (with params) or a design graph")
+    except engine.EngineError as e:
+        return _err(e.kind, str(e))
+    png = render(out / "part.stl", out / "views.png", title or (family or "design graph"))
+    return [json.dumps({"ok": True, "file": str(png)}), Image(path=str(png))]
 
 
 # ------------------------------------------------------------------ evaluation and optimization

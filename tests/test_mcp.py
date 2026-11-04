@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 SPEC = Path(__file__).resolve().parents[1] / "docs" / "examples" / "bracket_20kg.json"
 TOOLS = {"build_report", "derive_load", "rank_questions", "propose_relaxation", "list_families", "describe_grammar", "plan_study", "create_study", "accept_spec", "check_feasibility",
-         "compose_design", "evaluate_design", "run_optimization", "get_job", "get_results", "steer", "explain", "verify", "manufacturing_advice", "upload_part", "add_face", "add_lightening_pocket", "freeform_cad", "compose_candidates"}
+         "compose_design", "evaluate_design", "run_optimization", "get_job", "get_results", "steer", "explain", "verify", "manufacturing_advice", "upload_part", "add_face", "add_lightening_pocket", "freeform_cad", "compose_candidates", "render_views"}
 
 
 def test_tools_over_the_protocol():
@@ -216,3 +216,15 @@ def test_compose_candidates_best_of_n(tmp_path, monkeypatch):
     finally:
         for p in (ROOT / "families" / "uploads").glob("cand_bestofn_*.json"):
             p.unlink()
+
+
+def test_render_views_returns_an_image():
+    """B1: the agent can look at a design; the image travels over the protocol."""
+    async def go():
+        async with mcp.Client(srv.mcp) as c:
+            r = await c.call_tool("render_views", {"family": "bracket", "params": {"rib_count": 2}})
+            kinds = [x.type for x in r.content]
+            assert "image" in kinds and "text" in kinds
+            img = next(x for x in r.content if x.type == "image")
+            assert img.mime_type == "image/png" and len(img.data) > 10000
+    anyio.run(go)

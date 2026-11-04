@@ -305,4 +305,9 @@ Best of N (`compose_candidates`): the agent proposes several design graphs at on
 once at its default parameters against the study's spec (coarse mesh, a screening) and they come back ranked (gate
 pass, meets every requirement, first objective), with the reason each loser lost (a missing load or support face, a
 graph error, a gate reason, or the failed requirement). Rejected graphs leave no family file behind, and the engine's
-family listing skips unloadable files. A six-view render review is still to do.
+family listing skips unloadable files.
+
+Visual review (`render_views`): the engine's STL of a family design or a graph is rendered offline (matplotlib) in
+six views (front, back, left, right, top, isometric) with the overall size, about 2 s, and returned to the agent as
+an image over MCP so it can check the shape against the brief before solving. Example:
+`docs/screenshots/render_views_bracket.png`.

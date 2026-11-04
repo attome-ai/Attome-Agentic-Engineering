@@ -406,6 +406,7 @@ int run(const Args& a) {
       std::string dir = a.opt.at("out");
       d.save(dir);
       write_step(part.shape, (fs::path(dir) / "part.step").string());
+      write_stl(part.shape, (fs::path(dir) / "part.stl").string());  // for renders and printing
       std::ofstream(fs::path(dir) / "build.json") << out.dump(2);
       out["folder"] = fs::absolute(dir).string();
     }
