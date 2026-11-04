@@ -28,3 +28,33 @@ Notes found while building it:
 - gmsh's INP export names element sets after geometry entities, not physical groups; faces are found through the
   physical groups' node sets instead.
 - CalculiX 2.23 does not print nodal stresses with `*NODE PRINT ... S`; stresses are read from the `.frd` file.
+
+## Cantilever against beam theory (task C1-T2)
+
+Measured 2026-11-04, same machine, CalculiX 2.23 through the C++ engine (`engine_tests.exe -tc="C1-T2: cantilever*"`).
+100 x 10 x 10 mm S235 beam, root face fixed, 100 N downward spread over the tip face, C3D10 at 2.5 mm (20,388 DOF).
+
+| Quantity | Value |
+|---|---|
+| Tip deflection (mean over the tip face) | 0.19044 mm |
+| Euler-Bernoulli PL^3/3EI | 0.19048 mm |
+| With shear correction (Timoshenko, k = 5/6) | 0.19196 mm |
+| Error against the shear-corrected value | -0.79% (limit 2%) |
+| Reaction equilibrium error | below 0.5% |
+| Solve time (4 threads) | 0.42 s |
+
+## Bracket evaluation job (C1-T2 end to end)
+
+`structura solve --job docs/examples/bracket_job.json`: default bracket (6 mm, one rib), PETG, 981 N (100 kg) on the
+arm's end face, bolts fixed and the wall face supported normal to the wall. Build, gate, mesh (10,389 C3D10,
+60,690 DOF) and solve take 2.1 s in total; solve alone 1.2 s.
+
+| Result | Value |
+|---|---|
+| Mass | 96.4 g |
+| Max displacement | 13.5 mm |
+| Peak von Mises | 186 MPa (PETG yield 50 MPa: this design fails at 100 kg) |
+| Equilibrium error | 0.0 |
+
+With the bolts as the only support the bracket pivots about the bottom holes (224 mm, 824 MPa); the wall bearing
+support is required for a realistic result.

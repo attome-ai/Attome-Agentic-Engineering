@@ -6,6 +6,7 @@
 //   structura build  (--family NAME | --graph FILE) [--params FILE] [--set k=v ...] [--out DIR]
 //   structura gate   (--family NAME | --graph FILE) [--params FILE] [--set k=v ...] [--limits FILE]
 //   structura mesh   (--family NAME | --graph FILE) [--params FILE] [--set k=v ...] --out DIR [--size MM] [--order 1|2]
+//   structura solve  --job FILE [--out DIR]     build, gate, mesh and solve every load case of a job
 //   structura sweep  (--family NAME | --graph FILE) [--n 200] [--seed 1] [--out FILE]   random designs through the gate
 #include <chrono>
 #include <cmath>
@@ -19,6 +20,7 @@
 
 #include "structura/compile.hpp"
 #include "structura/design.hpp"
+#include "structura/fea.hpp"
 #include "structura/gate.hpp"
 #include "structura/mesh.hpp"
 #include "structura/occ.hpp"
@@ -125,6 +127,52 @@ int run(const Args& a) {
         out.push_back({{"name", g.name}, {"version", g.version}, {"doc", g.doc}, {"parameters", ps}, {"faces", faces}});
       }
     std::cout << out.dump(2) << "\n";
+    return 0;
+  }
+  if (a.cmd == "solve") {  // one evaluation: build -> gate -> mesh -> solve each load case
+    json job = read_json(a.opt.at("job"));
+    std::string out = a.opt.count("out") ? a.opt.at("out") : job.value("out", std::string("runs/job"));
+    DesignGraph g = job.contains("graph") ? DesignGraph::from_json(ojson::parse(job["graph"].dump())) : load_family(job.at("family"));
+    Values v;
+    const json jp = job.value("params", json::object());  // keep alive: items() of a temporary dangles
+    for (auto& [k, x] : jp.items()) v[k] = x.get<double>();
+    Design d(g, v);
+    CompiledPart part = d.build();
+    d.save((fs::path(out) / "design").string());
+    write_step(part.shape, (fs::path(out) / "design" / "part.step").string());
+    GateLimits lim = job.contains("gate") ? GateLimits::from_json(job["gate"]) : GateLimits{};
+    if (!lim.design_space) lim.design_space = part.design_space();
+    GateResult gr = gate(part.shape, lim);
+    json res = {{"hash", d.hash()}, {"params", d.params}, {"gate", gr.to_json()}, {"folder", fs::absolute(out).string()}};
+    if (!gr.ok) {
+      res["status"] = "gate_fail";
+      std::ofstream(fs::path(out) / "evaluation.json") << res.dump(2);
+      std::cout << res.dump(2) << "\n";
+      return 0;
+    }
+    MeshOptions mo;
+    json jm = job.value("mesh", json::object());
+    mo.size = jm.value("size", 4.0);
+    mo.order = jm.value("order", 2);
+    mo.threads = jm.value("threads", 1);
+    Mesh m = mesh_shape(part.shape, part.named_faces(), (fs::path(out) / "mesh").string(), mo);
+    res["mesh"] = m.report;
+    Material mat = load_material(job.value("material", std::string("PETG")));
+    SolveOptions so;
+    so.threads = job.value("solver_threads", 1);
+    json cases = json::object();
+    json lcs = job.contains("load_cases") ? job["load_cases"] : json::array({job.at("load_case")});
+    for (auto& jl : lcs) {
+      LoadCase lc = LoadCase::from_json(jl);
+      Result r = solve_static(m, mat, lc, (fs::path(out) / ("solve_" + lc.name)).string(), so);
+      r.save((fs::path(out) / ("result_" + lc.name)).string());
+      cases[lc.name] = r.summary();
+    }
+    res["material"] = {{"id", mat.id}, {"E", mat.E}, {"nu", mat.nu}, {"density", mat.density}, {"yield", mat.yield}, {"source", mat.source}, {"verify", mat.verify}};
+    res["results"] = cases;
+    res["status"] = "ok";
+    std::ofstream(fs::path(out) / "evaluation.json") << res.dump(2);
+    std::cout << res.dump(2) << "\n";
     return 0;
   }
   if (a.cmd == "sweep") {  // random in-bounds designs through build and gate

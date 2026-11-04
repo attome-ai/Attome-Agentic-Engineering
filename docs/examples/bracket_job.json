@@ -1,0 +1,41 @@
+{
+  "family": "bracket",
+  "params": {
+    "thickness": 6,
+    "plate_width": 50,
+    "rib_count": 1,
+    "rib_thickness": 4,
+    "fillet_radius": 3
+  },
+  "material": "PETG",
+  "mesh": {
+    "size": 4,
+    "order": 2
+  },
+  "solver_threads": 4,
+  "load_cases": [
+    {
+      "name": "service",
+      "supports": [
+        {
+          "group": "mount_holes"
+        },
+        {
+          "group": "wall_face",
+          "dofs": "1"
+        }
+      ],
+      "loads": [
+        {
+          "group": "load_face",
+          "force": [
+            0,
+            0,
+            -981
+          ]
+        }
+      ]
+    }
+  ],
+  "note": "Wall contact is modelled as a bilateral support normal to the wall face (u_x = 0); a compression-only contact is the C3 refinement."
+}

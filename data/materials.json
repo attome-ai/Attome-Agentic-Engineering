@@ -1,0 +1,30 @@
+{
+  "units": {"E": "MPa", "nu": "1", "density": "tonne/mm^3", "yield": "MPa", "k": "W/(mm K)"},
+  "note": "Values are for the bulk material. 3D-printed parts are weaker and anisotropic; the print knock-down (A2-T2) is applied separately. Entries marked verify=true were taken from the cited datasheet family but not re-read from the PDF in this session; confirm before quoting in the proposal.",
+  "materials": {
+    "PETG": {
+      "name": "PETG copolyester (injection-moulded reference)",
+      "E": 2100, "nu": 0.38, "density": 1.27e-9, "yield": 50, "k": 0.00021,
+      "source": "Eastman Eastar copolyester 6763 product data sheet (tensile modulus, yield stress, density); Poisson's ratio and conductivity typical for PETG",
+      "verify": true
+    },
+    "PLA": {
+      "name": "PLA (injection-moulded reference)",
+      "E": 3600, "nu": 0.36, "density": 1.24e-9, "yield": 60, "k": 0.00013,
+      "source": "NatureWorks Ingeo 4043D technical data sheet (tensile modulus, yield, density); Poisson's ratio and conductivity typical for PLA",
+      "verify": true
+    },
+    "AL6061T6": {
+      "name": "Aluminium 6061-T6",
+      "E": 68900, "nu": 0.33, "density": 2.70e-9, "yield": 276, "k": 0.167,
+      "source": "ASM Aerospace Specification Metals, Aluminum 6061-T6 data sheet",
+      "verify": true
+    },
+    "S235": {
+      "name": "Structural steel S235",
+      "E": 210000, "nu": 0.30, "density": 7.85e-9, "yield": 235, "k": 0.050,
+      "source": "EN 10025-2 (yield, thickness up to 16 mm); EN 1993-1-1 section 3.2.6 (E, nu, density); conductivity typical for carbon steel",
+      "verify": true
+    }
+  }
+}
