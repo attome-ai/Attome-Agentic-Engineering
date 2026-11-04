@@ -1,0 +1,24 @@
+name: attome-ae
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  # CAD
+  - cadquery
+  - build123d
+  # meshing and solving (gmsh and calculix are GPL: run as subprocesses only, see docs/licences.md)
+  - gmsh
+  - calculix
+  - meshio
+  - scikit-fem
+  # numerics and data
+  - numpy
+  - scipy
+  - pydantic
+  # optimization
+  - optuna
+  - pymoo
+  # results and visualization export
+  - pyvista
+  # tests
+  - pytest

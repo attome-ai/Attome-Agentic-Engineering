@@ -1,0 +1,11 @@
+[project]
+name = "structura"
+version = "0.0.1"
+description = "Attome Agentic Engineering engine: brief -> design graph -> mesh -> solve -> optimize -> verify"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+markers = [
+    "validation: solver validation cases against analytical or NAFEMS references",
+]
+testpaths = ["tests"]
