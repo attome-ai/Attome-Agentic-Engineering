@@ -59,7 +59,7 @@ def _record(study: optuna.Study, spec: SpecInfo, params: dict, ev, seconds: floa
 
 
 def run_ax(spec: SpecInfo, budget: int, seed: int, study: optuna.Study, mesh_size: float | None, threads: int,
-           batch: int = 4) -> None:
+           batch: int = 4, on_trial=None) -> None:
     from ax import Client
     from ax.api.configs import RangeParameterConfig
 
@@ -85,17 +85,21 @@ def run_ax(spec: SpecInfo, budget: int, seed: int, study: optuna.Study, mesh_siz
                     client.mark_trial_failed(trial_index=idx, failed_reason=ev.reason[:200])
                 _record(study, spec, params, ev, time.perf_counter() - t0)
                 done += 1
+                if on_trial:
+                    on_trial(ev.status == "ok" and ev.feasible)
 
 
 def run(spec_path: str | Path, budget: int, seed: int = 0, method: str | None = None, study_dir: str | Path | None = None,
-        mesh_size: float | None = None, threads: int = 1, n_jobs: int = 4) -> optuna.Study:
+        mesh_size: float | None = None, threads: int = 1, n_jobs: int = 4, on_trial=None) -> optuna.Study:
+    """on_trial(feasible: bool) is called after every finished evaluation (progress reporting without touching storage)."""
     spec = load_spec(spec_path)
     chosen, reason = (method, "method set by the caller") if method else choose(spec, budget)
     study_dir = Path(study_dir or Path("runs") / f"{spec.id}-{chosen}-{seed}")
     study_dir.mkdir(parents=True, exist_ok=True)
     if chosen in ("nsga2", "nsga3", "random", "tpe", "default"):
+        cbs = [lambda study, t: on_trial(bool(t.user_attrs.get("feasible")))] if on_trial else None
         s = st.run(spec_path, budget, sampler=chosen, seed=seed, study_dir=study_dir, mesh_size=mesh_size, threads=threads,
-                   n_jobs=n_jobs)
+                   n_jobs=n_jobs, callbacks=cbs)
     elif chosen == "botorch_qnehvi":
         storage = f"sqlite:///{(study_dir / 'study.db').resolve().as_posix()}"
         s = optuna.create_study(study_name=study_dir.name, storage=storage, load_if_exists=True, directions=spec.directions)
@@ -104,7 +108,7 @@ def run(spec_path: str | Path, budget: int, seed: int = 0, method: str | None = 
         s.set_user_attr("objectives", spec.objectives)
         s.set_user_attr("requirements", [r["id"] for r in spec.requirements])
         s.set_user_attr("sampler", chosen)
-        run_ax(spec, budget, seed, s, mesh_size, threads, batch=n_jobs)
+        run_ax(spec, budget, seed, s, mesh_size, threads, batch=n_jobs, on_trial=on_trial)
         (study_dir / "summary.json").write_text(json.dumps(st.summary(s), indent=2))
     else:
         raise ValueError(f"unknown method {chosen!r}")

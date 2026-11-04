@@ -162,9 +162,14 @@ def evaluate_design(study_id: str, params: dict, mesh_size: float = 4.0) -> dict
 
 def _run_job(job_id: str, study_id: str, budget: int, method: str | None, mesh_size: float):
     job = _jobs[job_id]
+
+    def progress(feasible: bool):
+        job["trials"] = job.get("trials", 0) + 1
+        job["feasible"] = job.get("feasible", 0) + int(feasible)
+
     try:
         s = portfolio.run(S.latest_spec_path(study_id), budget=budget, method=method, study_dir=S.folder(study_id) / "opt",
-                          mesh_size=mesh_size, n_jobs=8 if method not in (None, "botorch_qnehvi") else 4)
+                          mesh_size=mesh_size, n_jobs=8 if method not in (None, "botorch_qnehvi") else 4, on_trial=progress)
         job.update(state="done", method=s.user_attrs.get("method"), reason=s.user_attrs.get("method_reason"))
         S.log(study_id, "optimize", "done", job=job_id, method=job["method"], trials=len(s.trials))
     except Exception as e:  # reported, never swallowed
@@ -190,10 +195,8 @@ def get_job(job_id: str) -> dict:
     job = _jobs.get(job_id)
     if not job:
         return _err("job", f"unknown job {job_id}")
-    s = _study(job["study_id"])
-    trials = s.get_trials(deepcopy=False) if s else []
-    return _ok(**{k: v for k, v in job.items() if k != "trace"}, trials=len(trials),
-               feasible=sum(1 for t in trials if t.user_attrs.get("feasible")))
+    # progress comes from the job itself: opening the study database while the job creates it races on the schema
+    return _ok(**{"trials": 0, "feasible": 0, **{k: v for k, v in job.items() if k != "trace"}})
 
 
 @mcp.tool(description="Results of the study: feasible Pareto front (each point's parameters and objectives), the recommended knee design, and counts by status.")

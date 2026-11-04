@@ -47,7 +47,7 @@ def test_workflow_with_approval_gate(tmp_path, monkeypatch):
         if j["state"] != "running":
             break
         time.sleep(0.5)
-    assert j["state"] == "done", j
+    assert j["state"] == "done", srv._jobs[job]
     res = srv.get_results(sid)
     assert res["ok"] and res["summary"]["trials"] == 16
     if len(res["front"]) >= 2:
