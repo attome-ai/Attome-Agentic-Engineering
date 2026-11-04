@@ -18,6 +18,9 @@ dependencies:
   # optimization
   - optuna
   - pymoo
+  - ax-platform
+  - botorch
+  - salib
   # results and visualization export
   - pyvista
   # tests

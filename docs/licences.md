@@ -44,10 +44,14 @@ LGPL-2.1 **only** (with the Open CASCADE exception), not "or later".
 | doctest | 2.5.3 | MIT | https://raw.githubusercontent.com/doctest/doctest/master/LICENSE.txt | 2026-11-04 |
 | Ninja | 1.13.2 | Apache-2.0 | https://raw.githubusercontent.com/ninja-build/ninja/master/COPYING | 2026-11-04 |
 | Eigen (in-house solver, F2-T4/D3-T3) | 5.0.1 | MPL-2.0 | https://gitlab.com/libeigen/eigen/-/raw/master/COPYING.MPL2 | 2026-11-04 |
+| Ax (ax-platform) | 1.2.4 | MIT | https://raw.githubusercontent.com/facebook/Ax/main/LICENSE | 2026-11-04 |
+| BoTorch | 0.17.2 | MIT | https://raw.githubusercontent.com/pytorch/botorch/main/LICENSE | 2026-11-04 |
+| PyTorch | 2.8.0 | BSD-3-Clause | https://raw.githubusercontent.com/pytorch/pytorch/main/LICENSE | 2026-11-04 |
+| SALib | 1.6.0 | MIT | https://raw.githubusercontent.com/SALib/SALib/main/LICENSE.md | 2026-11-04 |
 | three.js (dashboard) | not yet installed | MIT | https://raw.githubusercontent.com/mrdoob/three.js/dev/LICENSE | 2026-11-04 |
 | plotly.js (dashboard) | not yet installed | MIT | https://raw.githubusercontent.com/plotly/plotly.js/master/LICENSE | 2026-11-04 |
 
-Planned later and to be verified when added: Ax/BoTorch (D1), SALib (D1), FastAPI (I2), the MCP Python SDK (E1),
+Planned later and to be verified when added: FastAPI (I2), the MCP Python SDK (E1),
 Netgen and fTetWild (C4 fallbacks), OpenFOAM, SU2 and XLB (C5).
 
 ## Excluded
