@@ -74,6 +74,28 @@ std::string b64(const void* data, size_t n) {
 }
 }  // namespace
 
+void write_volume(const Mesh& m, const std::map<int, double>& field, const std::string& name, const std::string& unit, const std::string& path) {
+  std::map<int, uint32_t> index;
+  std::vector<float> pos, scalar;
+  std::vector<uint32_t> tets;
+  tets.reserve(m.tets.size() * 4);
+  for (auto& t : m.tets)
+    for (int k = 1; k <= 4; ++k) {
+      auto [it, added] = index.emplace(t[k], static_cast<uint32_t>(index.size()));
+      if (added) {
+        auto& c = m.nodes.at(t[k]);
+        pos.insert(pos.end(), {float(c[0]), float(c[1]), float(c[2])});
+        auto f = field.find(t[k]);
+        scalar.push_back(f == field.end() ? 0.f : float(f->second));
+      }
+      tets.push_back(it->second);
+    }
+  std::ofstream o(path);
+  if (!o) throw std::runtime_error("cannot write " + path);
+  o << nlohmann::json({{"name", name}, {"unit", unit}, {"positions", b64(pos.data(), pos.size() * 4)}, {"tets", b64(tets.data(), tets.size() * 4)},
+                       {"scalar", b64(scalar.data(), scalar.size() * 4)}}).dump();
+}
+
 void write_skin(const Mesh& m, const Result& r, const std::string& path, double yield_MPa) {
   // boundary faces: tet faces (by sorted corners) that belong to exactly one element; keep the 6 nodes in order
   static const int F[4][6] = {{1, 2, 3, 5, 6, 7}, {1, 4, 2, 8, 9, 5}, {2, 4, 3, 9, 10, 6}, {3, 4, 1, 10, 8, 7}};

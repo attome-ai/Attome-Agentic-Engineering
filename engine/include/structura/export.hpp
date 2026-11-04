@@ -31,6 +31,10 @@ void write_skin(const Mesh& m, const Result& r, const std::string& path, double 
 void write_skin_scalar(const Mesh& m, const std::map<int, double>& field, const std::string& name, const std::string& unit,
                        const std::string& path);
 
+// G2: the volume mesh's corner nodes and one nodal field, for slicing in the viewer. JSON with base64 little-endian
+// arrays: positions float32 xyz, tets uint32 (4 corners, 0-based), scalar float32.
+void write_volume(const Mesh& m, const std::map<int, double>& field, const std::string& name, const std::string& unit, const std::string& path);
+
 // Writes part.step, part.stl and, per load case, result.vtu next to result.json; returns the files written.
 std::vector<std::string> export_bundle(const TopoDS_Shape& shape, const std::string& dir);
 

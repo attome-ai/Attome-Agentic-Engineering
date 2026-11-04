@@ -56,6 +56,16 @@ def hypervolume(points: list[Point], ref_minimized: np.ndarray) -> float:
     return float(HV(ref_point=np.asarray(ref_minimized, float))(np.array(pts)))
 
 
+def reference_point(study: optuna.Study) -> np.ndarray | None:
+    """A reference point just beyond the worst feasible value of each objective, for hypervolume in reports."""
+    pts = _points(study)
+    if not pts:
+        return None
+    worst = np.max([p.minimized for p in pts], axis=0)
+    best = np.min([p.minimized for p in pts], axis=0)
+    return worst + 0.1 * np.maximum(worst - best, 1e-9)
+
+
 def hypervolume_history(study: optuna.Study, ref_minimized: np.ndarray) -> list[float]:
     """Hypervolume of the feasible front after each trial, in trial order."""
     trials = sorted(study.get_trials(deepcopy=False), key=lambda t: t.number)

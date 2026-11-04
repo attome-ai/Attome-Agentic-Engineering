@@ -222,6 +222,7 @@ nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params
         r.save((fs::path(work) / ("result_" + lc.name)).string());
         write_vtu(m, r, (fs::path(work) / ("result_" + lc.name) / "result.vtu").string());
         write_skin(m, r, (fs::path(work) / ("result_" + lc.name) / "skin.json").string(), eff.yield);
+        write_volume(m, r.von_mises, "von_mises", "MPa", (fs::path(work) / ("result_" + lc.name) / "volume.json").string());
         nlohmann::json items = nlohmann::json::array();
         for (auto& l : lc.loads) items.push_back({{"kind", "load"}, {"group", l.group}, {"force", l.force}, {"pressure", l.pressure}});
         for (auto& sp : lc.supports) items.push_back({{"kind", "support"}, {"group", sp.group}, {"dofs", sp.dofs}});
@@ -236,6 +237,7 @@ nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params
       if (o.save_bundle) {
         fs::create_directories(fs::path(work) / ("result_" + tc.name));
         write_skin_scalar(m, tr.temperature, "temperature", "degC", (fs::path(work) / ("result_" + tc.name) / "skin.json").string());
+        write_volume(m, tr.temperature, "temperature", "degC", (fs::path(work) / ("result_" + tc.name) / "volume.json").string());
         nlohmann::json items = nlohmann::json::array();
         for (auto& f : tcr.fluxes) items.push_back({{"kind", "heat"}, {"group", f.group}, {"power", f.power}});
         add_markers((fs::path(work) / ("result_" + tc.name) / "skin.json").string(), m, items);

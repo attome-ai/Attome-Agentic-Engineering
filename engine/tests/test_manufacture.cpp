@@ -6,6 +6,8 @@
 #include <BRepPrimAPI_MakeBox.hxx>
 #include <gp_Pnt.hxx>
 
+#include <filesystem>
+#include <map>
 #include "structura/manufacture.hpp"
 #include "structura/occ.hpp"
 #include "structura/spec.hpp"
@@ -94,4 +96,20 @@ TEST_CASE("H1-T5: cost as a spec quantity needs a process; process_cost matches 
   double c = process_cost(shelf(), "PETG", {0, 0, 1}, P, "fdm", &d);
   CHECK(c == doctest::Approx(fdm_report(shelf(), "PETG", {0, 0, 1}, P)["cost"]["total"].get<double>()));
   CHECK_THROWS(process_cost(shelf(), "AL6061T6", {0, 0, 1}, P, "fdm"));  // not a printable material
+}
+
+TEST_CASE("H1-T2: the print direction follows tension across the layers and support") {
+  DesignSpec spec = DesignSpec::load((std::filesystem::path(STRUCTURA_ROOT) / "docs" / "examples" / "bracket_20kg.json").string());
+  std::map<std::string, double> p = {{"thickness", 8}, {"plate_width", 50}, {"rib_count", 2}, {"rib_thickness", 5}, {"fillet_radius", 3}};
+  nlohmann::json r = orientation_report(spec, p, (std::filesystem::temp_directory_path() / "structura_orient").string(), 4);
+  REQUIRE(r["directions"].size() == 6);
+  auto tension = [&](int i) { return r["directions"][i]["tension_across_layers_MPa"].get<double>(); };
+  // the arm bends in the x-z plane: stress runs along x, so layers stacked along x are pulled apart, layers stacked along y are not
+  CHECK(tension(2) > tension(4));
+  // opposite directions give the same layers, so the same tension
+  CHECK(tension(2) == doctest::Approx(tension(3)));
+  CHECK(r["recommended"].contains("direction"));
+  if (r["recommended"]["layers_ok"].get<bool>())
+    for (auto& d : r["directions"])
+      if (d["layers_ok"].get<bool>()) CHECK(r["recommended"]["support_volume_mm3"].get<double>() <= d["support_volume_mm3"].get<double>());
 }

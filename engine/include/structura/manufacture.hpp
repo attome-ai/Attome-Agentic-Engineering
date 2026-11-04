@@ -3,6 +3,8 @@
 // carries its source; the reports echo the inputs they used.
 #pragma once
 #include <array>
+#include <map>
+#include <vector>
 #include <string>
 
 #include <TopoDS_Shape.hxx>
@@ -39,5 +41,10 @@ nlohmann::json cnc_report(const TopoDS_Shape& shape, const std::string& material
 // Both reports plus advice: which process fits, which rule is closest to its limit, and the cost by each process.
 nlohmann::json manufacture_report(const TopoDS_Shape& shape, const std::string& material, const std::array<double, 3>& print_dir,
                                   const nlohmann::json& processes);
+
+struct DesignSpec;
+// H1: each of the six axis directions scored by tension across the layers (from one solve) and support volume, with the
+// recommended one and why. Stress comes from the spec's first load case at the top of its factor range.
+nlohmann::json orientation_report(const DesignSpec& spec, const std::map<std::string, double>& free_params, const std::string& workdir, int threads = 4);
 
 }  // namespace structura

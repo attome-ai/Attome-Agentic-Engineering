@@ -1,7 +1,7 @@
 {
   "name": "bracket",
   "version": "3",
-  "doc": "Wall-mounted shelf bracket: a vertical wall plate with two M6 clearance holes in a row below the ribs, a horizontal arm, an inner-corner fillet and triangular ribs under the arm with blunt, filleted tips. Version 2: knife-edge rib tips were a stress singularity that no mesh could converge (decision D6). Version 3: ribs run 95% of the arm and end in a 6 mm blunt tip with a 3 mm fillet against the arm, because the sharp corner was still a singularity that only local refinement could see, and the true stress there broke the safety factor (decision D10). The load acts on the arm's end face; the bracket is bolted through the mounting holes.",
+  "doc": "Wall-mounted shelf bracket: a vertical wall plate with two M6 clearance holes in a row below the ribs, a horizontal arm, an inner-corner fillet and triangular ribs under the arm with blunt, filleted tips. Version 2: knife-edge rib tips were a stress singularity that no mesh could converge (decision D6). Version 3: ribs run 95% of the arm and end in 6 mm blunt tips with 3 mm fillets against the arm and the wall plate, because the sharp corner was still a singularity that only local refinement could see, and the true stress there broke the safety factor (decision D10). The load acts on the arm's end face; the bracket is bolted through the mounting holes.",
   "parameters": {
     "thickness": {
       "unit": "mm",
@@ -124,6 +124,23 @@
           "thickness + 0.95 * (120 - thickness) - 6 + 0.2",
           "plate_width + 1",
           "100 - thickness + 0.05"
+        ]
+      }
+    },
+    {
+      "id": "wall_tip_fillet",
+      "type": "fillet",
+      "doc": "the same at the rib's lower tip, where it meets the wall plate (D10)",
+      "params": {
+        "radius": 3,
+        "edge_axis": "y",
+        "region": [
+          "thickness - 0.05",
+          -1,
+          "0.3 * (100 - thickness) + 6 - 0.2",
+          "thickness + 0.05",
+          "plate_width + 1",
+          "0.3 * (100 - thickness) + 6 + 0.2"
         ]
       }
     },

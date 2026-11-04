@@ -44,6 +44,7 @@ add_library(structura STATIC
   src/trace.cpp
   src/trust.cpp
   src/manufacture.cpp
+  src/orientation.cpp
   src/inspect.cpp
 )
 set_target_properties(structura PROPERTIES OUTPUT_NAME structura_core)

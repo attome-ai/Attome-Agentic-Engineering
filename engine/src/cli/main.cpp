@@ -234,6 +234,12 @@ int run(const Args& a) {
     std::cout << out.dump(2) << "\n";
     return 0;
   }
+  if (a.cmd == "orientations") {  // H1: the print direction, from tension across the layers and support volume
+    DesignSpec spec = DesignSpec::load(a.opt.at("spec"));
+    std::string work = a.opt.count("out") ? a.opt.at("out") : (fs::temp_directory_path() / "structura_orientations").string();
+    std::cout << orientation_report(spec, params_from(a), work, a.opt.count("threads") ? std::stoi(a.opt.at("threads")) : 4).dump(2) << "\n";
+    return 0;
+  }
   if (a.cmd == "meshsweep") {  // B4-T3: random designs through gate, repair and mesh; fit the mesh-ability model
     DesignGraph g = graph_from(a);
     int n = a.opt.count("n") ? std::stoi(a.opt.at("n")) : 500;

@@ -579,6 +579,17 @@ def build_report(study_id: str, baseline: dict | None = None) -> dict:
     return _ok(file=str(out), size_mb=round(out.stat().st_size / 1e6, 1))
 
 
+@mcp.tool(description="Choose the print direction for a design: each of the six axis directions with its tension across the layers (printed parts are weakest there) and "
+                      "support volume, the recommended one and why. Set the spec's print_direction to it before a final verify. Example: choose_print_direction('s1', {'thickness': 8, ...}).")
+def choose_print_direction(study_id: str, params: dict) -> dict:
+    try:
+        r = engine.call("orientations", spec=str(S.latest_spec_path(study_id)), set=[f"{k}={v}" for k, v in params.items()], timeout=600)
+    except engine.EngineError as e:
+        return _err(e.kind, str(e))
+    S.log(study_id, "print_direction", "ok", recommended=r["recommended"]["direction"])
+    return _ok(**r)
+
+
 @mcp.tool(description="Which model to use for an agent step (plan, spec_extraction, compose, repair, log_parsing, report_drafting, explanation), given how many "
                       "provider calls for this step have failed. Two failures move the step to the next model on its route; returns exhausted when none is left.")
 def model_route(step: str, failures: int = 0) -> dict:
