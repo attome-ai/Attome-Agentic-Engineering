@@ -19,6 +19,9 @@ import optuna
 from mcp.server.mcpserver import MCPServer
 
 from structura import engine
+from structura.agent import loads as L
+from structura.agent import playbooks as PB
+from structura.agent import questions as Q
 from structura.agent import studies as S
 from structura.optimize import decide, pareto, portfolio
 
@@ -42,8 +45,10 @@ def _ok(**kw) -> dict:
 
 
 def _err(kind: str, message: str, hint: str = "", **kw) -> dict:
-    """Typed error with a pointer to what to try (feeds the repair loop, E3)."""
-    return {"ok": False, "error": kind, "message": message, "hint": hint, **kw}
+    """Typed error with the matching repair playbook (E3): concrete next actions, not a reflection prompt."""
+    pb = PB.classify(message)
+    return {"ok": False, "error": kind, "message": message, "hint": hint, "playbook": pb["kind"], "actions": pb["actions"],
+            "repair_budget": PB.BUDGET, **kw}
 
 
 def _study(study_id: str) -> optuna.Study | None:
@@ -70,6 +75,27 @@ def list_families() -> list[dict]:
 @mcp.tool(description="Describe the design-graph grammar: every feature type with its parameters, kinds and bounds. Use before compose_design.")
 def describe_grammar() -> dict:
     return engine.describe()
+
+
+# ------------------------------------------------------------------ brief helpers
+@mcp.tool(description="Turn a mass in a use case into a design force with the working shown, e.g. derive_load(20, 'variable_action', supports=2) "
+                      "-> 98.1 N per bracket, factor 1.5 (EN 1990). Cases: static, variable_action (people, stored goods), permanent_action, "
+                      "sudden_application. Use the returned spec_hint for the load and factor_range; never invent a factor.")
+def derive_load(mass_kg: float, case: str = "variable_action", supports: int = 1) -> dict:
+    try:
+        return _ok(**L.derive(mass_kg, case, supports))
+    except ValueError as e:
+        return _err("load", str(e))
+
+
+@mcp.tool(description="Rank the brief's unknowns by how much they change the design before asking the user anything. Give the draft spec and a "
+                      "list of unknowns, each {name, question, low: {...}, high: {...}} with edits load_scale, add_load [fx,fy,fz] fraction, "
+                      "material, or factor. Returns at most three questions worth asking, each with its stake; default the rest and say so.")
+def rank_questions(spec: dict, unknowns: list[dict], quantity: str = "safety_factor") -> dict:
+    try:
+        return _ok(**Q.rank(spec, unknowns, quantity=quantity))
+    except engine.EngineError as e:
+        return _err(e.kind, str(e))
 
 
 # ------------------------------------------------------------------ plan, spec, approval

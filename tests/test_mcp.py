@@ -58,3 +58,44 @@ def test_workflow_with_approval_gate(tmp_path, monkeypatch):
         assert s in steps
     c = srv.compose_design(family="bracket", params={"thickness": 40}, study_id=sid)
     assert not c["ok"] and c["error"] == "graph"
+
+
+def test_derive_load_and_playbooks():
+    r = srv.derive_load(20, "variable_action", supports=2)
+    assert r["ok"] and abs(r["nominal_N"] - 98.067) < 0.01 and r["factor"] == 1.5 and "EN 1990" in r["source"]
+    assert not srv.derive_load(-1)["ok"]
+    from structura.agent import playbooks as PB
+    assert PB.classify("wall of 0.80 mm is thinner than the minimum 1.2 mm")["kind"] == "gate.thin_wall"
+    b = PB.RepairBudget("gate")
+    b.record("wall of 0.8 mm is thinner than the minimum")
+    step = b.record("wall of 0.9 mm is thinner than the minimum")
+    assert step["escalate_model"] and not step["stop"]
+    for _ in range(8):
+        step = b.record("wall is thinner than the minimum")
+    assert step["stop"] and step["next"] == "stop and report"
+    e = srv.compose_design(family="bracket", params={"thickness": 40})
+    assert e["playbook"] == "graph.bounds" and e["actions"]
+
+
+def test_rank_questions_finds_the_load_that_matters():
+    spec = json.loads(SPEC.read_text())
+    unknowns = [
+        {"name": "load magnitude", "question": "Is 20 kg the most it will ever hold?", "low": {}, "high": {"load_scale": 2.0}},
+        {"name": "material", "question": "PETG or PLA?", "low": {}, "high": {"material": "PLA"}},
+    ]
+    r = srv.rank_questions(spec, unknowns)
+    assert r["ok"]
+    names = [q["name"] for q in r["ask"]]
+    assert names and names[0] == "load magnitude"  # doubling the load halves the safety factor
+    assert all("stake" in q for q in r["ask"])
+
+
+def test_verify_tool_writes_a_graded_trust_record(tmp_path, monkeypatch):
+    monkeypatch.setattr(srv.S, "STUDIES", tmp_path / "studies")
+    sid = "verify-test"
+    srv.create_study(json.loads(SPEC.read_text()), study_id=sid)
+    knee = json.loads((Path(__file__).resolve().parents[1] / "benchmarks" / "p2_demo.json").read_text())["recommended_knee"]["params"]
+    v = srv.verify(sid, {k: float(x) for k, x in knee.items()}, fine_mesh=3.0)
+    assert v["ok"] and v["grade"] in ("A", "B", "C")
+    assert (Path(v["folder"]) / "trust.json").exists()
+    assert v["grade"] == "A" and v["status"] == "verified"  # the P2 demo's recommended design
