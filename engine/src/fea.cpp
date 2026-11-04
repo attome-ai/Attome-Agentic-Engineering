@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstdio>
 #include <filesystem>
+#include <functional>
 #include <fstream>
 #include <regex>
 #include <set>
@@ -112,7 +113,7 @@ Material load_material(const std::string& id) {
 LoadCase LoadCase::from_json(const nlohmann::json& j) {
   LoadCase lc;
   lc.name = j.value("name", std::string("service"));
-  for (auto& s : j.value("supports", nlohmann::json::array())) lc.supports.push_back({s.at("group"), s.value("dofs", std::string("123"))});
+  for (auto& s : j.value("supports", nlohmann::json::array())) lc.supports.push_back({s.at("group"), s.value("dofs", std::string("123")), s.value("kind", std::string("fixed"))});
   for (auto& l : j.value("loads", nlohmann::json::array())) {
     Load x;
     x.group = l.at("group");
@@ -142,6 +143,81 @@ std::map<int, std::array<double, 3>> distribute_force(const Mesh& m, const std::
   return f;
 }
 
+std::set<int> fixed_support_nodes(const Mesh& m, const std::vector<Support>& supports) {
+  std::set<int> held;
+  for (auto& s : supports) {
+    auto it = m.nsets.find(s.group);
+    if (s.kind != "bolted" && it != m.nsets.end()) held.insert(it->second.begin(), it->second.end());
+  }
+  return held;
+}
+
+std::vector<std::vector<std::vector<int>>> connected_faces(const Mesh& m, const std::string& group) {
+  auto sf = m.surfaces.find(group);
+  if (sf == m.surfaces.end() || sf->second.empty()) throw std::runtime_error("bolted support group '" + group + "' has no faces");
+  const auto& tris = sf->second;
+  std::vector<int> parent(tris.size());
+  for (size_t i = 0; i < tris.size(); ++i) parent[i] = static_cast<int>(i);
+  std::function<int(int)> root = [&](int x) { return parent[x] == x ? x : parent[x] = root(parent[x]); };
+  std::map<int, int> first_tri;
+  for (size_t i = 0; i < tris.size(); ++i)
+    for (size_t k = 1; k < tris[i].size(); ++k) {
+      auto [it, added] = first_tri.emplace(tris[i][k], static_cast<int>(i));
+      if (!added) parent[root(static_cast<int>(i))] = root(it->second);
+    }
+  std::map<int, std::vector<std::vector<int>>> comps;
+  for (size_t i = 0; i < tris.size(); ++i) comps[root(static_cast<int>(i))].push_back(tris[i]);
+  std::vector<std::vector<std::vector<int>>> out;
+  for (auto& [_, c] : comps) out.push_back(c);
+  return out;
+}
+
+std::vector<int> write_bolted_support(std::ostream& d, const Mesh& m, const Support& s, int& next_id, const std::set<int>& held) {
+  // Each bore's area-weighted mean translation equals a reference node, and the reference node is held. The bore is free
+  // to deform, so it shows no false stress peak; the reaction of the bolt is the reference node's reaction.
+  std::vector<int> refs;
+  for (auto& tris : connected_faces(m, s.group)) {
+    std::map<int, double> w;
+    std::array<double, 3> c{0, 0, 0};
+    double total = 0;
+    for (auto& t : tris) {
+      const double a = tri_area(m.nodes, t);
+      total += a;
+      for (size_t n = 1; n < t.size(); ++n) w[t[n]] += a / static_cast<double>(t.size() - 1);
+    }
+    for (auto& [n, x] : w)
+      for (int i = 0; i < 3; ++i) c[i] += x * m.nodes.at(n)[i];
+    for (auto& v : c) v /= total;
+    // a bore's rim can lie on a face another support holds; those nodes stay with that support, or their reaction is lost
+    for (auto it = w.begin(); it != w.end();) {
+      if (held.count(it->first)) {
+        total -= it->second;
+        it = w.erase(it);
+      } else {
+        ++it;
+      }
+    }
+    if (w.empty()) throw std::runtime_error("every node of a bolt bore in '" + s.group + "' is also held by another support");
+    auto dep = w.begin();
+    const int ref = next_id++;
+    d << "*NODE\n" << ref << "," << num(c[0]) << "," << num(c[1]) << "," << num(c[2]) << "\n";
+    for (char dof : s.dofs) {
+      d << "*EQUATION\n" << w.size() + 1 << "\n";
+      int on_line = 0;
+      auto term = [&](int n, double coef) {
+        d << n << "," << dof << "," << num(coef) << ((++on_line) % 4 == 0 ? ",\n" : ",");
+      };
+      term(dep->first, dep->second / total);
+      for (auto& [n, x] : w)
+        if (n != dep->first) term(n, x / total);
+      term(ref, -1.0);
+      d << "\n";
+    }
+    refs.push_back(ref);
+  }
+  return refs;
+}
+
 std::string write_deck(const Mesh& m, const Material& mat, const LoadCase& lc, std::map<int, std::array<double, 3>>* applied) {
   std::ostringstream d;
   d << "** Attome AE engine deck: " << lc.name << "\n*NODE\n";
@@ -151,9 +227,19 @@ std::string write_deck(const Mesh& m, const Material& mat, const LoadCase& lc, s
     for (size_t i = 0; i < t.size(); ++i) d << t[i] << (i + 1 < t.size() ? (i == 7 ? ",\n" : ",") : "\n");
   }
   std::set<int> support_nodes;
+  std::vector<int> bolt_refs;
+  int next_id = m.nodes.empty() ? 1 : m.nodes.rbegin()->first + 1;
+  std::set<int> held = fixed_support_nodes(m, lc.supports);
   for (auto& s : lc.supports) {
     auto it = m.nsets.find(s.group);
     if (it == m.nsets.end() || it->second.empty()) throw std::runtime_error("support group '" + s.group + "' has no nodes");
+    if (s.kind == "bolted") {
+      for (int ref : write_bolted_support(d, m, s, next_id, held)) {
+        bolt_refs.push_back(ref);
+        support_nodes.insert(ref);
+      }
+      continue;
+    }
     d << "*NSET,NSET=" << set_name(s.group) << "\n";
     for (size_t i = 0; i < it->second.size(); ++i) d << it->second[i] << ((i + 1) % 16 == 0 || i + 1 == it->second.size() ? "\n" : ",");
     support_nodes.insert(it->second.begin(), it->second.end());
@@ -179,8 +265,11 @@ std::string write_deck(const Mesh& m, const Material& mat, const LoadCase& lc, s
   }
   d << "*MATERIAL,NAME=MAT\n*ELASTIC\n" << num(mat.E) << "," << num(mat.nu) << "\n*DENSITY\n" << num(mat.density) << "\n";
   d << "*SOLID SECTION,ELSET=EALL,MATERIAL=MAT\n*BOUNDARY\n";
-  for (auto& s : lc.supports)
+  for (auto& s : lc.supports) {
+    if (s.kind == "bolted") continue;
     for (char c : s.dofs) d << set_name(s.group) << "," << c << "," << c << "\n";
+  }
+  for (int ref : bolt_refs) d << ref << ",1,6\n";
   d << "*STEP\n*STATIC\n";
   if (!forces.empty()) {
     d << "*CLOAD\n";
@@ -291,6 +380,8 @@ Result solve_static(const Mesh& m, const Material& mat, const LoadCase& lc, cons
   r.excluded_mm = o.exclude_near_bc_mm;
   if (o.exclude_near_bc_mm <= 0) {
     r.max_von_mises_MPa = r.max_von_mises_raw_MPa;
+    for (auto& [n, s] : r.von_mises)
+      if (s == r.max_von_mises_raw_MPa && m.nodes.count(n)) r.peak_at = m.nodes.at(n);
   } else {
     const double d = o.exclude_near_bc_mm, d2 = d * d;
     std::map<std::array<long long, 3>, std::vector<int>> grid;
@@ -302,6 +393,7 @@ Result solve_static(const Mesh& m, const Material& mat, const LoadCase& lc, cons
     for (auto& l : lc.loads) bc.insert(m.nsets.at(l.group).begin(), m.nsets.at(l.group).end());
     for (int n : bc) grid[cell(m.nodes.at(n))].push_back(n);
     for (auto& [n, s] : r.von_mises) {
+      if (!m.nodes.count(n)) continue;  // a bolt's reference node
       auto& c = m.nodes.at(n);
       auto k = cell(c);
       bool near = false;
@@ -315,7 +407,10 @@ Result solve_static(const Mesh& m, const Material& mat, const LoadCase& lc, cons
               if ((c[0] - e[0]) * (c[0] - e[0]) + (c[1] - e[1]) * (c[1] - e[1]) + (c[2] - e[2]) * (c[2] - e[2]) < d2) { near = true; break; }
             }
           }
-      if (!near) r.max_von_mises_MPa = std::max(r.max_von_mises_MPa, s);
+      if (!near && s > r.max_von_mises_MPa) {
+        r.max_von_mises_MPa = s;
+        r.peak_at = c;
+      }
     }
   }
   for (auto& [_, f] : applied)

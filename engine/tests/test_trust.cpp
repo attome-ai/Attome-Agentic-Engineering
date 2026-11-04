@@ -42,6 +42,11 @@ TEST_CASE("F1-T1: trust record for the demo bracket") {
   }
   CHECK(energy);
   CHECK(equilibrium);
+  // D10: the sharp rib-tip corner is found and caps the grade, whatever the uniform meshes say
+  REQUIRE(t.contains("peak_probe"));
+  CHECK(t["peak_probe"]["singular"] == true);
+  CHECK(t["peak_probe"]["refined_twice_peak_MPa"].get<double>() > t["peak_probe"]["uniform_mesh_peak_MPa"].get<double>());
+  CHECK(t["grade"] != "A");
   CHECK(!t["assumptions"].empty());
   CHECK(t["grade_rule"].get<std::string>().find("A:") == 0);
   // a verified status is only possible with grade A or B

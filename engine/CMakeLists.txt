@@ -14,7 +14,7 @@ find_package(doctest REQUIRED)
 find_package(Eigen3 REQUIRED CONFIG)
 
 set(OCCT_TOOLKITS TKernel TKMath TKG2d TKG3d TKGeomBase TKBRep TKGeomAlgo TKTopAlgo TKPrim TKBO TKBool
-    TKFillet TKOffset TKShHealing TKMesh TKXSBase TKDESTEP TKDESTL TKDE TKXCAF TKLCAF TKCAF TKCDF TKV3d TKService)
+    TKHLR TKFillet TKOffset TKShHealing TKMesh TKXSBase TKDESTEP TKDESTL TKDE TKXCAF TKLCAF TKCAF TKCDF TKV3d TKService)
 
 add_library(structura STATIC
   src/expr.cpp
@@ -30,7 +30,10 @@ add_library(structura STATIC
   src/mesh.cpp
   src/step_io.cpp
   src/fea.cpp
+  src/setup_check.cpp
+  src/adaptive.cpp
   src/export.cpp
+  src/export_formats.cpp
   src/analyses.cpp
   src/validation.cpp
   src/fem.cpp
@@ -61,6 +64,8 @@ add_executable(engine_tests
   tests/test_gate.cpp
   tests/test_mesh.cpp
   tests/test_fea.cpp
+  tests/test_setup_check.cpp
+  tests/test_adaptive.cpp
   tests/test_export.cpp
   tests/test_validation.cpp
   tests/test_golden.cpp

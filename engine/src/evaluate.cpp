@@ -158,6 +158,17 @@ nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params
   so.threads = o.threads;
   so.exclude_near_bc_mm = spec.stress_exclude_near_bc_mm;
   nlohmann::json cases = nlohmann::json::object();
+  nlohmann::json setup = nlohmann::json::object();
+  for (auto& slc : spec.load_cases) {  // C3: refuse a wrong setup before solving anything
+    SetupReport sr = check_setup(m, scaled(slc));
+    setup[slc.lc.name] = sr.to_json();
+    if (!sr.ok) {
+      out["setup_check"] = setup;
+      out["error"] = "setup of load case '" + slc.lc.name + "': " + sr.problems.front();
+      return finish("setup_fail");
+    }
+  }
+  out["setup_check"] = setup;
   try {
     for (auto& slc : spec.load_cases) {
       LoadCase lc = scaled(slc);

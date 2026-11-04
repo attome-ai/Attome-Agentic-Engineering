@@ -93,13 +93,30 @@ std::string geo_text(const std::string& step, double size, int algo, const MeshO
     << "Mesh.MeshSizeMin = " << num(size * o.size_min_factor) << ";\n"
     << "Mesh.MeshSizeFromCurvature = " << o.curvature_points << ";\n"
     << "Mesh.SaveGroupsOfNodes = 1;\n"
-    << "Mesh.Optimize = 1;\n"
-    << "Physical Volume(\"EALL\") = Volume{:};\n"
+    << "Mesh.Optimize = 1;\n";
+  if (!o.size_map.empty()) {  // adaptive refinement: the size comes only from the map, plus curvature
+    g << "Mesh.MeshSizeExtendFromBoundary = 0;\nMesh.MeshSizeFromPoints = 0;\n"
+      << "Merge \"" << fs::path(o.size_map).generic_string() << "\";\nBackground Mesh View[0];\n";
+  } else if (o.local_size > 0 && !groups.empty()) {  // finer elements on the named faces (holes, load faces, fillets)
+    g << "near[] = {};\n";
+    for (auto& [name, boxes] : groups) {
+      (void)name;
+      for (auto& b : boxes) {
+        const double e = 1e-3;
+        g << "near[] += Surface In BoundingBox{" << num(b[0] - e) << "," << num(b[1] - e) << "," << num(b[2] - e) << ","
+          << num(b[3] + e) << "," << num(b[4] + e) << "," << num(b[5] + e) << "};\n";
+      }
+    }
+    g << "Field[1] = Distance;\nField[1].SurfacesList = {near[]};\nField[1].Sampling = 40;\n"
+      << "Field[2] = Threshold;\nField[2].InField = 1;\nField[2].SizeMin = " << num(o.local_size) << ";\nField[2].SizeMax = " << num(size) << ";\n"
+      << "Field[2].DistMin = " << num(o.local_size) << ";\nField[2].DistMax = " << num(4 * o.local_size + size) << ";\nBackground Field = 2;\n"
+      << "Mesh.MeshSizeExtendFromBoundary = 0;\n";
+  }
+  g << "Physical Volume(\"EALL\") = Volume{:};\n"
     // every surface is its own physical group, so its triangles come out as element set Surface<tag>;
     // named faces are matched to these surfaces afterwards by area and centroid (works for curved faces)
     << "s[] = Surface{:};\n"
     << "For i In {0:#s[]-1}\n  Physical Surface(Sprintf(\"SF%g\", s[i])) = {s[i]};\nEndFor\n";
-  (void)groups;
   return g.str();
 }
 

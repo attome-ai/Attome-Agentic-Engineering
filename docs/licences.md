@@ -10,6 +10,9 @@ LGPL-2.1 **only** (with the Open CASCADE exception), not "or later".
 
 ## Rules
 
+- **The audit is automatic.** `tests/test_licences.py` fails on any AGPL or excluded package in the environment, on a
+  direct dependency missing from this table, and on a GPL module imported or linked into our code.
+- **ffmpeg** (GPL build) is optional, used only for MP4 export, and also runs only as a separate program.
 - **GPL tools run only as subprocesses.** CalculiX (`ccx.exe`) and gmsh (`gmsh.exe`) are called as separate
   programs exchanging files. Neither the gmsh library nor its Python module is linked or imported (decision D2).
 - **OCCT is LGPL-2.1**: the C++ engine links it dynamically (DLLs from the environment), which keeps the engine's
@@ -49,6 +52,9 @@ LGPL-2.1 **only** (with the Open CASCADE exception), not "or later".
 | PyTorch | 2.8.0 | BSD-3-Clause | https://raw.githubusercontent.com/pytorch/pytorch/main/LICENSE | 2026-11-04 |
 | SALib | 1.6.0 | MIT | https://raw.githubusercontent.com/SALib/SALib/main/LICENSE.md | 2026-11-04 |
 | three.js (report viewer, vendored UMD build) | 0.149.0 | MIT | https://raw.githubusercontent.com/mrdoob/three.js/dev/LICENSE | 2026-11-04 |
+| imageio (MP4 export of scenes) | 2.38.1 | BSD-2-Clause | conda-forge metadata (audit: tests/test_licences.py) | 2026-11-04 |
+| imageio-ffmpeg | 0.8.0 | BSD-2-Clause | conda-forge metadata (audit: tests/test_licences.py) | 2026-11-04 |
+| ffmpeg (conda-forge gpl build, with x264 and x265) | 7.1.1 | GPL-2.0-or-later (subprocess only) | conda-forge metadata (audit: tests/test_licences.py) | 2026-11-04 |
 | MCP Python SDK (agent server, E1) | 2.3.0 | MIT (package metadata) | https://raw.githubusercontent.com/modelcontextprotocol/python-sdk/main/LICENSE | 2026-11-04 |
 | plotly.js (dashboard) | not yet installed | MIT | https://raw.githubusercontent.com/plotly/plotly.js/master/LICENSE | 2026-11-04 |
 

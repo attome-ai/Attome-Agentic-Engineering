@@ -3,6 +3,8 @@
 //
 //   structura describe                                   grammar: feature types and their parameters
 //   structura families                                   available part families
+//   structura export --family F --set k=v --out DIR      STEP, STL, 3MF, GLB, drawing (DXF, PDF) and design source
+//   structura adaptive --spec S --set k=v [--out DIR]    refine where stress varies until the peak converges
 //   structura build  (--family NAME | --graph FILE) [--params FILE] [--set k=v ...] [--out DIR]
 //   structura gate   (--family NAME | --graph FILE) [--params FILE] [--set k=v ...] [--limits FILE]
 //   structura mesh   (--family NAME | --graph FILE) [--params FILE] [--set k=v ...] --out DIR [--size MM] [--order 1|2]
@@ -25,6 +27,7 @@
 #include <string>
 #include <vector>
 
+#include "structura/adaptive.hpp"
 #include "structura/compile.hpp"
 #include "structura/design.hpp"
 #include "structura/evaluate.hpp"
@@ -200,6 +203,34 @@ int run(const Args& a) {
     } else {
       out = evaluate_design(spec, params_from(a), o);
     }
+    std::cout << out.dump(2) << "\n";
+    return 0;
+  }
+  if (a.cmd == "adaptive") {  // C1, C4: refine where the stress varies until the peak converges, for one design and load case
+    DesignSpec spec = DesignSpec::load(a.opt.at("spec"));
+    Values v = spec.fixed_params;
+    for (auto& [k, x] : params_from(a)) v[k] = x;
+    Design d(load_family(spec.family), v);
+    CompiledPart part = d.build();
+    if (spec.load_cases.empty()) throw std::runtime_error("adaptive refinement needs a structural load case");
+    LoadCase lc = spec.load_cases.front().lc;
+    const double f = spec.load_cases.front().factor_range[1];
+    for (auto& l : lc.loads) {
+      for (auto& c : l.force) c *= f;
+      l.pressure *= f;
+    }
+    AdaptiveOptions o;
+    if (a.opt.count("start")) o.start_size = std::stod(a.opt.at("start"));
+    if (a.opt.count("min")) o.min_size = std::stod(a.opt.at("min"));
+    if (a.opt.count("tolerance")) o.tolerance = std::stod(a.opt.at("tolerance"));
+    SolveOptions so;
+    so.threads = a.opt.count("threads") ? std::stoi(a.opt.at("threads")) : 4;
+    so.exclude_near_bc_mm = spec.stress_exclude_near_bc_mm;
+    std::string work = a.opt.count("out") ? a.opt.at("out") : (fs::temp_directory_path() / "structura_adaptive_cli").string();
+    fs::remove_all(work);
+    AdaptiveResult r = solve_adaptive(part.shape, part.named_faces(), spec.effective_material(), lc, work, o, so);
+    json out = r.to_json();
+    out["hash"] = d.hash();
     std::cout << out.dump(2) << "\n";
     return 0;
   }
@@ -408,6 +439,13 @@ int run(const Args& a) {
   DesignGraph g = graph_from(a);
   Design d(g, params_from(a));
   CompiledPart part = d.build();
+  if (a.cmd == "export") {  // H2: every delivery format for one design
+    if (!a.opt.count("out")) throw std::runtime_error("export needs --out FOLDER");
+    std::array<double, 3> dir{0, 0, 1};
+    if (a.opt.count("print-dir")) dir = json::parse(a.opt.at("print-dir")).get<std::array<double, 3>>();
+    std::cout << export_all(d, part, a.opt.at("out"), dir).dump(2) << "\n";
+    return 0;
+  }
   if (a.cmd == "build") {
     auto named = part.named_faces();
     json out = {{"hash", d.hash()}, {"template", g.name}, {"params", d.params}, {"solids", part.solid_count()},

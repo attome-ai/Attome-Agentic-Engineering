@@ -20,6 +20,7 @@ struct TrustOptions {
   int threads = 4;
   std::string workdir;   // trust.json and the evidence bundle go here
   std::string spec_path; // recorded so the bundle can be reproduced
+  bool peak_probe = true;  // refine locally to tell a real stress peak from a sharp-corner singularity (decision D10)
 };
 
 struct Gci {

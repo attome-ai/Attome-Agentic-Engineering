@@ -1,9 +1,15 @@
 // Export a design bundle: STEP and STL geometry, and result fields as VTU (ParaView) (task H2-T1).
 #pragma once
+#include <array>
+#include <map>
 #include <string>
+#include <vector>
 
 #include <TopoDS_Shape.hxx>
 
+#include <nlohmann/json.hpp>
+
+#include "structura/design.hpp"
 #include "structura/fea.hpp"
 #include "structura/mesh.hpp"
 
@@ -27,5 +33,15 @@ void write_skin_scalar(const Mesh& m, const std::map<int, double>& field, const 
 
 // Writes part.step, part.stl and, per load case, result.vtu next to result.json; returns the files written.
 std::vector<std::string> export_bundle(const TopoDS_Shape& shape, const std::string& dir);
+
+// 3MF for printing, in mm, with the print direction turned to +z and the part resting on the plate.
+void write_3mf(const TopoDS_Shape& shape, const std::string& path, const std::array<double, 3>& print_direction = {0, 0, 1}, double tolerance = 0.05);
+// Binary glTF for the web and AR, in metres as glTF requires.
+void write_glb(const TopoDS_Shape& shape, const std::string& path, double tolerance = 0.05);
+// Three hidden-line views with overall dimensions and the labelled free parameters, as DXF and PDF.
+nlohmann::json write_drawing(const TopoDS_Shape& shape, const std::string& title, const std::map<std::string, std::string>& labels, const std::string& dxf_path,
+                             const std::string& pdf_path);
+// Everything geometry-side for one design: STEP, STL, 3MF, GLB, graph and parameters, drawing. Returns a manifest.
+nlohmann::json export_all(const Design& d, const CompiledPart& part, const std::string& dir, const std::array<double, 3>& print_direction = {0, 0, 1});
 
 }  // namespace structura

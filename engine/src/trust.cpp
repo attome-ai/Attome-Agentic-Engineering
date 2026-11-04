@@ -1,3 +1,5 @@
+#include "structura/adaptive.hpp"
+#include "structura/design.hpp"
 #include "structura/trust.hpp"
 
 #include <cmath>
@@ -205,15 +207,70 @@ nlohmann::json build_trust(const DesignSpec& spec, const Values& free, const Tru
   nlohmann::json vs = validation_status();
   t["validation_suite"] = vs;
 
+  // Sharp-corner probe (D10): three uniform meshes cannot see a singularity, because none of them resolves it. Refine
+  // locally twice, the second time to half the element size. A real peak settles; a sharp re-entrant corner keeps growing.
+  bool singular = false;
+  bool stress_required = false;
+  std::string stress_case;
+  for (auto& c : fine["checks"]) {
+    std::string q = c["quantity"];
+    if (q == "safety_factor" || q == "max_von_mises_MPa") {
+      stress_required = true;
+      stress_case = c.value("load_case", std::string());
+    }
+  }
+  if (o.peak_probe && stress_required && !spec.load_cases.empty()) {
+    const SpecLoadCase* slc = &spec.load_cases.front();
+    for (auto& x : spec.load_cases)
+      if (x.lc.name == stress_case) slc = &x;
+    LoadCase lc = slc->lc;
+    for (auto& l : lc.loads) {
+      for (auto& v : l.force) v *= slc->factor_range[1];
+      l.pressure *= slc->factor_range[1];
+    }
+    Design design(load_family(spec.family), fine["params"].get<Values>());
+    CompiledPart part = design.build();
+    SolveOptions so;
+    so.threads = o.threads;
+    so.exclude_near_bc_mm = spec.stress_exclude_near_bc_mm;
+    AdaptiveOptions ao;
+    ao.start_size = h;
+    ao.tolerance = 0.02;
+    ao.max_levels = 4;
+    ao.min_size = h / 6;
+    AdaptiveResult a1 = solve_adaptive(part.shape, part.named_faces(), spec.effective_material(), lc, (fs::path(work) / "peak_probe1").string(), ao, so);
+    ao.min_size = h / 12;
+    AdaptiveResult a2 = solve_adaptive(part.shape, part.named_faces(), spec.effective_material(), lc, (fs::path(work) / "peak_probe2").string(), ao, so);
+    const double uniform = fine["load_cases"][slc->lc.name].value("max_von_mises_MPa", 0.0);
+    const double p1 = a1.result.max_von_mises_MPa, p2 = a2.result.max_von_mises_MPa;
+    const double growth = p1 > 0 ? p2 / p1 : 1;
+    singular = growth > 1.10;
+    t["peak_probe"] = {{"load_case", slc->lc.name}, {"uniform_mesh_peak_MPa", uniform}, {"refined_peak_MPa", p1}, {"refined_twice_peak_MPa", p2},
+                       {"smallest_element_mm", {ao.min_size * 2, ao.min_size}}, {"growth_on_halving", growth}, {"at_mm", a2.result.peak_at}, {"singular", singular},
+                       {"meaning", singular ? "the peak keeps growing as the mesh is refined: a sharp re-entrant corner, where the linear-elastic stress has no finite value. "
+                                              "The reported stress and safety factor are values at the stated mesh size, not the true local peak."
+                                            : "the peak settles under local refinement: it is a real, resolved stress."}};
+    checks.push_back({{"check", "peak stress settles under local refinement"}, {"value", growth}, {"limit", 1.10}, {"passed", !singular},
+                      {"detail", "peak " + std::to_string(uniform).substr(0, 5) + " MPa on the uniform mesh, " + std::to_string(p1).substr(0, 5) + " then " +
+                                     std::to_string(p2).substr(0, 5) + " MPa refined locally"}});
+    t["independent_checks"] = checks;
+    if (singular)
+      as.push_back("Stress is reported at the stated mesh size. The peak at a sharp corner near (" + std::to_string(a2.result.peak_at[0]).substr(0, 5) + ", " +
+                   std::to_string(a2.result.peak_at[1]).substr(0, 5) + ", " + std::to_string(a2.result.peak_at[2]).substr(0, 5) +
+                   ") mm has no finite linear-elastic value; a real part yields locally there, and a static safety factor does not cover fatigue or brittle cracking from that corner.");
+    t["assumptions"] = as;
+  }
+
   // grade with its written rule
   bool val_ok = vs.value("ran", false) && vs.value("all_passed", false);
   std::string grade = "C";
-  if (all_pass && all_proven && independent_ok && val_ok && worst_gci_gov < 0.05) grade = "A";
+  if (all_pass && all_proven && independent_ok && val_ok && worst_gci_gov < 0.05 && !singular) grade = "A";
   else if (all_pass && independent_ok && val_ok && worst_gci_gov <= 0.10) grade = "B";
   t["grade"] = grade;
   t["grade_rule"] = "A: every requirement passes and is proven (margin larger than its numerical error), every independent check "
-                    "passes, numerical error on governing values below 5% and the validation suite passed. B: as A but error up "
-                    "to 10% and requirements may be not proven. C: anything else.";
+                    "passes, numerical error on governing values below 5%, the validation suite passed and the peak stress settles under "
+                    "local refinement. B: as A but error up to 10%, requirements may be not proven, or the peak sits at a sharp corner "
+                    "where stress has no finite value (the safety factor is then a value at the stated mesh size). C: anything else.";
   t["status"] = (grade == "A" || grade == "B") ? "verified" : "not_verified";
   std::vector<std::string> why;
   if (!all_pass) why.push_back("a requirement fails");
@@ -224,6 +281,7 @@ nlohmann::json build_trust(const DesignSpec& spec, const Values& free, const Tru
   if (!independent_ok) why.push_back("an independent check fails");
   if (!val_ok) why.push_back("the validation suite has not passed in full");
   if (worst_gci_gov >= 0.05) why.push_back("numerical error on a governing value is " + pct(worst_gci_gov));
+  if (singular) why.push_back("the peak stress is at a sharp corner and keeps growing under local refinement, so the safety factor is a value at the stated mesh size");
   t["reasons"] = why;
 
   // evidence and reproduction

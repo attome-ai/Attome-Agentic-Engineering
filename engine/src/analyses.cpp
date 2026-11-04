@@ -41,11 +41,22 @@ Run run_ccx(const std::string& deck, const std::string& workdir, const SolveOpti
 
 void structural_preamble(std::ostream& d, const Mesh& m, const Material& mat, const std::vector<Support>& supports) {
   write_nodes_elements(d, m, "C3D10");
-  for (auto& s : supports) write_nset(d, m, s.group);
+  std::vector<int> refs;
+  int next_id = m.nodes.rbegin()->first + 1;
+  for (auto& s : supports) {
+    if (s.kind == "bolted") {
+      for (int r : write_bolted_support(d, m, s, next_id, fixed_support_nodes(m, supports))) refs.push_back(r);
+    } else {
+      write_nset(d, m, s.group);
+    }
+  }
   d << "*MATERIAL,NAME=MAT\n*ELASTIC\n" << num(mat.E) << "," << num(mat.nu) << "\n*DENSITY\n" << num(mat.density) << "\n";
   d << "*SOLID SECTION,ELSET=EALL,MATERIAL=MAT\n*BOUNDARY\n";
-  for (auto& s : supports)
+  for (auto& s : supports) {
+    if (s.kind == "bolted") continue;
     for (char c : s.dofs) d << set_name(s.group) << "," << c << "," << c << "\n";
+  }
+  for (int r : refs) d << r << ",1,3\n";
 }
 
 // Lumped carried masses: one MASS element per node of the group, the group's mass shared evenly.

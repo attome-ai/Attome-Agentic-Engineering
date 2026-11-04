@@ -41,6 +41,8 @@ struct MeshOptions {
   double area_tol = 0.02;      // relative tolerance of the named-group area check
   double size_min_factor = 0.2;
   int curvature_points = 12;   // elements per 2*pi of curvature
+  std::string size_map;        // C4: gmsh .pos scalar view giving the element size everywhere (adaptive refinement)
+  double local_size = 0;       // C4: element size on and near the named faces (0 = none), growing to `size` over 4 x local_size
 };
 
 struct Mesh {

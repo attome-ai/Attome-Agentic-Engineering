@@ -26,7 +26,7 @@
   "thermal_cases": [
     {
       "name": "steady",
-      "source": "brief: 5 W module, 35 C air, fan along the fins at 1.5 m/s (assumed from a small axial fan; confirm against its datasheet); h from the plate-fin channel correlation (Teertstra et al. 1999)",
+      "source": "brief: 5 W module, 35 C air, a fan ducted onto the fins (a typical 60 mm fan, scaled with fan speed by the fan laws to the brief's 1.5 m/s class; confirm against the fan's datasheet); channel air speed from the fan's operating point against the fins' pressure drop; h from the plate-fin channel correlation (Teertstra et al. 1999)",
       "fluxes": [
         {
           "group": "base_bottom",
@@ -39,10 +39,15 @@
           "sink": 35.0,
           "correlation": {
             "model": "plate_fin_channel",
-            "velocity_m_s": 1.5,
             "spacing_mm": "(60 - fin_thickness) / (fin_count - 1) - fin_thickness",
             "fin_thickness_mm": "fin_thickness",
-            "length_mm": 60
+            "length_mm": 60,
+            "fan": {
+              "max_pressure_Pa": 32.0,
+              "max_flow_m3_s": 0.0068
+            },
+            "fin_height_mm": "fin_height",
+            "channels": "fin_count - 1"
           }
         },
         {
@@ -50,10 +55,15 @@
           "sink": 35.0,
           "correlation": {
             "model": "plate_fin_channel",
-            "velocity_m_s": 1.5,
             "spacing_mm": "(60 - fin_thickness) / (fin_count - 1) - fin_thickness",
             "fin_thickness_mm": "fin_thickness",
-            "length_mm": 60
+            "length_mm": 60,
+            "fan": {
+              "max_pressure_Pa": 32.0,
+              "max_flow_m3_s": 0.0068
+            },
+            "fin_height_mm": "fin_height",
+            "channels": "fin_count - 1"
           }
         },
         {
@@ -61,10 +71,15 @@
           "sink": 35.0,
           "correlation": {
             "model": "plate_fin_channel",
-            "velocity_m_s": 1.5,
             "spacing_mm": "(60 - fin_thickness) / (fin_count - 1) - fin_thickness",
             "fin_thickness_mm": "fin_thickness",
-            "length_mm": 60
+            "length_mm": 60,
+            "fan": {
+              "max_pressure_Pa": 32.0,
+              "max_flow_m3_s": 0.0068
+            },
+            "fin_height_mm": "fin_height",
+            "channels": "fin_count - 1"
           }
         },
         {
@@ -72,10 +87,15 @@
           "sink": 35.0,
           "correlation": {
             "model": "plate_fin_channel",
-            "velocity_m_s": 1.5,
             "spacing_mm": "(60 - fin_thickness) / (fin_count - 1) - fin_thickness",
             "fin_thickness_mm": "fin_thickness",
-            "length_mm": 60
+            "length_mm": 60,
+            "fan": {
+              "max_pressure_Pa": 32.0,
+              "max_flow_m3_s": 0.0068
+            },
+            "fin_height_mm": "fin_height",
+            "channels": "fin_count - 1"
           }
         },
         {
@@ -83,10 +103,15 @@
           "sink": 35.0,
           "correlation": {
             "model": "plate_fin_channel",
-            "velocity_m_s": 1.5,
             "spacing_mm": "(60 - fin_thickness) / (fin_count - 1) - fin_thickness",
             "fin_thickness_mm": "fin_thickness",
-            "length_mm": 60
+            "length_mm": 60,
+            "fan": {
+              "max_pressure_Pa": 32.0,
+              "max_flow_m3_s": 0.0068
+            },
+            "fin_height_mm": "fin_height",
+            "channels": "fin_count - 1"
           }
         }
       ]

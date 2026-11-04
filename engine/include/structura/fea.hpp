@@ -5,6 +5,8 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <ostream>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -27,6 +29,8 @@ Material load_material(const std::string& id);  // from <repo>/data/materials.js
 struct Support {
   std::string group;      // named face group
   std::string dofs = "123";  // fixed translations
+  std::string kind = "fixed";  // fixed: every node of the face is held; bolted: each connected face (one bolt bore) is held
+                               // through a distributing coupling to a reference node, so the bore can deform (no false peak)
 };
 struct Load {
   std::string group;
@@ -45,6 +49,22 @@ struct LoadCase {
 // corner nodes take 0 and mid-side nodes A/3 of each triangle's share. The sum equals the requested force.
 std::map<int, std::array<double, 3>> distribute_force(const Mesh& m, const std::string& group, const std::array<double, 3>& total);
 
+// C3: checked before any solve; a setup that fails is refused with the reason instead of solved.
+struct SetupReport {
+  bool ok = false;
+  int restrained = 0;  // rigid-body motions the supports stop, out of 6
+  std::vector<std::string> problems;
+  nlohmann::json to_json() const;
+};
+SetupReport check_setup(const Mesh& m, const LoadCase& lc);
+
+// C1: bolted supports. connected_faces splits a face group into its separate faces (one per bolt bore), as lists of
+// triangles. write_bolted_support ties each bore's mean translation to a new reference node (ids from `next_id`) and
+// returns those nodes for the caller to hold in *BOUNDARY; `held` are nodes other supports fix.
+std::set<int> fixed_support_nodes(const Mesh& m, const std::vector<Support>& supports);
+std::vector<std::vector<std::vector<int>>> connected_faces(const Mesh& m, const std::string& group);
+std::vector<int> write_bolted_support(std::ostream& d, const Mesh& m, const Support& s, int& next_id, const std::set<int>& held);
+
 // ---------------------------------------------------------------- results (C1-T1)
 struct Result {
   double mass_t = 0;               // tonne
@@ -52,6 +72,7 @@ struct Result {
   double max_von_mises_MPa = 0;      // peak over the evaluation region (see SolveOptions::exclude_near_bc_mm)
   double max_von_mises_raw_MPa = 0;  // raw peak over every node
   double excluded_mm = 0;
+  std::array<double, 3> peak_at{0, 0, 0};  // mm, where max_von_mises_MPa occurs
   double max_disp_mm = 0;
   std::array<double, 3> applied_N{0, 0, 0};
   std::array<double, 3> reaction_N{0, 0, 0};

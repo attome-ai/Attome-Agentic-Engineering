@@ -113,3 +113,21 @@ asked for a cap; "lightest possible" is already the objective. A default decided
 deflection limits), each labelled with its source. Defaults that only restate the objective (a mass cap for "as light
 as possible") are not added. When nothing is feasible, the agent's results name the closest design and the
 requirements it misses (`get_results.closest_infeasible`), so the user sees which requirements conflict.
+
+## D10. Trust checks local refinement; bracket ribs end in a filleted tip (2026-11-04)
+
+**Evidence.** Adaptive refinement of the recommended 20 kg bracket (family version 2, 250.8 g, reported safety factor 2.32,
+grade A) showed the peak stress growing without limit at the corner where each rib's blunt tip meets the arm: 11 -> 17 ->
+28 -> 44 -> 52 MPa as the smallest element shrank from 4 to 0.15 mm. Three uniform meshes cannot see this, because none of
+them resolves the corner, so their Grid Convergence Index looked fine. Rounding that corner gives a finite answer, and it
+is not small: with a 1.5 mm fillet the peak settles at about 21 MPa, a true safety factor of 1.2 against the required 2.
+The previous grade A was wrong about this design.
+
+**Decision.** (1) The trust record refines locally twice, the second time to half the element size. If the peak grows by
+more than 10% it is a sharp corner: the record says so and where, the design cannot be grade A, and the report states
+that its stress is a value at the stated mesh size. (2) Bracket family version 3: ribs run 95% of the arm and end in a
+6 mm tip with a 3 mm fillet. On the same design this gives 266 g, a settled peak of 10 MPa (safety factor 2.5) and 0.39 mm
+deflection, against 251 g, 21 MPa and 0.71 mm with the short rib and small fillet (`docs/benchmarks.md`).
+
+**Consequence.** Every bracket result from family version 2 is superseded and re-run. The grade rule changes; the owner
+should review this decision, because it changes headline numbers.
