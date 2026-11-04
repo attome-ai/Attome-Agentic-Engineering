@@ -21,7 +21,9 @@ struct Rung {
   int code;
   double scale;
 };
-const Rung kLadder[] = {{"hxt", 10, 1.0}, {"delaunay", 1, 1.0}, {"frontal", 4, 1.0}, {"delaunay", 1, 1.5}};
+// Delaunay first: gmsh's default and the most robust. HXT runs single-threaded because with several threads it can
+// hang on Windows (found in the validation suite: 120 s timeouts on simple boxes).
+const Rung kLadder[] = {{"delaunay", 1, 1.0}, {"hxt", 10, 1.0}, {"frontal", 4, 1.0}, {"delaunay", 1, 1.5}};
 
 std::string upper(std::string s) {
   std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
@@ -50,21 +52,20 @@ std::string geo_text(const std::string& step, double size, int algo, const MeshO
     << "Mesh.MeshSizeFromCurvature = " << o.curvature_points << ";\n"
     << "Mesh.SaveGroupsOfNodes = 1;\n"
     << "Mesh.Optimize = 1;\n"
-    << "e = 1e-4;\n"
-    << "Physical Volume(\"EALL\") = Volume{:};\n";
-  for (size_t gi = 0; gi < groups.size(); ++gi) {
-    std::string parts;
-    for (size_t bi = 0; bi < groups[gi].second.size(); ++bi) {
-      auto& b = groups[gi].second[bi];
-      std::string var = "g" + std::to_string(gi) + "_" + std::to_string(bi);
-      g << var << "[] = Surface In BoundingBox{" << num(b[0]) << " - e, " << num(b[1]) << " - e, " << num(b[2]) << " - e, "
-        << num(b[3]) << " + e, " << num(b[4]) << " + e, " << num(b[5]) << " + e};\n";
-      parts += (parts.empty() ? "" : ", ") + var + "[]";
-    }
-    g << "Physical Surface(\"" << groups[gi].first << "\") = {" << parts << "};\n";
-  }
+    << "Physical Volume(\"EALL\") = Volume{:};\n"
+    // every surface is its own physical group, so its triangles come out as element set Surface<tag>;
+    // named faces are matched to these surfaces afterwards by area and centroid (works for curved faces)
+    << "s[] = Surface{:};\n"
+    << "For i In {0:#s[]-1}\n  Physical Surface(Sprintf(\"SF%g\", s[i])) = {s[i]};\nEndFor\n";
+  (void)groups;
   return g.str();
 }
+
+struct SurfStat {
+  double area = 0;
+  double cx = 0, cy = 0, cz = 0;
+  std::vector<const std::vector<int>*> tris;
+};
 
 std::string tail(const std::string& s, size_t n = 2000) { return s.size() > n ? s.substr(s.size() - n) : s; }
 
@@ -118,7 +119,7 @@ Mesh mesh_shape(const TopoDS_Shape& shape, const std::map<std::string, std::vect
     std::error_code ec;
     fs::remove(out, ec);
     std::ofstream(fs::path(workdir) / "mesh.geo") << geo_text(step.generic_string(), size, rung.code, opt, groups);
-    ProcessResult pr = run_process({gmsh, "mesh.geo", "-3", "-format", "inp", "-o", "mesh.inp", "-nt", std::to_string(opt.threads)},
+    ProcessResult pr = run_process({gmsh, "mesh.geo", "-3", "-format", "inp", "-o", "mesh.inp", "-nt", std::to_string(rung.code == 10 ? 1 : opt.threads)},
                                    workdir, opt.timeout_s);
     nlohmann::json att = {{"algorithm", rung.algo}, {"size", size}, {"seconds", std::round(pr.seconds * 100) / 100}};
     bool ok = !pr.timed_out && pr.exit_code == 0 && fs::exists(out) && fs::file_size(out) > 0 &&
@@ -146,23 +147,53 @@ Mesh mesh_shape(const TopoDS_Shape& shape, const std::map<std::string, std::vect
     for (auto& t : m.tets) used.insert(t.begin() + 1, t.end());
     for (auto& [id, c] : d.nodes)
       if (used.count(id)) m.nodes[id] = c;
-    std::vector<const std::vector<int>*> tris;
-    for (auto& b : d.blocks)
-      if (upper(b.type) == tri_type)
-        for (auto& r : b.rows) tris.push_back(&r);
+    // per gmsh surface: triangles, area and area-weighted centroid
+    std::map<std::string, SurfStat> surf;
+    for (auto& b : d.blocks) {
+      if (upper(b.type) != tri_type) continue;
+      SurfStat& st = surf[b.elset];
+      for (auto& r : b.rows) {
+        double a = tri_area(m.nodes, r);
+        auto& p = m.nodes.at(r[1]);
+        auto& q = m.nodes.at(r[2]);
+        auto& s3 = m.nodes.at(r[3]);
+        st.area += a;
+        st.cx += a * (p[0] + q[0] + s3[0]) / 3;
+        st.cy += a * (p[1] + q[1] + s3[1]) / 3;
+        st.cz += a * (p[2] + q[2] + s3[2]) / 3;
+        st.tris.push_back(&r);
+      }
+    }
+    for (auto& [_, st] : surf)
+      if (st.area > 0) { st.cx /= st.area; st.cy /= st.area; st.cz /= st.area; }
     nlohmann::json checks = nlohmann::json::object();
     std::vector<std::string> bad;
     for (auto& [name, faces] : named) {
-      auto it = d.nsets.find(upper(name));
+      auto& out = m.surfaces[name];
       std::set<int> ids;
-      if (it != d.nsets.end()) ids.insert(it->second.begin(), it->second.end());
-      auto& surf = m.surfaces[name];
-      for (auto* t : tris)
-        if (ids.count((*t)[1]) && ids.count((*t)[2]) && ids.count((*t)[3])) surf.push_back(*t);
       double want = 0, got = 0;
-      for (auto& f : faces) want += area(f);
-      for (auto& t : surf) got += tri_area(m.nodes, t);
-      bool good = want > 0 && std::fabs(got - want) <= opt.area_tol * want;
+      bool good = !faces.empty();
+      std::set<std::string> used_surf;
+      for (auto& f : faces) {
+        double af = area(f);
+        gp_Pnt cf = centre(f);
+        want += af;
+        std::string best;
+        double bd = 1e300;
+        for (auto& [key, st] : surf) {
+          if (used_surf.count(key) || std::fabs(st.area - af) > opt.area_tol * af) continue;
+          double dd = std::sqrt((st.cx - cf.X()) * (st.cx - cf.X()) + (st.cy - cf.Y()) * (st.cy - cf.Y()) + (st.cz - cf.Z()) * (st.cz - cf.Z()));
+          if (dd < bd) { bd = dd; best = key; }
+        }
+        if (best.empty() || bd > 0.05 * std::sqrt(af) + 1e-6) { good = false; continue; }
+        used_surf.insert(best);
+        got += surf[best].area;
+        for (auto* t : surf[best].tris) {
+          out.push_back(*t);
+          ids.insert(t->begin() + 1, t->end());
+        }
+      }
+      good = good && want > 0 && std::fabs(got - want) <= opt.area_tol * want;
       checks[name] = {{"faces", faces.size()}, {"expected_mm2", std::round(want * 1000) / 1000},
                       {"meshed_mm2", std::round(got * 1000) / 1000}, {"ok", good}};
       if (!good) bad.push_back(name);

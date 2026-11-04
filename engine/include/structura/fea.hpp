@@ -54,6 +54,7 @@ struct Result {
   double equilibrium_error = 0;    // |applied + reaction| / |applied|
   std::map<int, std::array<double, 3>> disp;  // node -> (ux, uy, uz) mm
   std::map<int, double> von_mises;            // node -> MPa (nodal, extrapolated)
+  std::map<int, std::array<double, 6>> stress;  // node -> sxx syy szz sxy syz szx (MPa); not saved to fields.bin
   std::string solver = "CalculiX", solver_version, load_case;
   nlohmann::json mesh_report;
   double runtime_s = 0;
@@ -69,6 +70,55 @@ struct SolveOptions {
 };
 std::string write_deck(const Mesh& m, const Material& mat, const LoadCase& lc, std::map<int, std::array<double, 3>>* applied = nullptr);
 Result solve_static(const Mesh& m, const Material& mat, const LoadCase& lc, const std::string& workdir, const SolveOptions& o = {});
+
+// ---------------------------------------------------------------- modal and buckling (C1, before 3 Feb)
+struct ModalResult {
+  std::vector<double> frequencies_hz;
+  std::string solver_version;
+  double runtime_s = 0;
+};
+ModalResult solve_modal(const Mesh& m, const Material& mat, const std::vector<Support>& supports, int modes,
+                        const std::string& workdir, const SolveOptions& o = {});
+
+struct BuckleResult {
+  std::vector<double> factors;  // load multipliers at which the structure buckles
+  std::string solver_version;
+  double runtime_s = 0;
+};
+BuckleResult solve_buckle(const Mesh& m, const Material& mat, const LoadCase& lc, int modes, const std::string& workdir,
+                          const SolveOptions& o = {});
+
+// ---------------------------------------------------------------- steady heat transfer (C2 base)
+// Thermal inputs use watts consistently: k in W/(mm K), film h in W/(mm^2 K), flux in W/mm^2, power in W.
+struct FixedTemperature {
+  std::string group;
+  double t = 0;
+};
+struct Film {
+  std::string group;
+  double h = 0, sink = 0;
+};
+struct Flux {
+  std::string group;
+  double q = 0;      // W/mm^2 into the part; if power > 0 it is converted using the face area
+  double power = 0;  // W
+};
+struct ThermalCase {
+  std::string name = "thermal";
+  std::vector<FixedTemperature> temperatures;
+  std::vector<Film> films;
+  std::vector<Flux> fluxes;
+  static ThermalCase from_json(const nlohmann::json& j);
+};
+struct ThermalResult {
+  std::map<int, double> temperature;  // node -> temperature
+  double t_max = 0, t_min = 0;
+  std::string solver_version;
+  double runtime_s = 0;
+  nlohmann::json summary() const;
+};
+ThermalResult solve_thermal(const Mesh& m, const Material& mat, const ThermalCase& tc, const std::string& workdir,
+                            const SolveOptions& o = {});
 
 // .frd reading: last block of a result type ("DISP", "STRESS") -> node -> values
 std::map<int, std::vector<double>> read_frd_block(const std::string& path, const std::string& name);

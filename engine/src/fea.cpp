@@ -12,11 +12,12 @@
 #include <stdexcept>
 
 #include "structura/process.hpp"
+#include "fea_detail.hpp"
 
 namespace fs = std::filesystem;
 
 namespace structura {
-namespace {
+namespace detail {
 
 std::string num(double v) {
   char b[64];
@@ -48,6 +49,7 @@ double tet_volume(const Mesh& m, const std::vector<int>& t) {
 }
 
 // CalculiX C3D10 faces by local corner nodes (1-based).
+extern const int kFaces[4][3];
 const int kFaces[4][3] = {{1, 2, 3}, {1, 4, 2}, {2, 4, 3}, {3, 4, 1}};
 
 std::vector<std::pair<int, int>> element_faces(const Mesh& m, const std::string& group) {
@@ -69,7 +71,28 @@ std::vector<std::pair<int, int>> element_faces(const Mesh& m, const std::string&
   return out;
 }
 
-}  // namespace
+void write_id_list(std::ostream& d, const std::vector<int>& ids) {
+  for (size_t i = 0; i < ids.size(); ++i) d << ids[i] << ((i + 1) % 16 == 0 || i + 1 == ids.size() ? "\n" : ",");
+}
+
+std::vector<int> write_nset(std::ostream& d, const Mesh& m, const std::string& group) {
+  auto it = m.nsets.find(group);
+  if (it == m.nsets.end() || it->second.empty()) throw std::runtime_error("group '" + group + "' has no nodes");
+  d << "*NSET,NSET=" << set_name(group) << "\n";
+  write_id_list(d, it->second);
+  return it->second;
+}
+
+void write_nodes_elements(std::ostream& d, const Mesh& m, const std::string& element_type) {
+  d << "*NODE\n";
+  for (auto& [id, c] : m.nodes) d << id << "," << num(c[0]) << "," << num(c[1]) << "," << num(c[2]) << "\n";
+  d << "*ELEMENT,TYPE=" << element_type << ",ELSET=EALL\n";
+  for (auto& t : m.tets)
+    for (size_t i = 0; i < t.size(); ++i) d << t[i] << (i + 1 < t.size() ? (i == 7 ? ",\n" : ",") : "\n");
+}
+
+}  // namespace detail
+using namespace detail;
 
 Material load_material(const std::string& id) {
   fs::path p = fs::path(STRUCTURA_ROOT) / "data" / "materials.json";
@@ -231,6 +254,7 @@ Result solve_static(const Mesh& m, const Material& mat, const LoadCase& lc, cons
   for (auto& [n, v] : read_frd_block(frd, "STRESS")) {
     double s = von_mises(v);
     r.von_mises[n] = s;
+    r.stress[n] = {v[0], v[1], v[2], v[3], v[4], v[5]};
     r.max_von_mises_MPa = std::max(r.max_von_mises_MPa, s);
   }
   for (auto& [_, f] : applied)

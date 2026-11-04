@@ -30,6 +30,8 @@ add_library(structura STATIC
   src/step_io.cpp
   src/fea.cpp
   src/export.cpp
+  src/analyses.cpp
+  src/validation.cpp
 )
 set_target_properties(structura PROPERTIES OUTPUT_NAME structura_core)
 target_include_directories(structura PUBLIC include ${OpenCASCADE_INCLUDE_DIR})
@@ -50,6 +52,8 @@ add_executable(engine_tests
   tests/test_mesh.cpp
   tests/test_fea.cpp
   tests/test_export.cpp
+  tests/test_validation.cpp
+  tests/test_golden.cpp
 )
 target_link_libraries(engine_tests PRIVATE structura doctest::doctest)
 

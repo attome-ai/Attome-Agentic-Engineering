@@ -1,5 +1,5 @@
 // Meshing with gmsh run as a subprocess (.geo script in, .inp mesh out) and a fixed fallback ladder:
-// HXT, Delaunay, Frontal at the requested size, then Delaunay at 1.5 x size. Named faces become physical groups;
+// Delaunay, HXT (single-threaded), Frontal at the requested size, then Delaunay at 1.5 x size. Named faces become physical groups;
 // each group's meshed area is checked against the faces it should contain, so a selection that picked up the wrong
 // faces is caught instead of silently loading the wrong surface.
 #pragma once

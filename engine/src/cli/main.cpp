@@ -7,6 +7,7 @@
 //   structura gate   (--family NAME | --graph FILE) [--params FILE] [--set k=v ...] [--limits FILE]
 //   structura mesh   (--family NAME | --graph FILE) [--params FILE] [--set k=v ...] --out DIR [--size MM] [--order 1|2]
 //   structura solve  --job FILE [--out DIR]     build, gate, mesh and solve every load case of a job
+//   structura validate [--case ID] [--out report.md] [--json file] [--machine TEXT]   standing validation suite
 //   structura sweep  (--family NAME | --graph FILE) [--n 200] [--seed 1] [--out FILE]   random designs through the gate
 #include <chrono>
 #include <cmath>
@@ -25,6 +26,7 @@
 #include "structura/gate.hpp"
 #include "structura/mesh.hpp"
 #include "structura/occ.hpp"
+#include "structura/validation.hpp"
 
 namespace fs = std::filesystem;
 using namespace structura;
@@ -114,6 +116,23 @@ int run(const Args& a) {
   if (a.cmd == "describe") {
     std::cout << describe().dump(2) << "\n";
     return 0;
+  }
+  if (a.cmd == "validate") {  // run the standing validation suite; optionally write the markdown report
+    std::vector<ValidationRow> rows;
+    std::string work = a.opt.count("work") ? a.opt.at("work") : (fs::temp_directory_path() / "structura_validate").string();
+    int threads = a.opt.count("threads") ? std::stoi(a.opt.at("threads")) : 4;
+    for (auto& id : validation_cases()) {
+      if (a.opt.count("case") && a.opt.at("case") != id) continue;
+      rows.push_back(run_validation_case(id, work, threads));
+    }
+    if (a.opt.count("out"))
+      std::ofstream(a.opt.at("out")) << to_markdown(rows, a.opt.count("machine") ? a.opt.at("machine") : std::string(""));
+    size_t passed = 0;
+    for (auto& r : rows) passed += r.pass;
+    json out = {{"passed", passed}, {"cases", rows.size()}, {"date", utc_now()}, {"rows", to_json(rows)}};
+    if (a.opt.count("json")) std::ofstream(a.opt.at("json")) << out.dump(2);
+    std::cout << out.dump(2) << "\n";
+    return passed == rows.size() ? 0 : 1;
   }
   if (a.cmd == "families") {
     json out = json::array();
