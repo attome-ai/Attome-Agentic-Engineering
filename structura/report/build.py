@@ -118,6 +118,23 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
     return o
 
 
+def to_pdf(html_path: str | Path, pdf_path: str | Path | None = None) -> Path:
+    """Print the report to PDF with headless Chrome or Edge (I1); the page's #print mode freezes the 3D view first."""
+    import shutil
+    import subprocess
+    src = Path(html_path).resolve()
+    pdf = Path(pdf_path) if pdf_path else src.with_suffix(".pdf")
+    cands = [shutil.which("chrome"), shutil.which("msedge"), r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+             r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe", "/usr/bin/google-chrome", "/usr/bin/chromium"]
+    exe = next((c for c in cands if c and Path(c).exists()), None)
+    if not exe:
+        raise RuntimeError("no Chrome or Edge found for PDF export")
+    subprocess.run([exe, "--headless=new", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--virtual-time-budget=20000",
+                    "--no-pdf-header-footer", f"--print-to-pdf={pdf.resolve()}", src.as_uri() + "#print"],
+                   check=True, capture_output=True, timeout=180)
+    return pdf
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--spec", required=True)
@@ -126,10 +143,14 @@ def main():
     ap.add_argument("--baseline", nargs="*", default=[])
     ap.add_argument("--trust")
     ap.add_argument("--study-id")
+    ap.add_argument("--pdf", action="store_true", help="also print the report to PDF (needs Chrome or Edge)")
     a = ap.parse_args()
     base = {k: float(v) for k, v in (x.split("=") for x in a.baseline)} if a.baseline else None
     p = build(a.spec, a.study, a.out, base, a.trust, a.study_id)
     print(f"wrote {p} ({p.stat().st_size / 1e6:.1f} MB)")
+    if a.pdf:
+        q = to_pdf(p)
+        print(f"wrote {q} ({q.stat().st_size / 1e6:.1f} MB)")
 
 
 if __name__ == "__main__":

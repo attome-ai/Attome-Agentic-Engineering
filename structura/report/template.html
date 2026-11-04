@@ -48,6 +48,8 @@ ul.plain{margin:.2rem 0;padding-left:1.1rem}ul.plain li{margin:.15rem 0}
 .tl{list-style:none;margin:0;padding:0;font-size:.85rem}.tl li{display:grid;grid-template-columns:64px 110px 1fr;gap:8px;padding:5px 0;border-bottom:1px solid var(--line)}
 .muted{color:var(--muted)}
 footer{color:var(--muted);font-size:.8rem;margin-top:20px}
+@media print{body{background:#fff}.controls,#probe,.seg,#play{display:none!important}.card{break-inside:avoid;box-shadow:none}#viewer{height:420px}}
+body.print .controls,body.print #probe{display:none!important}
 </style>
 </head>
 <body>
@@ -203,7 +205,7 @@ $("#foot").textContent = `Spec ${D.spec.id} v${D.spec.version} · hash ${D.spec.
 
 // ---------------------------------------------------------------- 3D viewer (Three.js, own orbit controls)
 const cv = $("#cv"), box = $("#viewer");
-const renderer = new THREE.WebGLRenderer({canvas: cv, antialias: true, alpha: true});
+const renderer = new THREE.WebGLRenderer({canvas: cv, antialias: true, alpha: true, preserveDrawingBuffer: location.hash === "#print"});
 renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 5000);
@@ -470,6 +472,12 @@ function timeline(){
 
 pareto(); compare(); trust(); history(); timeline();
 if (rec) show(rec, label(rec)); else if (D.baseline) show(D.baseline, "Baseline (hand design)");
+// print / PDF mode (I1): freeze the 3D view into an image (WebGL canvases often print blank) and drop the controls
+if (location.hash === "#print") {
+  document.body.classList.add("print");
+  setTimeout(() => {draw(); const img = new Image(); img.src = cv.toDataURL("image/png"); img.style.cssText = "width:100%;height:100%;display:block";
+    cv.replaceWith(img); document.title += " (print)"}, 400);
+}
 if (location.hash === "#split" && rec && D.baseline) $("#whichseg").querySelector('[data-w="split"]').click();  // link straight to the comparison
 </script>
 </body>
