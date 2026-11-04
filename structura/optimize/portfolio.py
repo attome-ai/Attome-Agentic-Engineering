@@ -1,0 +1,112 @@
+"""Method portfolio (D1-T2): choose the search method from the problem, run it, keep one history.
+
+Bayesian optimization (BoTorch qNEHVI through Ax) when evaluations are expensive relative to the budget (under 200)
+and there are at most three objectives; NSGA-II for two objectives and NSGA-III for three or four otherwise.
+Integer parameters are native in both paths; the spec's requirements become Ax outcome constraints (feasibility-aware
+search) or Optuna constraint functions. Every Ax trial is also written into the study's Optuna SQLite storage, so the
+history and Pareto views read one source whichever method ran. The choice and its reason are stored on the study.
+"""
+from __future__ import annotations
+
+import json
+import logging
+import math
+import time
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+
+import optuna
+
+from . import study as st
+from .evaluate import SpecInfo, evaluate, load_spec
+
+logging.getLogger("ax").setLevel(logging.ERROR)
+
+
+def choose(spec: SpecInfo, budget: int) -> tuple[str, str]:
+    n = len(spec.objectives)
+    if budget < 200 and n <= 3:
+        return "botorch_qnehvi", (f"budget {budget} < 200 evaluations and {n} objective(s): a Gaussian-process model "
+                                  "(BoTorch qNEHVI) spends each expensive evaluation where it most improves the Pareto front")
+    if n <= 2:
+        return "nsga2", f"budget {budget} >= 200 with {n} objectives: NSGA-II scales to many cheap evaluations"
+    return "nsga3", f"budget {budget} >= 200 with {n} objectives: NSGA-III keeps diversity with three or more objectives"
+
+
+def _ax_objective(spec: SpecInfo) -> str:
+    return ", ".join(("-" if sense == "min" else "") + q for q, sense in spec.objectives)
+
+
+def _ax_constraints(spec: SpecInfo) -> list[str]:
+    return [f"{r['quantity']} {r['op']} {float(r['value'])}" for r in spec.requirements]
+
+
+def _record(study: optuna.Study, spec: SpecInfo, params: dict, ev, seconds: float) -> None:
+    dists = {k: (optuna.distributions.IntDistribution(int(lo), int(hi)) if k in spec.integer
+                 else optuna.distributions.FloatDistribution(lo, hi)) for k, (lo, hi) in spec.free.items()}
+    attrs = {"status": ev.status, "seconds": round(seconds, 3), "method": "botorch_qnehvi"}
+    if ev.status == "ok":
+        attrs.update(violations=ev.violations, feasible=ev.feasible, metrics=ev.raw["metrics"], checks=ev.raw["checks"],
+                     hash=ev.raw["hash"])
+        t = optuna.trial.create_trial(params={k: (int(v) if k in spec.integer else v) for k, v in params.items()},
+                                      distributions=dists, values=ev.objectives, user_attrs=attrs)
+    else:
+        attrs.update(reason=ev.reason[:500], violations=[1.0] * len(spec.requirements))
+        t = optuna.trial.create_trial(params={k: (int(v) if k in spec.integer else v) for k, v in params.items()},
+                                      distributions=dists, state=optuna.trial.TrialState.FAIL, user_attrs=attrs)
+    study.add_trial(t)
+
+
+def run_ax(spec: SpecInfo, budget: int, seed: int, study: optuna.Study, mesh_size: float | None, threads: int,
+           batch: int = 4) -> None:
+    from ax import Client
+    from ax.api.configs import RangeParameterConfig
+
+    client = Client(random_seed=seed)
+    client.configure_experiment(parameters=[
+        RangeParameterConfig(name=k, bounds=(lo, hi), parameter_type="int" if k in spec.integer else "float")
+        for k, (lo, hi) in spec.free.items()])
+    client.configure_optimization(objective=_ax_objective(spec), outcome_constraints=_ax_constraints(spec))
+    metrics_needed = {q for q, _ in spec.objectives} | {r["quantity"] for r in spec.requirements}
+    done = 0
+    with ThreadPoolExecutor(max_workers=batch) as pool:
+        while done < budget:
+            trials = client.get_next_trials(max_trials=min(batch, budget - done))
+            futures = {}
+            for idx, p in trials.items():
+                params = {k: float(v) for k, v in p.items()}
+                futures[idx] = (params, time.perf_counter(), pool.submit(evaluate, spec, params, mesh_size, threads))
+            for idx, (params, t0, fut) in futures.items():
+                ev = fut.result()
+                if ev.status == "ok" and all(q in ev.raw["metrics"] for q in metrics_needed):
+                    client.complete_trial(trial_index=idx, raw_data={q: float(ev.raw["metrics"][q]) for q in metrics_needed})
+                else:
+                    client.mark_trial_failed(trial_index=idx, failed_reason=ev.reason[:200])
+                _record(study, spec, params, ev, time.perf_counter() - t0)
+                done += 1
+
+
+def run(spec_path: str | Path, budget: int, seed: int = 0, method: str | None = None, study_dir: str | Path | None = None,
+        mesh_size: float | None = None, threads: int = 1, n_jobs: int = 4) -> optuna.Study:
+    spec = load_spec(spec_path)
+    chosen, reason = (method, "method set by the caller") if method else choose(spec, budget)
+    study_dir = Path(study_dir or Path("runs") / f"{spec.id}-{chosen}-{seed}")
+    study_dir.mkdir(parents=True, exist_ok=True)
+    if chosen in ("nsga2", "nsga3", "random", "tpe", "default"):
+        s = st.run(spec_path, budget, sampler=chosen, seed=seed, study_dir=study_dir, mesh_size=mesh_size, threads=threads,
+                   n_jobs=n_jobs)
+    elif chosen == "botorch_qnehvi":
+        storage = f"sqlite:///{(study_dir / 'study.db').resolve().as_posix()}"
+        s = optuna.create_study(study_name=study_dir.name, storage=storage, load_if_exists=True, directions=spec.directions)
+        s.set_user_attr("spec_path", str(spec_path))
+        s.set_user_attr("spec_hash", spec.hash)
+        s.set_user_attr("objectives", spec.objectives)
+        s.set_user_attr("requirements", [r["id"] for r in spec.requirements])
+        s.set_user_attr("sampler", chosen)
+        run_ax(spec, budget, seed, s, mesh_size, threads, batch=n_jobs)
+        (study_dir / "summary.json").write_text(json.dumps(st.summary(s), indent=2))
+    else:
+        raise ValueError(f"unknown method {chosen!r}")
+    s.set_user_attr("method", chosen)
+    s.set_user_attr("method_reason", reason)
+    return s
