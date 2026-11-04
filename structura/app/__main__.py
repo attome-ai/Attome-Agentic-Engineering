@@ -53,6 +53,32 @@ def evaluate(file: str, params: dict, mesh: float) -> dict:
     return res
 
 
+_job: dict = {}
+
+
+def start_optimize(file: str, budget: int) -> dict:
+    """One background study at a time; every finished evaluation is appended to _job["results"] as it arrives."""
+    from structura.optimize import portfolio
+    if _job.get("state") == "running":
+        return {"error": "an optimization is already running"}
+    path = ROOT / "docs" / "examples" / Path(file).name
+    import time
+    import uuid
+    jid = uuid.uuid4().hex[:8]
+    _job.clear()
+    _job.update(id=jid, state="running", budget=budget, results=[], file=path.name, started=time.time())
+
+    def work():
+        try:
+            s = portfolio.run(path, budget=budget, seed=0, study_dir=ROOT / "runs" / "workbench" / jid, mesh_size=4, n_jobs=8,
+                              on_result=lambda r: _job["results"].append(r))
+            _job.update(state="done", method=s.user_attrs.get("method"), seconds=round(time.time() - _job["started"], 1))
+        except Exception as e:  # noqa: BLE001
+            _job.update(state="error", error=str(e))
+    threading.Thread(target=work, daemon=True).start()
+    return {"job": jid}
+
+
 class Handler(BaseHTTPRequestHandler):
     def _send(self, code: int, body: bytes, ctype: str):
         self.send_response(code)
@@ -73,14 +99,22 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, html.encode(), "text/html; charset=utf-8")
         elif self.path == "/api/specs":
             self._json(specs())
+        elif self.path.startswith("/api/progress"):
+            from urllib.parse import parse_qs, urlparse
+            q = parse_qs(urlparse(self.path).query)
+            start = int(q.get("from", ["0"])[0])
+            res = _job.get("results", [])
+            self._json({k: v for k, v in _job.items() if k != "results"} | {"results": res[start:], "count": len(res)})
         else:
             self._json({"error": "not found"}, 404)
 
     def do_POST(self):
-        if self.path != "/api/evaluate":
-            return self._json({"error": "not found"}, 404)
         try:
             body = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0))) or b"{}")
+            if self.path == "/api/optimize":
+                return self._json(start_optimize(body["file"], max(4, min(400, int(body.get("budget", 120))))))
+            if self.path != "/api/evaluate":
+                return self._json({"error": "not found"}, 404)
             self._json(evaluate(body["file"], body.get("params", {}), float(body.get("mesh", 4.0))))
         except Exception as e:  # noqa: BLE001 - report to the page
             self._json({"status": "error", "error": str(e)}, 500)

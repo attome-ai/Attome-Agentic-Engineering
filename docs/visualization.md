@@ -21,3 +21,10 @@ pick a brief from `docs/examples`, move the parameter sliders, press Evaluate (o
 released"). The real pipeline runs (build, gate, mesh, CalculiX; about 4 s for the bracket at 4 mm) and the page shows
 the field in 3D with load and support markers, the metrics and every requirement with pass/fail. A gate or mesh
 failure is shown with its reason. `#run` evaluates once on load. Screenshot: `docs/screenshots/workbench.png`.
+
+Live optimization (G3 live streaming): "Optimize this brief" in the workbench starts a study in the background (one
+at a time); every finished evaluation streams to the page within a second (`/api/progress`) and is plotted on the two
+objectives with the requirement line: teal feasible, grey not, orange the best feasible design so far. Clicking a
+point loads its parameters into the sliders and solves it for the 3D view. Reloading the page picks up a running or
+finished study. Test: 40 evaluations of the 20 kg brief streamed and plotted (none feasible at that budget, as
+expected: the brief needs about 200).

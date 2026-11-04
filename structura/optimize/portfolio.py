@@ -78,7 +78,7 @@ def _record(study: optuna.Study, spec: SpecInfo, params: dict, ev, seconds: floa
 
 
 def run_ax(spec: SpecInfo, budget: int, seed: int, study: optuna.Study, mesh_size: float | None, threads: int,
-           batch: int = 4, on_trial=None) -> None:
+           batch: int = 4, on_trial=None, on_result=None) -> None:
     from ax import Client
     from ax.api.configs import RangeParameterConfig
 
@@ -109,11 +109,15 @@ def run_ax(spec: SpecInfo, budget: int, seed: int, study: optuna.Study, mesh_siz
                 done += 1
                 if on_trial:
                     on_trial(ev.status == "ok" and ev.feasible)
+                if on_result:
+                    on_result({"params": params, "status": ev.status, "feasible": bool(ev.feasible),
+                               "metrics": ev.raw.get("metrics") if ev.status == "ok" else None})
 
 
 def run(spec_path: str | Path, budget: int, seed: int = 0, method: str | None = None, study_dir: str | Path | None = None,
-        mesh_size: float | None = None, threads: int = 1, n_jobs: int = 4, on_trial=None) -> optuna.Study:
-    """on_trial(feasible: bool) is called after every finished evaluation (progress reporting without touching storage)."""
+        mesh_size: float | None = None, threads: int = 1, n_jobs: int = 4, on_trial=None, on_result=None) -> optuna.Study:
+    """on_trial(feasible: bool) is called after every finished evaluation (progress reporting without touching storage);
+    on_result(dict) gets the same moment with params, status, feasible and metrics (live views)."""
     spec = load_spec(spec_path)
     if not spec.free:
         raise ValueError("the spec has no free parameters: it describes one fixed design to analyse, not a search")
@@ -121,7 +125,13 @@ def run(spec_path: str | Path, budget: int, seed: int = 0, method: str | None = 
     study_dir = Path(study_dir or Path("runs") / f"{spec.id}-{chosen}-{seed}")
     study_dir.mkdir(parents=True, exist_ok=True)
     if chosen in ("nsga2", "nsga3", "random", "tpe", "default"):
-        cbs = [lambda study, t: on_trial(bool(t.user_attrs.get("feasible")))] if on_trial else None
+        cbs = []
+        if on_trial:
+            cbs.append(lambda study, t: on_trial(bool(t.user_attrs.get("feasible"))))
+        if on_result:
+            cbs.append(lambda study, t: on_result({"params": dict(t.params), "status": t.user_attrs.get("status", t.state.name),
+                                                   "feasible": bool(t.user_attrs.get("feasible")), "metrics": t.user_attrs.get("metrics")}))
+        cbs = cbs or None
         s = st.run(spec_path, budget, sampler=chosen, seed=seed, study_dir=study_dir, mesh_size=mesh_size, threads=threads,
                    n_jobs=n_jobs, callbacks=cbs)
     elif chosen == "botorch_qnehvi":
@@ -132,7 +142,7 @@ def run(spec_path: str | Path, budget: int, seed: int = 0, method: str | None = 
         s.set_user_attr("objectives", spec.objectives)
         s.set_user_attr("requirements", [r["id"] for r in spec.requirements])
         s.set_user_attr("sampler", chosen)
-        run_ax(spec, budget, seed, s, mesh_size, threads, batch=n_jobs, on_trial=on_trial)
+        run_ax(spec, budget, seed, s, mesh_size, threads, batch=n_jobs, on_trial=on_trial, on_result=on_result)
         (study_dir / "summary.json").write_text(json.dumps(st.summary(s), indent=2))
     else:
         raise ValueError(f"unknown method {chosen!r}")

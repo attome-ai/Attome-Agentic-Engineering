@@ -78,6 +78,17 @@ footer{color:var(--muted);font-size:.8rem;margin-top:20px}
       <div class="tblw" style="margin-top:10px"><table id="res"></table></div>
     </section>
   </div>
+  <section class="card" style="margin-top:14px">
+    <h2>Optimize live</h2>
+    <div class="controls">
+      <label>Budget <input type="number" id="budget" min="8" max="400" value="120" style="width:5em;font:inherit"> evaluations</label>
+      <button id="opt" style="padding:6px 14px;font:inherit;font-weight:600;border-radius:8px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer">Optimize this brief</button>
+      <span class="muted" id="optstatus" style="font-size:.85rem"></span>
+    </div>
+    <svg id="live" viewBox="0 0 900 320" width="100%" role="img" aria-label="Live optimization" style="margin-top:8px"></svg>
+    <p class="muted" style="font-size:.8rem;margin:.3rem 0 0">Every design the optimizer evaluates appears as it finishes (real solves): teal meets every
+      requirement, grey does not, orange is the best feasible design so far. Click a point to load it into the sliders and see it in 3D.</p>
+  </section>
 </main>
 <script>__THREE__</script>
 <script>
@@ -192,6 +203,7 @@ function pickSpec(){
     inp.addEventListener("input", () => $("#v_" + inp.dataset.k).textContent = inp.dataset.int === "1" ? inp.value : f3(+inp.value));
     inp.addEventListener("change", () => {if ($("#auto").checked) run()})});
   $("#res").innerHTML = ""; $("#status").textContent = "";
+  if (!liveTimer) {LIVE = []; liveFrom = 0; liveDraw(); $("#optstatus").textContent = ""}
 }
 async function run(){
   const params = {}; $("#params").querySelectorAll("input").forEach(i => params[i.dataset.k] = +i.value);
@@ -212,12 +224,62 @@ async function run(){
   } catch (e) {$("#status").textContent = "request failed: " + e}
   finally {$("#go").disabled = false}
 }
+// ---------------------------------------------------------------- live optimization (G3 live streaming)
+let LIVE = [], liveTimer = null, liveFrom = 0;
+const LUNITS = {mass_g: "g", safety_factor: "", max_disp_mm: "mm", max_von_mises_MPa: "MPa", peak_temperature: "degC", cost: "USD"};
+function liveDraw(){
+  const svg = $("#live"), W = 900, H = 320, L = 60, R = 20, T = 16, B = 40;
+  const ox = spec.objectives[0], oy = spec.objectives[1] || spec.objectives[0], kx = ox.quantity, ky = oy.quantity;
+  const pts = LIVE.filter(r => r.metrics && r.metrics[kx] != null && r.metrics[ky] != null);
+  const req = spec.requirements.find(r => r.quantity === ky);
+  if (!pts.length) {svg.innerHTML = `<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="currentColor" opacity="0.6">no evaluations yet</text>`; return}
+  const xs = pts.map(r => r.metrics[kx]), ys = pts.map(r => r.metrics[ky]).concat(req ? [req.value] : []);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const X = v => L + (v - x0)/((x1 - x0) || 1)*(W - L - R), Y = v => H - B - (v - y0)/((y1 - y0) || 1)*(H - T - B);
+  const better = (a, b) => (ox.sense === "min" ? a < b : a > b);
+  let best = null;
+  for (const r of pts) if (r.feasible && (!best || better(r.metrics[kx], best.metrics[kx]))) best = r;
+  let h = `<g fill="currentColor" font-size="11" opacity="0.75"><text x="${(L + W - R)/2}" y="${H - 8}" text-anchor="middle">${esc(NAMES[kx] || kx)}${LUNITS[kx] ? " (" + LUNITS[kx] + ")" : ""}</text>
+    <text transform="rotate(-90)" x="${-(T + H - B)/2}" y="14" text-anchor="middle">${esc(NAMES[ky] || ky)}${LUNITS[ky] ? " (" + LUNITS[ky] + ")" : ""}</text>
+    <text x="${L}" y="${H - B + 16}">${f3(x0)}</text><text x="${W - R}" y="${H - B + 16}" text-anchor="end">${f3(x1)}</text>
+    <text x="${L - 6}" y="${H - B}" text-anchor="end">${f3(y0)}</text><text x="${L - 6}" y="${T + 8}" text-anchor="end">${f3(y1)}</text></g>`;
+  h += `<line x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}" stroke="currentColor" opacity="0.3"/><line x1="${L}" x2="${L}" y1="${T}" y2="${H - B}" stroke="currentColor" opacity="0.3"/>`;
+  if (req) h += `<line x1="${L}" x2="${W - R}" y1="${Y(req.value)}" y2="${Y(req.value)}" stroke="#2f7d4f" stroke-dasharray="5 4"/><text x="${W - R}" y="${Y(req.value) - 4}" text-anchor="end" font-size="11" fill="#2f7d4f">${esc(req.id)} ${esc(req.op)} ${req.value}</text>`;
+  pts.forEach((r, i) => {
+    const isNew = i >= pts.length - 4, col = r === best ? "#d9480f" : r.feasible ? "#2f6f5e" : "#b8b7ae";
+    h += `<circle class="lp" data-i="${LIVE.indexOf(r)}" cx="${X(r.metrics[kx]).toFixed(1)}" cy="${Y(r.metrics[ky]).toFixed(1)}" r="${r === best ? 7 : isNew ? 5 : 3.5}" fill="${col}" opacity="${r.feasible ? 0.9 : 0.6}" style="cursor:pointer"><title>${f3(r.metrics[kx])} ${LUNITS[kx]}, ${f3(r.metrics[ky])} ${LUNITS[ky]}${r.feasible ? "" : " (fails a requirement)"}</title></circle>`});
+  svg.innerHTML = h;
+  return best;
+}
+async function livePoll(){
+  const r = await (await fetch(`/api/progress?from=${liveFrom}`)).json();
+  if (!r.id) return;
+  if (r.file !== spec.file) {const o = SPECS.find(x => x.file === r.file); if (o) {$("#spec").value = o.file; pickSpec()}}
+  LIVE.push(...r.results); liveFrom = r.count;
+  const best = liveDraw();
+  const ox = spec.objectives[0];
+  $("#optstatus").textContent = `${r.count} / ${r.budget} evaluations` + (best ? ` · best feasible ${NAMES[ox.quantity] || ox.quantity}: ${f3(best.metrics[ox.quantity])} ${LUNITS[ox.quantity]}` : " · no feasible design yet") +
+    (r.state === "done" ? ` · done in ${r.seconds} s (${r.method})` : r.state === "error" ? ` · error: ${r.error}` : "");
+  if (r.state !== "running") {clearInterval(liveTimer); liveTimer = null; $("#opt").disabled = false}
+}
+$("#opt").addEventListener("click", async () => {
+  const r = await (await fetch("/api/optimize", {method: "POST", body: JSON.stringify({file: spec.file, budget: +$("#budget").value})})).json();
+  if (r.error) {$("#optstatus").textContent = r.error; return}
+  LIVE = []; liveFrom = 0; $("#opt").disabled = true; $("#optstatus").textContent = "measuring one evaluation to choose the method…";
+  liveTimer = setInterval(livePoll, 1000);
+});
+$("#live").addEventListener("click", e => {
+  const c = e.target.closest(".lp"); if (!c) return; const r = LIVE[+c.dataset.i];
+  $("#params").querySelectorAll("input").forEach(i => {if (r.params[i.dataset.k] != null) {i.value = r.params[i.dataset.k]; i.dispatchEvent(new Event("input"))}});
+  run();
+});
 $("#go").addEventListener("click", run);
 $("#spec").addEventListener("change", pickSpec);
 fetch("/api/specs").then(r => r.json()).then(s => {SPECS = s;
   $("#spec").innerHTML = s.map(x => `<option value="${esc(x.file)}">${esc(x.id)} (${esc(x.family)})</option>`).join("");
   const want = s.find(x => x.file === "bracket_20kg.json"); if (want) $("#spec").value = want.file;
-  pickSpec(); if (location.hash === "#run") run()});
+  pickSpec(); if (location.hash === "#run") run();
+  livePoll().then(() => {if (!liveTimer && $("#optstatus").textContent.includes("/ ") && !/done|error/.test($("#optstatus").textContent)) {$("#opt").disabled = true; liveTimer = setInterval(livePoll, 1000)}})});  // a study already running or finished
 </script>
 </body>
 </html>
