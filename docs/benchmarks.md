@@ -311,3 +311,14 @@ Visual review (`render_views`): the engine's STL of a family design or a graph i
 six views (front, back, left, right, top, isometric) with the overall size, about 2 s, and returned to the agent as
 an image over MCP so it can check the shape against the brief before solving. Example:
 `docs/screenshots/render_views_bracket.png`.
+
+## Brief benchmark (P3-t1, `benchmarks/brief_bench/`): dataset and scorer ready, model run pending
+
+50 hand-written briefs with gold spec fields: 31 brackets, 12 heat sinks and 7 out of scope (a gear, a propeller,
+a bicycle frame...: the right answer is "no family fits"); 15 in Arabic, 3 mixed, and imperial units (lb, F) to test
+conversion. Ten fields per brief (family, material, load in N, safety factor, deflection, power, temperature limit,
+fan speed, objective, process). The scorer reports all fields, **stated fields** (only those the brief gives: an empty
+answer scores 58% on all fields but 0% here, so this is the honest number) and unit correctness, with every miss.
+Self-check: the gold answers score 100%; no answers score 0% on stated fields. The model run needs an API key:
+`python -m benchmarks.brief_bench.run extract --model claude-opus-5-5 --out runs/brief_bench/opus`, then `score`.
+Image briefs (a sketch or photo) are not in this set yet.
