@@ -79,13 +79,26 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
                     {"time": "", "step": "verify front", "outcome": f"{len(designs)} designs re-solved at {mesh} mm"}]
         if trust:
             timeline.append({"time": "", "step": "trust", "outcome": f"grade {trust.get('grade')}", "detail": "; ".join(trust.get("reasons", []))})
+    manufacturing = None
+    rec_design = next((d for d in designs if d["recommended"]), designs[0] if designs else None)
+    if rec_design:
+        raw_spec = json.loads(Path(spec_path).read_text(encoding="utf-8"))
+        try:
+            m = engine.call("manufacture", family=raw_spec["family"], set=[f"{k}={float(v)}" for k, v in rec_design["params"].items()],
+                            material=raw_spec.get("material", "PETG"), **{"print-dir": json.dumps(raw_spec.get("print_direction", [0, 0, 1]))})
+            manufacturing = {k: v for k, v in m.items() if k not in ("fdm", "cnc")}
+            for p in ("fdm", "cnc"):
+                if p in m:
+                    manufacturing[p] = {k: v for k, v in m[p].items() if k not in ("inputs", "price_per_kg")}
+        except engine.EngineError as e:
+            manufacturing = {"advice": [{"process": "all", "fits": False, "reason": f"manufacturing check failed: {e}"}]}
     req_sf = next((r["value"] for r in card["requirements"] if r["quantity"] == "safety_factor" and r["op"] == ">="), None)
     units = {"mass_g": "g", "safety_factor": "", "max_disp_mm": "mm", "max_von_mises_MPa": "MPa", "peak_temperature": "degC"}
     objectives = [{"quantity": q, "sense": sense, "unit": units.get(q, "")} for q, sense in spec.objectives]
     data = {"title": f"{card['id']}: {spec.objectives[0][0]} vs {spec.objectives[1][0]}" if len(spec.objectives) > 1 else card["id"],
             "brief": card.get("brief") or json.loads(Path(spec_path).read_text()).get("brief", ""),
             "spec": {"id": card["id"], "version": card["version"], "hash": card["hash"], "requirements": card["requirements"]},
-            "required_sf": req_sf, "objectives": objectives, "designs": designs, "baseline": base, "history": hist, "trust": trust, "timeline": timeline,
+            "required_sf": req_sf, "objectives": objectives, "designs": designs, "manufacturing": manufacturing, "baseline": base, "history": hist, "trust": trust, "timeline": timeline,
             "generated": datetime.now(timezone.utc).isoformat(timespec="seconds")}
     html = TEMPLATE.read_text(encoding="utf-8")
     html = html.replace("__THREE__", THREE.read_text(encoding="utf-8")).replace("__DATA__", json.dumps(data).replace("</", "<\\/"))

@@ -93,6 +93,12 @@ footer{color:var(--muted);font-size:.8rem;margin-top:20px}
     </section>
   </div>
 
+  <section class="card" style="margin-top:14px" id="mfgcard">
+    <h2>Making the recommended design</h2>
+    <div class="tblw"><table id="mfg"></table></div>
+    <p class="muted" style="font-size:.8rem;margin:.4rem 0 0" id="mfgnote"></p>
+  </section>
+
   <section class="card" style="margin-top:14px">
     <h2>Spec card</h2>
     <div class="tblw"><table id="spec"></table></div>
@@ -124,6 +130,20 @@ const headline = [
   ["Evaluations", D.history.length],
   ["Baseline", D.baseline ? qv(D.baseline.metrics, OX) + " · " + qv(D.baseline.metrics, OY) : "–"]];
 $("#headline").innerHTML = headline.map(([k, v]) => `<div class="stat"><b>${esc(v)}</b><span>${esc(k)}</span></div>`).join("");
+if (D.manufacturing) {
+  const M = D.manufacturing, rows = M.advice.map(a => {
+    const r = M[a.process], c = a.closest_rule;
+    const rule = a.reason ? esc(a.reason) : c ? `${esc(c.id)}: ${esc(c.rule)} (${f3(c.value)} ${esc(c.op)} ${f3(c.limit)} ${esc(c.unit)})` : "–";
+    return `<tr><td>${a.process.toUpperCase()}</td><td><span class="pill ${a.fits ? "pass" : "fail"}">${a.fits ? "fits" : "no"}</span></td><td>${rule}</td>` +
+           `<td class="n">${r ? f3(r.time_h) + " h" : "–"}</td><td class="n">${r ? f3(r.cost.total) + " " + esc(r.cost.currency) : "–"}</td></tr>`});
+  $("#mfg").innerHTML = "<tr><th>Process</th><th>Fits</th><th>Rule closest to its limit</th><th>Time</th><th>Cost</th></tr>" + rows.join("");
+  const fdm = M.fdm, dirs = {"0,0,1": "+z (as analysed)", "0,0,-1": "-z", "1,0,0": "+x", "-1,0,0": "-x", "0,1,0": "+y", "0,-1,0": "-y"};
+  const best = fdm ? fdm.least_support_direction.map(Math.round).join(",") : null;
+  $("#mfgnote").textContent = (M.recommended_process ? `Recommended process: ${M.recommended_process.toUpperCase()}. ` : "No process fits every rule. ") +
+    (fdm ? `Printing along ${dirs[fdm.print_direction.map(Math.round).join(",")] || "the spec direction"} needs about ${f3(fdm.support_volume_mm3 / 1000)} cm³ of support; ` +
+           `the least support is along ${dirs[best] || best} (re-run the analysis in that direction before changing it: printed strength depends on layer direction). ` : "") +
+    "Every rate and price is a stated assumption in data/processes.json; replace them with your own printer, shop and supplier numbers.";
+} else $("#mfgcard").style.display = "none";
 $("#spec").innerHTML = "<tr><th>Id</th><th>Requirement</th><th>Source</th></tr>" + D.spec.requirements.map(r =>
   `<tr><td>${esc(r.id)}</td><td>${esc(r.quantity)} ${esc(r.op)} ${esc(r.value)} ${r.unit === "1" ? "" : esc(r.unit)}</td><td class="muted">${esc(r.source)}</td></tr>`).join("");
 $("#assump").innerHTML = (D.trust && D.trust.assumptions || []).map(a => `<li>${esc(a)}</li>`).join("");
