@@ -72,8 +72,9 @@ From a sentence, a photo or an existing part to a checkable spec. Competitor sco
 - **Measured, not claimed.** A benchmark of 50 briefs (English and Arabic, text and image) with gold specs written by hand; the target is at least 90% of spec fields correct and 100% of units correct, reported per field in the proposal.
 - **Why.** Every competitor that scores 60+ here (SimScale, Zoo, Adam, the papers) scores 0-20 on Pareto (D2), and none was found deriving loads from a use case or taking Arabic briefs.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 35):**
+- The agent turns a brief into a spec through MCP tools (create_study, derive_load, rank_questions); no image or sketch input.
+- 50-brief benchmark (English and Arabic) with gold fields and scorer is ready (`benchmarks/brief_bench/`); the model run is pending, so accuracy is unmeasured.
 
 **How the leaders do it:**
 - SimScale's Engineering AI agent goes from one prompt to a solved FEA/CFD/thermal study with an explanation; free on every plan, inside Onshape since Sept 2026.
@@ -93,8 +94,9 @@ From a sentence, a photo or an existing part to a checkable spec. Competitor sco
 - **Versions and diffs.** Each spec edit creates a new version; any two runs show what changed in the spec and what it did to the result.
 - **Materials.** A vetted table (PETG, PLA, Al 6061-T6, steel S235) with a source per value; the LLM cannot invent material properties.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 75):**
+- Typed spec with requirement ids and sources, load factors evaluated at the top of their range, print knock-down, feasibility by corner evaluation, versioning and an acceptance gate.
+- Decision D9: unstated defaults are hard requirements only when they protect the user; conflicts are named when nothing is feasible.
 
 **How the leaders do it:**
 - HEPH (arXiv 2605.17448) ships 50 briefs with executable requirement checkers, one case per brief; the best formalization found.
@@ -110,8 +112,9 @@ From a sentence, a photo or an existing part to a checkable spec. Competitor sco
 - **Two redesign paths.** If a template (B3) fits the detected dimensions within tolerance, its parameters are optimized; otherwise wall thickness, pocket depth and rib count are optimized as operations on the uploaded solid inside its envelope, with every candidate passing the gate (B4).
 - **Honest scope.** Parts that fit neither path are analysed and reported, and the tool says it cannot redesign them; native CAD parameters come with A4.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 55):**
+- STEP upload with interface detection (holes and patterns, faces, envelope), holes frozen as preserve regions; the as-is analysis reproduces the native result exactly.
+- Redesign by a lightening pocket inside the part: 354 g to 328 g (-7.3%), grade B. Template fitting is not built.
 
 **How the leaders do it:**
 - Scores carried over from the researched row *Natural-language intent input*; this detail row was not researched on its own, so treat every score as low confidence.
@@ -142,8 +145,8 @@ From a sentence, a photo or an existing part to a checkable spec. Competitor sco
 - **Learn the threshold.** Answers and outcomes are logged so the threshold can be tuned on the A1 benchmark.
 - **Why.** No competitor or paper was found choosing clarifying questions by their effect on the design.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 40):**
+- rank_questions orders open questions by how much each answer could change the result; not yet measured on real briefs.
 
 **How the leaders do it:**
 - Scores carried over from the researched row *Natural-language intent input*; this detail row was not researched on its own, so treat every score as low confidence.
@@ -164,8 +167,9 @@ How shapes are made. The LLM never writes raw CAD code on the main path: it comp
 - **Measured on a public benchmark.** Run Text2CAD-Bench (L1-L4) through the grammar path and report invalid rate, Chamfer distance and IoU against the published model results (GPT-5.2: 11.1% invalid on L1; about 70-90% invalid on L3 for most models). The score rises above 90 only if the benchmark shows we lead.
 - **Why.** Free-form CAD code is the weak point of every text-to-CAD system measured so far; a typed grammar removes the failure class instead of repairing it.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 60):**
+- The agent composes design graphs (typed grammar), ranks several candidates (compose_candidates) and reviews six rendered views (render_views).
+- Free-form CadQuery as a gated last resort (freeform_cad). Text2CAD-Bench not run.
 
 **How the leaders do it:**
 - Zoo leads text-to-CAD on its own B-rep kernel with KCL code and snapshot self-checks; fails on complex parts.
@@ -198,8 +202,8 @@ How shapes are made. The LLM never writes raw CAD code on the main path: it comp
 - **Drawing.** A dimensioned 2D drawing (PDF) from the STEP with the free parameters labelled.
 - **Native feature trees (after the competition).** Recreate the graph as a native feature tree in Onshape or Fusion through their MCP servers.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 75):**
+- Design graph with 14 typed feature types, bounded parameters, safe expressions, named faces and content hashes; two families (bracket, heat sink); every feature compiles at its bound corners.
 
 **How the leaders do it:**
 - Creo and Zoo lead: Creo keeps topology results in the parametric history; Zoo outputs KCL code.
@@ -214,8 +218,8 @@ How shapes are made. The LLM never writes raw CAD code on the main path: it comp
 - **Mesh-ability prediction.** A classifier on cheap geometric features (smallest face area, face count, minimum edge length, thickness ratio) trained on the P1 sweep predicts mesh failure; predicted failures are coarsened or repaired before gmsh runs.
 - **Measured.** Gate-pass → mesh-success rate over the P1 and P2 sweeps, reported in docs/benchmarks.md.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 80):**
+- Geometry gate (validity, single solid, design space, keep-out, preserve, minimum wall, edge and hole, overhang) with safe repair: 499 of 500 random designs pass, all gated designs mesh.
 
 **How the leaders do it:**
 - Scores carried over from the researched row *Verification and trust reporting*; this detail row was not researched on its own, so treat every score as low confidence.
@@ -237,8 +241,9 @@ Real solvers, never surrogates alone. Each feature says what is built **before 3
 - **Validation.** Cantilever, NAFEMS LE10 and a modal case against the analytical beam frequency, all in F2.
 - **Why not 95.** Ansys adds explicit dynamics, fatigue, composites and decades of verification; 90 is the credible ceiling for a wrapped open solver.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 70):**
+- CalculiX static stress, frequency and buckling, all validated (LE10 +0.14%, LE1 -0.40%, cantilever -0.80%, buckling +0.06%, frequency -0.26%); frequency and buckling requirements work in specs.
+- No nonlinear material or contact.
 
 **How the leaders do it:**
 - Ansys and Siemens lead with reference-grade solvers.
@@ -256,8 +261,9 @@ Real solvers, never surrogates alone. Each feature says what is built **before 3
 - **After 3 Feb: radiation.** Surface emissivity for hot parts.
 - **Honest limit.** Correlations are approximations of real airflow; CFD (C5) is the step beyond, and the trust panel states which one was used.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 55):**
+- Steady conduction validated (slab exact, fin -0.002%), heat balance in the trust record, fin-channel convection correlation per design; heat sink 103.7 g to 34.4 g, grade A.
+- No transient or thermal stress.
 
 **How the leaders do it:**
 - Ansys and Siemens lead; Creo 12 added thermal objectives to generative design.
@@ -273,8 +279,8 @@ Real solvers, never surrogates alone. Each feature says what is built **before 3
 - **Before 3 Feb: setup checks.** Before the solve: the structure is not free to move (rigid-body modes), not over-constrained against thermal expansion, loads land on existing faces, and after the solve reactions balance applied loads within 0.5%.
 - **Why.** Wrong boundary conditions are the most common source of plausible but wrong FEA results; a setup that a non-expert can see and that checks itself is the gap the agent tools leave.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 65):**
+- Loads and supports on named faces, factor ranges, load derivation from kg with sources, partial supports; loads and supports drawn in the viewer.
 
 **How the leaders do it:**
 - Scores carried over from the researched row *LLM agent drives the tools*; this detail row was not researched on its own, so treat every score as low confidence.
@@ -289,8 +295,8 @@ Real solvers, never surrogates alone. Each feature says what is built **before 3
 - **Before 3 Feb: quality gate.** Minimum scaled Jacobian and aspect ratio recorded and shown in the trust panel; a mesh below the threshold is remeshed, never solved.
 - **Before 3 Feb: adaptive refinement.** Elements flagged by the C1 error estimate are refined until peak stress converges.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 70):**
+- Mesh ladder (Delaunay, straight-sided, HXT single thread, Frontal, coarser), quadratic-element Jacobian check, named faces matched by area and centroid; 100% of gated designs mesh.
 
 **How the leaders do it:**
 - Scores carried over from the researched row *Verification and trust reporting*; this detail row was not researched on its own, so treat every score as low confidence.
@@ -318,8 +324,8 @@ Real solvers, never surrogates alone. Each feature says what is built **before 3
 - **After 3 Feb: cross-study model.** A model on design-graph features and stored results from every past study predicts performance for a new study before the first solve, so the tool gets better with every study run; it is used only to choose starting candidates.
 - **Why not higher.** PhysicsX, Neural Concept, Ansys SimAI and Siemens PhysicsAI predict full fields from millions of meshes; this plan predicts objectives for one design family at a time.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 10):**
+- An in-house solver screens designs in process (same answer as CalculiX); no learned surrogate.
 
 **How the leaders do it:**
 - PhysicsX, Neural Concept, Ansys SimAI and Siemens PhysicsAI lead; SimAI needs 30-100 customer simulations and reports confidence per prediction.
@@ -342,8 +348,8 @@ The optimizer searches, the solver decides; the LLM sets up the problem and expl
 - **After 3 Feb: warm start.** A new study starts from the best designs and the fitted model of earlier studies of the same family (C6).
 - **Measured, not claimed.** On every part family: random search, plain NSGA-II, Optuna's default sampler and the Attome AE portfolio with the same budget and three seeds; report hypervolume against solver calls. The score stays above 90 only if the portfolio wins.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 75):**
+- NSGA-II/III and BoTorch qNEHVI, chosen from the measured cost of an evaluation (D5); budget convergence rule (D8): 34.4 g heat sink confirmed at 600 evaluations.
 
 **How the leaders do it:**
 - Siemens (HEEDS, with its SHERPA hybrid search) and Ansys (optiSLang) lead for experts; Fusion and nTop optimize inside generative studies.
@@ -361,8 +367,8 @@ The optimizer searches, the solver decides; the LLM sets up the problem and expl
 - **After 3 Feb: robustness per point.** How much each Pareto design's objectives move under the spec's load and material ranges, shown as an error bar on the front.
 - **After 3 Feb: across families.** One front across part families (bracket versus flexure for the same job).
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 65):**
+- Pareto fronts with a recommended knee design, steering by preference, explanation of two designs; the front is re-solved on a finer mesh.
 
 **How the leaders do it:**
 - Siemens and Ansys lead for experts with enterprise budgets.
@@ -379,8 +385,8 @@ The optimizer searches, the solver decides; the LLM sets up the problem and expl
 - **Before 3 Feb: fast screening solver.** scikit-fem in process with a reused factorization for small linear screening runs, cross-checked against CalculiX (F2).
 - **Measured.** Evaluations per minute on the demo laptop, cache hit rate and coarse-to-fine drift written to docs/benchmarks.md.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 60):**
+- Content-hash cache, parallel evaluations, coarse search with fine verification (D7), in-process screening solver.
 
 **How the leaders do it:**
 - Scores carried over from the researched row *Automatic optimization*; this detail row was not researched on its own, so treat every score as low confidence.
@@ -403,8 +409,8 @@ The agent runs the loop end to end, repairs its own failures inside a budget, an
 - **After 3 Feb: specialist reviewers.** A physics-review subagent (load path, plausibility of stress and deflection) is added only if the E2 benchmark shows it raises the strict pass rate.
 - **Measured.** Hephaestus-CCX, if its kit is public: Opus 5.5 in the original free-form mode, then the full Attome AE system, reported separately by stage (execute, mesh, FEA, requirement pass, strict pass).
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 75):**
+- MCP server with 25 tools, tested over the protocol; images (six-view renders) returned to the agent.
 
 **How the leaders do it:**
 - SimScale exposes its agent through API and MCP; Synera orchestrates 80+ tools with logged multi-agent workflows.
@@ -420,8 +426,8 @@ The agent runs the loop end to end, repairs its own failures inside a budget, an
 - **After 3 Feb: parallel studies.** Several briefs or families run at once and are compared.
 - **Measured.** Share of scripted briefs that end with a verified design without human help (target at least 90% of 20 briefs), and the strict pass rate on Hephaestus-CCX against the published 9 of 50.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 60):**
+- Closed loop with an approval gate, feasibility first, relaxation proposals and named conflicts; ten scripted briefs run end to end (`benchmarks/brief_suite.json`).
 
 **How the leaders do it:**
 - The two May 2026 papers close this loop and lead; with FEA feedback PIL raised target hits from 22.2% to 59.0%; HEPH reached 9/50 strict passes after 10 attempts at about 68 minutes per item.
@@ -438,8 +444,8 @@ The agent runs the loop end to end, repairs its own failures inside a budget, an
 - **Measured.** Repair success by stage and attempts to success, written to docs/benchmarks.md.
 - **Why.** In a matched study FoamBench success rose from 0.9% (no repair) to 90.0% (5 attempts) and 96.4% (10); scripted reflection added nothing, so playbooks are concrete actions, not reflection prompts.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 50):**
+- Typed errors carry a repair playbook and budget; free-form CAD errors come back structured for repair.
 
 **How the leaders do it:**
 - Scores carried over from the researched row *Closed design → simulate → iterate loop*; this detail row was not researched on its own, so treat every score as low confidence.
@@ -455,8 +461,8 @@ The agent runs the loop end to end, repairs its own failures inside a budget, an
 - **Before 3 Feb: fallback.** If a provider call fails twice, the step moves to the next model in its route and the switch is logged; the demo cache (P7) covers a full outage.
 - **After 3 Feb: adaptive routing.** Routes update automatically from accumulated per-step results.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 5):**
+- Not built: one model drives every step.
 
 **How the leaders do it:**
 - Scores carried over from the researched row *LLM agent drives the tools*; this detail row was not researched on its own, so treat every score as low confidence.
@@ -480,8 +486,8 @@ Why a judge or an engineer should believe the numbers. The method follows establ
 - **After 3 Feb: credibility assessment.** A per-study credibility table in the spirit of NASA-STD-7009 (verification, validation, input pedigree, uncertainty, use history), filled from the evidence the engine already records.
 - **Why.** Public verification evidence is weak for almost every physics-AI vendor, and execution-based and field-level success can differ by about 20 points (arXiv 2609.03718).
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 80):**
+- Trust record: three-level grid convergence with error bars per requirement, equilibrium, energy and heat balance, validation status, A/B/C grade with the reason, reproduce command (bit-identical).
 
 **How the leaders do it:**
 - Ansys leads (SimAI confidence per prediction plus model evaluation reports); SimScale compiles mesh-independence studies.
@@ -500,8 +506,8 @@ Why a judge or an engineer should believe the numbers. The method follows establ
 - **Before 3 Feb: agent benchmarks.** The A1 brief benchmark, the E2 scripted-brief benchmark and Hephaestus-CCX (if its kit is public), reported by stage.
 - **After 3 Feb: code verification.** Method of manufactured solutions for the scikit-fem path, and more NAFEMS cases as physics grows (thermal stress, contact).
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 70):**
+- Validation suite 7 of 7, independent in-house solver agrees to 6e-5%; Hephaestus-CCX not public yet.
 
 **How the leaders do it:**
 - Scores carried over from the researched row *Verification and trust reporting*; this detail row was not researched on its own, so treat every score as low confidence.
@@ -522,8 +528,8 @@ The owner's focus: design and simulation must be easy to see, compare and decide
 - **Before 3 Feb: fast.** Skin mesh exported once per design (PyVista `extract_surface()`, positions, indices and scalars as binary); target: a 200k-triangle field loads in under one second and orbits at 60 frames per second on the demo laptop, measured.
 - **After 3 Feb: inside views.** Iso-surfaces and principal-stress trajectories (load paths) computed on the volume mesh server-side; AR view on a phone.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 70):**
+- Offline three.js viewer: stress, displacement, safety and temperature fields, probe, load and support markers, Arabic mode; 200k-triangle timing not measured.
 
 **How the leaders do it:**
 - Ansys and Siemens lead with desktop post-processors; SimScale shows fields in the browser.
@@ -539,8 +545,8 @@ The owner's focus: design and simulation must be easy to see, compare and decide
 - **Before 3 Feb: probe.** Hover for the value, unit and location; click to pin a probe and compare designs at the same point.
 - **After 3 Feb: transient playback.** Time scrubber for transient thermal (C2).
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 60):**
+- Deformation slider with ghost, load-up animation, vibration mode animation; no clip plane (surface mesh only).
 
 **How the leaders do it:**
 - Scores carried over from the researched row *3D viewer with result fields*; this detail row was not researched on its own, so treat every score as low confidence.
@@ -555,8 +561,8 @@ The owner's focus: design and simulation must be easy to see, compare and decide
 - **Before 3 Feb: what matters.** Sobol sensitivity (D1) as a bar chart, with frozen parameters marked.
 - **Before 3 Feb: gallery.** Thumbnails of every feasible design, sortable by any objective.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 65):**
+- History chart, brushable parallel coordinates of every evaluation, live streaming of the optimization in the workbench.
 
 **How the leaders do it:**
 - Fusion's outcome explorer, Siemens HyperWorks side-by-side comparisons and Ansys optiSLang lead.
@@ -571,8 +577,8 @@ The owner's focus: design and simulation must be easy to see, compare and decide
 - **Before 3 Feb: steer by dragging.** Drag a target point on the chart toward "lighter" or "stiffer"; it becomes the reference point for the steering run (D2), and the new designs appear as they finish.
 - **Before 3 Feb: three objectives.** A 3D front for three objectives, with 2D projections side by side.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 60):**
+- Clickable Pareto explorer linked to 3D, with search-to-fine mesh bars and the trust grade.
 
 **How the leaders do it:**
 - Scores carried over from the researched row *Design comparison / history / Pareto views*; this detail row was not researched on its own, so treat every score as low confidence.
@@ -588,8 +594,8 @@ The owner's focus: design and simulation must be easy to see, compare and decide
 - **Before 3 Feb: physical evidence.** When the printed test (H3) exists, photos of both parts and the measured force-displacement curves beside the predicted ones.
 - **After 3 Feb: N-way comparison.** Up to four designs in a grid with the same camera and range.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 65):**
+- Baseline toggle and side-by-side view with one camera and one colour scale; comparison table with changes.
 
 **How the leaders do it:**
 - Scores carried over from the researched row *Design comparison / history / Pareto views*; this detail row was not researched on its own, so treat every score as low confidence.
@@ -604,8 +610,8 @@ The owner's focus: design and simulation must be easy to see, compare and decide
 - **Before 3 Feb: replay.** A finished study replays at any speed; the replay is the demo's offline fallback (P7).
 - **After 3 Feb: export.** Replay exported as a video or a self-contained HTML page to share.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 40):**
+- Timeline from the study log with a hash-chained audit trail; no live view or replay.
 
 **How the leaders do it:**
 - Scores carried over from the researched row *Reports, audit trail, collaboration*; this detail row was not researched on its own, so treat every score as low confidence.
@@ -627,8 +633,8 @@ From the screen to a made and tested part. Manufacturing rules are inputs to the
 - **After 3 Feb: more processes.** SLA and SLS printing, sheet metal (bend radius, flat pattern), injection moulding and casting (draft angle, uniform wall).
 - **After 3 Feb: slicer check.** Optional call to the user's own installed slicer CLI for exact print time; slicers such as PrusaSlicer are AGPL, so they are never bundled or hosted.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 55):**
+- FDM and 3-axis CNC rules (support volume per direction, undercuts, internal corners), time and cost from stated rates, process advice in the report; print orientation is not optimized.
 
 **How the leaders do it:**
 - Fusion leads with additive, milling, cutting and die-casting constraints in generative design; Siemens and nTop are strong.
@@ -644,8 +650,8 @@ From the screen to a made and tested part. Manufacturing rules are inputs to the
 - **Before 3 Feb: import.** STEP and STL in, for the improve-a-part path (A3).
 - **After 3 Feb: native CAD.** Write the design back to Onshape or Fusion as a native feature tree or configuration through their MCP servers (A4, B3).
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 60):**
+- STEP, STL and VTU (ParaView) export per design; STEP import.
 
 **How the leaders do it:**
 - Ansys and Synera lead interoperability.
@@ -661,8 +667,8 @@ From the screen to a made and tested part. Manufacturing rules are inputs to the
 - **Before 3 Feb: calibration.** The measured stiffness updates the effective modulus and knock-down factor for that material, orientation and infill in `structura/materials.py`, with the test as its source; the change and its effect on predictions are shown.
 - **After 3 Feb: more cases.** Thermal test of the printed heat sink with a heater and thermocouples against C2.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 15):**
+- Test protocol, rig bill of materials and predictions written (59.8 vs 389.9 N/mm); no physical test yet.
 
 **How the leaders do it:**
 - No competitor in the matrix ships a physical test or calibration workflow; all are software. Scores of 0 mean absent from the product, not that their users never test.
@@ -682,8 +688,8 @@ Reports a reviewer can explore, history that proves where every number came from
 - **Before 3 Feb: audit trail.** Every step appends to a hash-chained log (each entry includes the hash of the previous one), so a changed or removed entry is detectable; one command verifies the chain.
 - **After 3 Feb: team review.** Several users, comments pinned to 3D locations, review and approval with names and dates, hosted read-only share links, export to PLM systems.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 70):**
+- Self-contained interactive HTML report, PDF export, Arabic mode, run history browser, hash-chained audit log.
 
 **How the leaders do it:**
 - SimScale's agent writes a PDF report of objective, design space, assumptions and results; Synera logs workflows; Ansys generates model evaluation reports for SimAI.
@@ -699,8 +705,8 @@ Reports a reviewer can explore, history that proves where every number came from
 - **Before 3 Feb: documentation.** Every endpoint and tool with a runnable example, generated from the schemas so it cannot drift.
 - **After 3 Feb: hosted service.** Authentication, per-user quotas, webhooks, a JavaScript SDK.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 45):**
+- CLI for every engine step, MCP server, local workbench with a small HTTP API; no REST service or SDK documentation.
 
 **How the leaders do it:**
 - Ansys (PyAnsys) and Siemens lead automation; SimScale, Zoo and Adam expose APIs and MCP servers.
@@ -720,8 +726,8 @@ A laptop, an open stack, any model. Each feature says what is built **before 3 F
 - **After 3 Feb: local model option.** An open-weight model served locally for repair and parsing steps, so routine work needs no paid API; used only where the routing benchmark (E4) shows acceptable success.
 - **After 3 Feb: free access for education.** Free use for students and schools, starting with Bahrain.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 60):**
+- No solver licences or training data; runs on one desktop (evaluation 1-4 s, study 4-8 min); demo rehearsed in 7.6 min.
 
 **How the leaders do it:**
 - SimScale (free agent on every plan) and Zoo lead accessibility; most physics-AI vendors are enterprise and demo-gated, and surrogate vendors need 30-100+ customer simulations.
@@ -737,8 +743,8 @@ A laptop, an open stack, any model. Each feature says what is built **before 3 F
 - **Before 3 Feb: open evidence.** The validation suite, its results (F2) and the benchmark harnesses are public in the repository, so anyone can reproduce the accuracy claims.
 - **After 3 Feb: contribution path.** Contribution guide, part-family and grammar-feature contributions with required validation tests.
 
-**Today (score 0):**
-- Nothing built yet.
+**Today (score 75):**
+- Every licence checked against its LICENSE file; GPL tools only as subprocesses; any MCP client can drive the engine.
 
 **How the leaders do it:**
 - The papers promise open code; Adam open-sourced CADAM; Synera supports bring-your-own LLM on premises; incumbents are closed.
