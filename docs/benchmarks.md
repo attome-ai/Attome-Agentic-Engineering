@@ -92,3 +92,23 @@ real defect, correctly refused. For comparison, Physics-in-the-Loop (arXiv 2605.
 The mesh-ability model stays untrained (`data/meshability_bracket.json`): with no meshing failures there is nothing
 to learn, so it predicts every gated shape meshable and says so. It will train automatically when a family produces
 failures.
+
+## Trust record and screening path (tasks F1, D3-T3)
+
+Test design (8 mm, 50 mm wide, 2 ribs, 20 kg spec at factor 1.5), three mesh levels 3 / 4.5 / 6.75 mm:
+
+| Quantity | Grid Convergence Index (fine) | Observed order |
+|---|---|---|
+| Max displacement | 0.11% | 4.0 (capped) |
+| Mass | 0.0% (converged to round-off) | |
+| Peak von Mises | **14.3%** | 2.1 |
+
+Peak stress does not converge cleanly because it sits at sharp re-entrant corners and the edge of the loaded face
+(a stress singularity); the trust panel reports this rather than hiding it. Follow-up: measure stress at a defined
+distance from singular edges. Equilibrium error 1e-13 and strain-energy balance 5e-8 (Clapeyron) pass. The design
+fails R1 (safety factor 0.97 against 2.0), so its grade is C: the record behaves as intended.
+
+Screening path (in-house solver, same coarse mesh, `--screen 1`): max displacement 4.7587 mm in both solvers, peak von
+Mises 51.921 vs 51.922 MPa. It is not faster at this size (1.52 s against 1.37 s for CalculiX with mesh I/O): Eigen's
+single-threaded LDLT costs about what CalculiX's multithreaded SPOOLES does. Its value today is the in-process cross-check;
+speed-up would need an iterative solver with factorization reuse.

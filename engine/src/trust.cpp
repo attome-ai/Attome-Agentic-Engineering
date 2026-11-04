@@ -126,7 +126,8 @@ nlohmann::json build_trust(const DesignSpec& spec, const Values& free, const Tru
     bool monotone = gci.count(q) ? gci[q].monotone : true;
     double room = std::fabs(value - limit), error_abs = e * std::fabs(value);
     bool passed = c["passed"];
-    bool proven = passed && room > error_abs && monotone;
+    // a value converged to round-off may oscillate; monotone convergence is only required when the error matters
+    bool proven = passed && room > error_abs && (monotone || e < 1e-3);
     all_pass = all_pass && passed;
     all_proven = all_proven && proven;
     worst_gci_gov = std::max(worst_gci_gov, e);
@@ -213,7 +214,7 @@ nlohmann::json reproduce(const std::string& dir, double tol) {
   std::string sp = t["spec"].value("path", std::string());
   if (sp.empty()) throw std::runtime_error("trust.json does not record the spec path");
   DesignSpec spec = DesignSpec::load(sp);
-  if (spec.hash() != t["spec"]["hash"]) throw std::runtime_error("the spec file changed since the trust record was written");
+  if (spec.hash() != t["spec"]["hash"].get<std::string>()) throw std::runtime_error("the spec file changed since the trust record was written");
   Values free;
   for (auto& [k, _] : spec.free_params) free[k] = t["params"].at(k).get<double>();
   EvalOptions eo;

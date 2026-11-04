@@ -1,0 +1,15 @@
+CMake Warning (dev) at C:/Users/Computia.me/micromamba/root/envs/attome-ae/Library/lib/cmake/opencascade/OpenCASCADEConfig.cmake:47:
+  Syntax Warning in cmake code at column 75
+
+  Argument not separated from preceding token by whitespace.
+Call Stack (most recent call first):
+  CMakeLists.txt:11 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: C:/Users/Computia.me/Downloads/everything/Agentic Engineering/engine/build-dev
+[1/4] Building CXX object CMakeFiles\structura.dir\src\trust.cpp.obj
+[2/4] Linking CXX static library structura_core.lib
+[3/4] Linking CXX executable structura.exe
+[4/4] Linking CXX executable engine_tests.exe
