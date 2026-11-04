@@ -1,0 +1,471 @@
+{
+  "budget": 150,
+  "success": "7 of 10",
+  "stage_success": {
+    "spec": "10 of 10",
+    "feasibility": "10 of 10",
+    "optimize": "9 of 9",
+    "verify": "8 of 8",
+    "trust": "8 of 8"
+  },
+  "runs": [
+    {
+      "id": "b01-shelf-10kg-pla",
+      "brief": "A light wall bracket for a 10 kg shelf, printed in PLA.",
+      "expect": "feasible",
+      "stages": {
+        "spec": {
+          "ok": true,
+          "seconds": 0.1
+        },
+        "feasibility": {
+          "ok": true,
+          "seconds": 10.1
+        },
+        "optimize": {
+          "ok": true,
+          "seconds": 128.8
+        },
+        "verify": {
+          "ok": true,
+          "seconds": 117.6
+        },
+        "trust": {
+          "ok": true,
+          "seconds": 9.9
+        }
+      },
+      "feasible_by_corners": true,
+      "method": "nsga2",
+      "evaluations": 150,
+      "feasible_found": 90,
+      "front": "14 of 14 still feasible on the finer mesh",
+      "design": {
+        "params": {
+          "fillet_radius": 1.5997607246360936,
+          "plate_width": 31.680791491018148,
+          "rib_count": 2,
+          "rib_thickness": 4.386322332100009,
+          "thickness": 11.194353990643902
+        },
+        "objectives_fine": [
+          120.25056639326709,
+          2.6704428535985034
+        ]
+      },
+      "grade": "A",
+      "reasons": [],
+      "outcome": "verified design, grade A",
+      "success": true,
+      "seconds": 266.5
+    },
+    {
+      "id": "b02-shelf-20kg-petg",
+      "brief": "A wall shelf bracket that holds 20 kg, as light as possible, printed in PETG.",
+      "expect": "feasible",
+      "stages": {
+        "spec": {
+          "ok": true,
+          "seconds": 0.0
+        },
+        "feasibility": {
+          "ok": true,
+          "seconds": 9.9
+        },
+        "optimize": {
+          "ok": true,
+          "seconds": 131.9
+        },
+        "verify": {
+          "ok": true,
+          "seconds": 153.0
+        },
+        "trust": {
+          "ok": true,
+          "seconds": 25.7
+        }
+      },
+      "feasible_by_corners": true,
+      "method": "nsga2",
+      "evaluations": 150,
+      "feasible_found": 9,
+      "front": "6 of 7 still feasible on the finer mesh",
+      "design": {
+        "params": {
+          "fillet_radius": 2.3072356368190574,
+          "plate_width": 55.447752471801564,
+          "rib_count": 3,
+          "rib_thickness": 9.795190211858547,
+          "thickness": 10.162675058372532
+        },
+        "objectives_fine": [
+          252.11175388416848,
+          2.0685946962595465
+        ]
+      },
+      "grade": "C",
+      "reasons": [
+        "a requirement margin is smaller than its numerical error",
+        "numerical error on a governing value is 54.05%"
+      ],
+      "outcome": "verified design, grade C",
+      "success": false,
+      "seconds": 320.6
+    },
+    {
+      "id": "b03-shelf-30kg-petg",
+      "brief": "Bracket for a 30 kg shelf of books, printed in PETG, lightest possible.",
+      "expect": "feasible",
+      "stages": {
+        "spec": {
+          "ok": true,
+          "seconds": 0.0
+        },
+        "feasibility": {
+          "ok": true,
+          "seconds": 10.2
+        },
+        "optimize": {
+          "ok": true,
+          "seconds": 120.5
+        }
+      },
+      "feasible_by_corners": true,
+      "method": "nsga2",
+      "evaluations": 150,
+      "feasible_found": 0,
+      "closest": {
+        "metrics": {
+          "mass_g": 294.33518410111685,
+          "max_disp_mm": 0.828433119763144,
+          "max_von_mises_MPa": 13.33547810593861,
+          "safety_factor": 1.8746984398607276
+        },
+        "fails": [
+          "R1 safety_factor 1.875 >= 2.0"
+        ]
+      },
+      "outcome": "no feasible design found",
+      "success": false,
+      "seconds": 130.7
+    },
+    {
+      "id": "b04-stiff-15kg-petg",
+      "brief": "A PETG bracket for 15 kg that must not sag more than 1 mm at the shelf edge.",
+      "expect": "feasible",
+      "stages": {
+        "spec": {
+          "ok": true,
+          "seconds": 0.0
+        },
+        "feasibility": {
+          "ok": true,
+          "seconds": 10.4
+        },
+        "optimize": {
+          "ok": true,
+          "seconds": 119.8
+        },
+        "verify": {
+          "ok": true,
+          "seconds": 123.3
+        },
+        "trust": {
+          "ok": true,
+          "seconds": 14.5
+        }
+      },
+      "feasible_by_corners": true,
+      "method": "nsga2",
+      "evaluations": 150,
+      "feasible_found": 24,
+      "front": "8 of 8 still feasible on the finer mesh",
+      "design": {
+        "params": {
+          "fillet_radius": 3.5795017841431624,
+          "plate_width": 36.113967464051406,
+          "rib_count": 3,
+          "rib_thickness": 5.409808129180873,
+          "thickness": 11.904918091130021
+        },
+        "objectives_fine": [
+          167.4597195751349,
+          2.1567534111344773
+        ]
+      },
+      "grade": "A",
+      "reasons": [],
+      "outcome": "verified design, grade A",
+      "success": true,
+      "seconds": 268.1
+    },
+    {
+      "id": "b05-heavy-50kg-al",
+      "brief": "A machined aluminium bracket for a 50 kg load, as light as possible.",
+      "expect": "feasible",
+      "stages": {
+        "spec": {
+          "ok": true,
+          "seconds": 0.1
+        },
+        "feasibility": {
+          "ok": true,
+          "seconds": 10.2
+        },
+        "optimize": {
+          "ok": true,
+          "seconds": 136.4
+        },
+        "verify": {
+          "ok": true,
+          "seconds": 303.8
+        },
+        "trust": {
+          "ok": true,
+          "seconds": 5.9
+        }
+      },
+      "feasible_by_corners": true,
+      "method": "nsga2",
+      "evaluations": 150,
+      "feasible_found": 139,
+      "front": "28 of 28 still feasible on the finer mesh",
+      "design": {
+        "params": {
+          "fillet_radius": 4.319377939374862,
+          "plate_width": 31.94261666607691,
+          "rib_count": 1,
+          "rib_thickness": 5.038391877042741,
+          "thickness": 8.355871179769327
+        },
+        "objectives_fine": [
+          190.19144781357994,
+          2.237965208421577
+        ]
+      },
+      "grade": "A",
+      "reasons": [],
+      "outcome": "verified design, grade A",
+      "success": true,
+      "seconds": 456.4
+    },
+    {
+      "id": "b06-overload-100kg-petg",
+      "brief": "A PETG bracket that holds 100 kg.",
+      "expect": "infeasible",
+      "stages": {
+        "spec": {
+          "ok": true,
+          "seconds": 0.0
+        },
+        "feasibility": {
+          "ok": true,
+          "seconds": 10.0
+        }
+      },
+      "feasible_by_corners": false,
+      "problems": [
+        "even the strongest design in the spec's bounds gives 0.666 against the requirement safety_factor >= 2"
+      ],
+      "outcome": "reported infeasible",
+      "success": true,
+      "seconds": 10.1
+    },
+    {
+      "id": "h01-5w-60c",
+      "brief": "Heat sink for a 5 W chip, keep it below 60 C with a small fan, lightest.",
+      "expect": "feasible",
+      "stages": {
+        "spec": {
+          "ok": true,
+          "seconds": 0.0
+        },
+        "feasibility": {
+          "ok": true,
+          "seconds": 11.9
+        },
+        "optimize": {
+          "ok": true,
+          "seconds": 97.8
+        },
+        "verify": {
+          "ok": true,
+          "seconds": 399.2
+        },
+        "trust": {
+          "ok": true,
+          "seconds": 6.7
+        }
+      },
+      "feasible_by_corners": true,
+      "method": "nsga2",
+      "evaluations": 150,
+      "feasible_found": 150,
+      "front": "23 of 23 still feasible on the finer mesh",
+      "design": {
+        "params": {
+          "base_thickness": 2.193316065584699,
+          "fin_count": 4,
+          "fin_height": 16.81325852579713,
+          "fin_thickness": 2.3204390058776574
+        },
+        "objectives_fine": [
+          46.60030689609598,
+          53.2485
+        ]
+      },
+      "grade": "A",
+      "reasons": [],
+      "outcome": "verified design, grade A",
+      "success": true,
+      "seconds": 515.7
+    },
+    {
+      "id": "h02-10w-75c",
+      "brief": "A heat sink that keeps a 10 W module below 75 C with a small fan, as light as possible.",
+      "expect": "feasible",
+      "stages": {
+        "spec": {
+          "ok": true,
+          "seconds": 0.0
+        },
+        "feasibility": {
+          "ok": true,
+          "seconds": 11.4
+        },
+        "optimize": {
+          "ok": true,
+          "seconds": 108.1
+        },
+        "verify": {
+          "ok": true,
+          "seconds": 422.6
+        },
+        "trust": {
+          "ok": true,
+          "seconds": 7.1
+        }
+      },
+      "feasible_by_corners": true,
+      "method": "nsga2",
+      "evaluations": 150,
+      "feasible_found": 149,
+      "front": "20 of 20 still feasible on the finer mesh",
+      "design": {
+        "params": {
+          "base_thickness": 2.10466379522714,
+          "fin_count": 4,
+          "fin_height": 16.754966370907358,
+          "fin_thickness": 1.4731821518856236
+        },
+        "objectives_fine": [
+          36.4519640232,
+          73.1948
+        ]
+      },
+      "grade": "A",
+      "reasons": [],
+      "outcome": "verified design, grade A",
+      "success": true,
+      "seconds": 549.3
+    },
+    {
+      "id": "h03-15w-80c-fast-fan",
+      "brief": "15 W module, a stronger fan (2.5 m/s), stay below 80 C, minimum mass.",
+      "expect": "feasible",
+      "stages": {
+        "spec": {
+          "ok": true,
+          "seconds": 0.1
+        },
+        "feasibility": {
+          "ok": true,
+          "seconds": 13.1
+        },
+        "optimize": {
+          "ok": true,
+          "seconds": 100.1
+        },
+        "verify": {
+          "ok": true,
+          "seconds": 429.4
+        },
+        "trust": {
+          "ok": true,
+          "seconds": 7.1
+        }
+      },
+      "feasible_by_corners": true,
+      "method": "nsga2",
+      "evaluations": 150,
+      "feasible_found": 150,
+      "front": "22 of 22 still feasible on the finer mesh",
+      "design": {
+        "params": {
+          "base_thickness": 2.144466359351884,
+          "fin_count": 4,
+          "fin_height": 16.750657772646083,
+          "fin_thickness": 2.035686897495243
+        },
+        "objectives_fine": [
+          42.94055104898402,
+          79.1343
+        ]
+      },
+      "grade": "A",
+      "reasons": [],
+      "outcome": "verified design, grade A",
+      "success": true,
+      "seconds": 549.9
+    },
+    {
+      "id": "h04-40w-50c",
+      "brief": "Cool a 40 W module below 50 C with a small fan, using this 60 x 60 mm heat sink.",
+      "expect": "infeasible",
+      "stages": {
+        "spec": {
+          "ok": true,
+          "seconds": 0.0
+        },
+        "feasibility": {
+          "ok": true,
+          "seconds": 13.0
+        },
+        "optimize": {
+          "ok": true,
+          "seconds": 121.8
+        },
+        "verify": {
+          "ok": true,
+          "seconds": 189.3
+        },
+        "trust": {
+          "ok": true,
+          "seconds": 52.4
+        }
+      },
+      "feasible_by_corners": true,
+      "method": "nsga2",
+      "evaluations": 150,
+      "feasible_found": 4,
+      "front": "4 of 4 still feasible on the finer mesh",
+      "design": {
+        "params": {
+          "base_thickness": 2.4683907008742683,
+          "fin_count": 16,
+          "fin_height": 35.07204141994707,
+          "fin_thickness": 2.4761774264613914
+        },
+        "objectives_fine": [
+          249.09391501631964,
+          49.7966
+        ]
+      },
+      "grade": "A",
+      "reasons": [],
+      "outcome": "verified design, grade A",
+      "success": false,
+      "seconds": 376.6
+    }
+  ]
+}

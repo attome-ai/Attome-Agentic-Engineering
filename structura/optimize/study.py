@@ -66,7 +66,8 @@ def objective_fn(spec: SpecInfo, mesh_size: float | None, threads: int):
 
 def run(spec_path: str | Path, n_trials: int, sampler: str = "nsga2", seed: int = 0, study_dir: str | Path | None = None,
         mesh_size: float | None = None, threads: int = 1, n_jobs: int = 1, study_name: str | None = None,
-        callbacks: list | None = None) -> optuna.Study:
+        callbacks: list | None = None, seeds: list[dict] | None = None) -> optuna.Study:
+    """seeds: designs evaluated first (e.g. the corners of the design space), so the search starts from known points."""
     spec = load_spec(spec_path)
     study_dir = Path(study_dir or Path("runs") / f"{spec.id}-{sampler}-{seed}")
     study_dir.mkdir(parents=True, exist_ok=True)
@@ -78,6 +79,9 @@ def run(spec_path: str | Path, n_trials: int, sampler: str = "nsga2", seed: int 
     study.set_user_attr("objectives", spec.objectives)
     study.set_user_attr("requirements", [r["id"] for r in spec.requirements])
     study.set_user_attr("sampler", sampler)
+    if seeds and not study.trials:
+        for p in seeds:
+            study.enqueue_trial({k: (int(round(v)) if k in spec.integer else float(v)) for k, v in p.items() if k in spec.free})
     study.optimize(objective_fn(spec, mesh_size, threads), n_trials=n_trials, n_jobs=n_jobs, catch=(), callbacks=callbacks)
     (study_dir / "summary.json").write_text(json.dumps(summary(study), indent=2))
     return study

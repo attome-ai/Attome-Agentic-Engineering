@@ -125,6 +125,62 @@ BuckleResult solve_buckle(const Mesh& m, const Material& mat, const LoadCase& lc
   return r;
 }
 
+DynamicResult solve_dynamic(const Mesh& m, const Material& mat, const LoadCase& lc, double duration_s, double dt_s, double damping_ratio,
+                            double f1_hz, double f2_hz, int store_every, const std::string& workdir, const SolveOptions& o) {
+  if (dt_s <= 0 || duration_s <= dt_s) throw std::runtime_error("dynamic: need 0 < dt < duration");
+  DynamicResult r;
+  r.dt = dt_s;
+  r.duration = duration_s;
+  r.damping_ratio = damping_ratio;
+  // Rayleigh damping with the stated ratio at two frequencies (f1_hz and f2_hz): alpha = 2 z w1 w2 / (w1 + w2),
+  // beta = 2 z / (w1 + w2); between them the ratio stays close to z
+  double w1 = 2 * 3.14159265358979 * f1_hz, w2 = 2 * 3.14159265358979 * (f2_hz > f1_hz ? f2_hz : f1_hz);
+  r.alpha = f1_hz > 0 ? 2 * damping_ratio * w1 * w2 / (w1 + w2) : 0;
+  r.beta = f1_hz > 0 ? 2 * damping_ratio / (w1 + w2) : 0;
+  std::ostringstream d;
+  write_nodes_elements(d, m, "C3D10");
+  for (auto& s : lc.supports) write_nset(d, m, s.group);
+  d << "*MATERIAL,NAME=MAT\n*ELASTIC\n" << num(mat.E) << "," << num(mat.nu) << "\n*DENSITY\n" << num(mat.density) << "\n";
+  if (r.beta > 0) d << "*DAMPING,ALPHA=" << num(r.alpha) << ",BETA=" << num(r.beta) << "\n";
+  d << "*SOLID SECTION,ELSET=EALL,MATERIAL=MAT\n*BOUNDARY\n";
+  for (auto& s : lc.supports)
+    for (char c : s.dofs) d << set_name(s.group) << "," << c << "," << c << "\n";
+  d << "*AMPLITUDE,NAME=SUDDEN\n0.,1.," << num(10 * duration_s) << ",1.\n";  // full load from t = 0 and held
+  int steps = static_cast<int>(std::ceil(duration_s / dt_s));
+  d << "*STEP,INC=" << steps + 10 << "\n*DYNAMIC,DIRECT\n" << num(dt_s) << "," << num(duration_s) << "\n";
+  std::map<int, std::array<double, 3>> forces;
+  for (auto& l : lc.loads) {
+    if (l.kind != "force") throw std::runtime_error("dynamic analysis supports force loads only");
+    for (auto& [n, f] : distribute_force(m, l.group, l.force))
+      for (int c = 0; c < 3; ++c) forces[n][c] += f[c];
+  }
+  d << "*CLOAD,AMPLITUDE=SUDDEN\n";
+  for (auto& [n, f] : forces)
+    for (int c = 0; c < 3; ++c)
+      if (std::fabs(f[c]) > 0) d << n << "," << (c + 1) << "," << num(f[c]) << "\n";
+  int every = std::max(1, store_every);
+  d << "*NODE FILE,FREQUENCY=" << every << "\nU\n*EL FILE,FREQUENCY=" << every << "\nS\n*END STEP\n";
+  Run run = run_ccx(d.str(), workdir, o);
+  r.solver_version = run.version;
+  r.runtime_s = run.seconds;
+  std::string frd = (fs::path(workdir) / "job.frd").string();
+  auto du = read_frd_blocks(frd, "DISP");
+  auto st = read_frd_blocks(frd, "STRESS");
+  for (size_t k = 0; k < du.size(); ++k) {
+    std::map<int, std::array<double, 3>> u;
+    for (auto& [n, v] : du[k])
+      if (v.size() >= 3) u[n] = {v[0], v[1], v[2]};
+    r.disp.push_back(std::move(u));
+    std::map<int, double> vm;
+    if (k < st.size())
+      for (auto& [n, v] : st[k]) vm[n] = von_mises(v);
+    r.von_mises.push_back(std::move(vm));
+    r.times.push_back(dt_s * every * static_cast<double>(k + 1));
+  }
+  if (r.disp.empty()) throw std::runtime_error("dynamic: no displacement frames in job.frd");
+  return r;
+}
+
 AirProperties air_properties(double T_C) {
   // Incropera, DeWitt, Bergman, Lavine, Fundamentals of Heat and Mass Transfer, Table A.4 (air at 1 atm)
   static const double T[] = {250, 300, 350, 400};

@@ -25,4 +25,18 @@ struct EvalOptions {
 nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params, const EvalOptions& o);
 nlohmann::json check_feasibility(const DesignSpec& spec, const EvalOptions& o);
 
+// Real-physics animation data (dynamic response): the first load case applied suddenly at its nominal value (factor 1),
+// solved over time. Writes into `out`: part.step, mesh.vtu (static result), frames.bin (float32 per frame per node:
+// ux uy uz von_mises, nodes in node_ids order) and dynamic.json (times, frequencies, damping, static and peak values,
+// dynamic amplification, markers). Duration and time step come from the first frequency unless given.
+struct DynamicOptions {
+  double mesh_size = 0;
+  int threads = 4;
+  double damping_ratio = 0.03;  // typical for polymers and bolted metal joints; stated in the output as an assumption
+  double periods = 4;           // simulated time in periods of the lowest computed mode
+  int steps_per_period = 30;    // per period of the highest computed mode
+  int store_every = 2;
+};
+nlohmann::json dynamic_bundle(const DesignSpec& spec, const Values& free_params, const std::string& out, const DynamicOptions& o);
+
 }  // namespace structura

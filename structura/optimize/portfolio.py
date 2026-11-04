@@ -115,7 +115,8 @@ def run_ax(spec: SpecInfo, budget: int, seed: int, study: optuna.Study, mesh_siz
 
 
 def run(spec_path: str | Path, budget: int, seed: int = 0, method: str | None = None, study_dir: str | Path | None = None,
-        mesh_size: float | None = None, threads: int = 1, n_jobs: int = 4, on_trial=None, on_result=None) -> optuna.Study:
+        mesh_size: float | None = None, threads: int = 1, n_jobs: int = 4, on_trial=None, on_result=None,
+        seed_corners: bool = True) -> optuna.Study:
     """on_trial(feasible: bool) is called after every finished evaluation (progress reporting without touching storage);
     on_result(dict) gets the same moment with params, status, feasible and metrics (live views)."""
     spec = load_spec(spec_path)
@@ -132,8 +133,16 @@ def run(spec_path: str | Path, budget: int, seed: int = 0, method: str | None = 
             cbs.append(lambda study, t: on_result({"params": dict(t.params), "status": t.user_attrs.get("status", t.state.name),
                                                    "feasible": bool(t.user_attrs.get("feasible")), "metrics": t.user_attrs.get("metrics")}))
         cbs = cbs or None
+        seeds = None
+        if seed_corners:  # start from the most- and least-material corners: a feasible anchor whenever one exists
+            try:
+                from structura import engine
+                f = engine.call("feasibility", spec=str(spec_path), **({"mesh-size": mesh_size} if mesh_size else {}), threads=threads)
+                seeds = [f["most_material"]["params"], f["least_material"]["params"]]
+            except Exception:  # noqa: BLE001 - seeding is an optimisation, never a reason to fail the study
+                seeds = None
         s = st.run(spec_path, budget, sampler=chosen, seed=seed, study_dir=study_dir, mesh_size=mesh_size, threads=threads,
-                   n_jobs=n_jobs, callbacks=cbs)
+                   n_jobs=n_jobs, callbacks=cbs, seeds=seeds)
     elif chosen == "botorch_qnehvi":
         storage = f"sqlite:///{(study_dir / 'study.db').resolve().as_posix()}"
         s = optuna.create_study(study_name=study_dir.name, storage=storage, load_if_exists=True, directions=spec.directions)

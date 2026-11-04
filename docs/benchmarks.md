@@ -374,4 +374,13 @@ evaluations), verify (front on a finer mesh), trust.
 First-run details: the brackets that ran gave grade A (10 kg PLA, 15 kg PETG with 1 mm, 50 kg aluminium) and grade B
 (20 kg PETG, safety factor converging non-monotonically); 100 kg PETG was correctly reported infeasible in 10 s.
 
-**Second run** (fixed engine, D9 specs): see `benchmarks/brief_suite.json`.
+**Second run (fixed engine, D9 specs): 7 of 10.** The heat-sink fix worked (5 W, 10 W and 15 W: grade A). Misses:
+- b02 (20 kg PETG): verified but grade C: the lightest design has a stress raiser (54% numerical error). Fix: deliver the
+  lightest *proven* design, trying the next one when verification fails.
+- b03 (30 kg PETG): no feasible design in 150 evaluations, closest SF 1.875; the feasible region is a sliver near the
+  strongest corner. Fix: the search now starts from the corners of the design space.
+- h04 (40 W below 50 C, expected infeasible): a "grade A" design with 16 fins and 1.36 mm gaps. Not credible: the
+  model keeps the fan's 1.5 m/s approach velocity fixed, so dense fins get 4.2 m/s in the channels; a real fan's flow
+  falls with the fins' pressure drop and the air bypasses the sink. The optimizer exploited a stated assumption.
+  Fix: the fan's operating point (its pressure-flow curve against the fin channels' pressure drop) replaces the fixed
+  velocity; the heat-sink results are re-run with it.

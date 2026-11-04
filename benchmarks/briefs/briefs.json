@@ -1,0 +1,62 @@
+[
+  {
+    "id": "b01-shelf-10kg-pla",
+    "brief": "A light wall bracket for a 10 kg shelf, printed in PLA.",
+    "family": "bracket",
+    "expect": "feasible"
+  },
+  {
+    "id": "b02-shelf-20kg-petg",
+    "brief": "A wall shelf bracket that holds 20 kg, as light as possible, printed in PETG.",
+    "family": "bracket",
+    "expect": "feasible"
+  },
+  {
+    "id": "b03-shelf-30kg-petg",
+    "brief": "Bracket for a 30 kg shelf of books, printed in PETG, lightest possible.",
+    "family": "bracket",
+    "expect": "feasible"
+  },
+  {
+    "id": "b04-stiff-15kg-petg",
+    "brief": "A PETG bracket for 15 kg that must not sag more than 1 mm at the shelf edge.",
+    "family": "bracket",
+    "expect": "feasible"
+  },
+  {
+    "id": "b05-heavy-50kg-al",
+    "brief": "A machined aluminium bracket for a 50 kg load, as light as possible.",
+    "family": "bracket",
+    "expect": "feasible"
+  },
+  {
+    "id": "b06-overload-100kg-petg",
+    "brief": "A PETG bracket that holds 100 kg.",
+    "family": "bracket",
+    "expect": "infeasible"
+  },
+  {
+    "id": "h01-5w-60c",
+    "brief": "Heat sink for a 5 W chip, keep it below 60 C with a small fan, lightest.",
+    "family": "heatsink",
+    "expect": "feasible"
+  },
+  {
+    "id": "h02-10w-75c",
+    "brief": "A heat sink that keeps a 10 W module below 75 C with a small fan, as light as possible.",
+    "family": "heatsink",
+    "expect": "feasible"
+  },
+  {
+    "id": "h03-15w-80c-fast-fan",
+    "brief": "15 W module, a stronger fan (2.5 m/s), stay below 80 C, minimum mass.",
+    "family": "heatsink",
+    "expect": "feasible"
+  },
+  {
+    "id": "h04-40w-50c",
+    "brief": "Cool a 40 W module below 50 C with a small fan, using this 60 x 60 mm heat sink.",
+    "family": "heatsink",
+    "expect": "infeasible"
+  }
+]

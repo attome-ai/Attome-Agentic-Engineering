@@ -334,4 +334,90 @@ nlohmann::json check_feasibility(const DesignSpec& spec, const EvalOptions& o) {
           {"direction", direction}, {"method", "evaluate the most-material and least-material corners of the free parameters"}};
 }
 
+
+nlohmann::json dynamic_bundle(const DesignSpec& spec, const Values& free_params, const std::string& out, const DynamicOptions& o) {
+  if (spec.load_cases.empty()) throw std::runtime_error("dynamic: the spec has no structural load case");
+  fs::create_directories(out);
+  Values params = all_params(spec, free_params);
+  DesignGraph g = load_family(spec.family);
+  Design d(g, params);
+  CompiledPart part = d.build();
+  write_step(part.shape, (fs::path(out) / "part.step").string());
+  write_stl(part.shape, (fs::path(out) / "part.stl").string());
+  MeshOptions mo;
+  mo.size = o.mesh_size > 0 ? o.mesh_size : spec.mesh_size;
+  mo.threads = o.threads;
+  Mesh m = mesh_shape(part.shape, part.named_faces(), (fs::path(out) / "mesh").string(), mo);
+  Material eff = spec.effective_material();
+  LoadCase lc = spec.load_cases[0].lc;  // nominal load: the real event, not the design factor
+  SolveOptions so;
+  so.threads = o.threads;
+  so.timeout_s = 3600;  // a time simulation runs hundreds of increments
+  so.exclude_near_bc_mm = spec.stress_exclude_near_bc_mm;
+  Result st = solve_static(m, eff, lc, (fs::path(out) / "static").string(), so);
+  write_vtu(m, st, (fs::path(out) / "mesh.vtu").string());
+  ModalResult mr = solve_modal(m, eff, lc.supports, 3, (fs::path(out) / "modal").string(), so);
+  // time step from the highest computed mode (the vertical response of a bracket is often its second mode, not the
+  // first), duration from the lowest; damping held near the stated ratio across all computed modes
+  double f1 = mr.frequencies_hz.front(), fmax = mr.frequencies_hz.back();
+  double dt = 1.0 / (fmax * o.steps_per_period), duration = o.periods / f1;
+  DynamicResult dr = solve_dynamic(m, eff, lc, duration, dt, o.damping_ratio, f1, fmax, o.store_every, (fs::path(out) / "dynamic").string(), so);
+
+  // frames.bin: float32 [frame][node][ux, uy, uz, vm], nodes in ascending id order
+  std::vector<int> ids;
+  for (auto& [n, _] : m.nodes) ids.push_back(n);
+  std::ofstream fb(fs::path(out) / "frames.bin", std::ios::binary);
+  double peak_disp = 0, peak_vm = 0, peak_t = 0;
+  for (size_t k = 0; k < dr.disp.size(); ++k) {
+    for (int n : ids) {
+      auto it = dr.disp[k].find(n);
+      std::array<double, 3> u = it == dr.disp[k].end() ? std::array<double, 3>{0, 0, 0} : it->second;
+      auto iv = dr.von_mises[k].find(n);
+      float rec[4] = {static_cast<float>(u[0]), static_cast<float>(u[1]), static_cast<float>(u[2]),
+                      static_cast<float>(iv == dr.von_mises[k].end() ? 0.0 : iv->second)};
+      fb.write(reinterpret_cast<const char*>(rec), sizeof rec);
+      double mag = std::sqrt(u[0] * u[0] + u[1] * u[1] + u[2] * u[2]);
+      if (mag > peak_disp) { peak_disp = mag; peak_t = dr.times[k]; }
+      if (rec[3] > peak_vm) peak_vm = rec[3];
+    }
+  }
+  fb.close();
+  nlohmann::json markers = nlohmann::json::array();
+  auto group_box = [&](const std::string& grp, nlohmann::json mk) {
+    auto ns = m.nsets.find(grp);
+    if (ns == m.nsets.end() || ns->second.empty()) return;
+    double c[3] = {0, 0, 0}, lo[3] = {1e300, 1e300, 1e300}, hi[3] = {-1e300, -1e300, -1e300};
+    for (int n : ns->second) {
+      auto& x = m.nodes.at(n);
+      for (int i = 0; i < 3; ++i) { c[i] += x[i]; lo[i] = std::min(lo[i], x[i]); hi[i] = std::max(hi[i], x[i]); }
+    }
+    double k = static_cast<double>(ns->second.size());
+    mk["group"] = grp;
+    mk["at"] = {c[0] / k, c[1] / k, c[2] / k};
+    mk["bbox"] = {lo[0], lo[1], lo[2], hi[0], hi[1], hi[2]};
+    markers.push_back(mk);
+  };
+  for (auto& l : lc.loads) group_box(l.group, {{"kind", "load"}, {"force", l.force}});
+  for (auto& sp : lc.supports) group_box(sp.group, {{"kind", "support"}, {"dofs", sp.dofs}});
+  double static_disp = st.max_disp_mm;
+  nlohmann::json j = {
+      {"spec", spec.id}, {"params", d.params}, {"hash", d.hash()}, {"load_case", lc.name},
+      {"event", "the load case's nominal force applied suddenly at t = 0 and held (for example a weight set down at once)"},
+      {"mesh_size", mo.size}, {"nodes", ids.size()}, {"node_ids", ids}, {"frames", dr.times.size()}, {"times_s", dr.times},
+      {"dt_s", dt}, {"duration_s", duration}, {"frequencies_hz", mr.frequencies_hz},
+      {"damping", {{"ratio", o.damping_ratio}, {"rayleigh_alpha_per_s", dr.alpha}, {"rayleigh_beta_s", dr.beta},
+                   {"note", "Rayleigh damping fitted to the stated ratio at the lowest and highest computed frequencies: an assumption, "
+                            "not measured; CalculiX's implicit integrator adds a little numerical damping"}}},
+      {"static", {{"max_disp_mm", static_disp}, {"max_von_mises_MPa", st.max_von_mises_raw_MPa}}},
+      {"peak", {{"max_disp_mm", peak_disp}, {"max_von_mises_MPa", peak_vm}, {"time_s", peak_t}}},
+      {"dynamic_amplification", static_disp > 0 ? peak_disp / static_disp : 0.0},
+      {"material", {{"id", eff.id}, {"E", eff.E}, {"density", eff.density}, {"yield_effective", eff.yield}}},
+      {"markers", markers}, {"solver_version", dr.solver_version}, {"solve_seconds", dr.runtime_s},
+      {"files", {{"mesh", "mesh.vtu"}, {"frames", "frames.bin"}, {"part", "part.stl"}}}};
+  std::ofstream(fs::path(out) / "dynamic.json") << j.dump(1);
+  j.erase("node_ids");
+  j.erase("times_s");
+  return j;
+}
+
 }  // namespace structura

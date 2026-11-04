@@ -1,0 +1,117 @@
+{
+  "id": "h04-40w-50c",
+  "version": 1,
+  "brief": "Cool a 40 W module below 50 C with a small fan, using this 60 x 60 mm heat sink.",
+  "family": "heatsink",
+  "free_params": {
+    "base_thickness": [
+      2,
+      8
+    ],
+    "fin_count": [
+      4,
+      16
+    ],
+    "fin_thickness": [
+      1.2,
+      3
+    ],
+    "fin_height": [
+      10,
+      40
+    ]
+  },
+  "material": "AL6061T6",
+  "apply_print_knockdown": false,
+  "thermal_cases": [
+    {
+      "name": "steady",
+      "source": "brief: 40 W module, 35 C air, fan along the fins at 1.5 m/s (assumed from a small axial fan; confirm against its datasheet); h from the plate-fin channel correlation (Teertstra et al. 1999)",
+      "fluxes": [
+        {
+          "group": "base_bottom",
+          "power": 40
+        }
+      ],
+      "films": [
+        {
+          "group": "exposed_top",
+          "sink": 35.0,
+          "correlation": {
+            "model": "plate_fin_channel",
+            "velocity_m_s": 1.5,
+            "spacing_mm": "(60 - fin_thickness) / (fin_count - 1) - fin_thickness",
+            "fin_thickness_mm": "fin_thickness",
+            "length_mm": 60
+          }
+        },
+        {
+          "group": "exposed_px",
+          "sink": 35.0,
+          "correlation": {
+            "model": "plate_fin_channel",
+            "velocity_m_s": 1.5,
+            "spacing_mm": "(60 - fin_thickness) / (fin_count - 1) - fin_thickness",
+            "fin_thickness_mm": "fin_thickness",
+            "length_mm": 60
+          }
+        },
+        {
+          "group": "exposed_nx",
+          "sink": 35.0,
+          "correlation": {
+            "model": "plate_fin_channel",
+            "velocity_m_s": 1.5,
+            "spacing_mm": "(60 - fin_thickness) / (fin_count - 1) - fin_thickness",
+            "fin_thickness_mm": "fin_thickness",
+            "length_mm": 60
+          }
+        },
+        {
+          "group": "exposed_py",
+          "sink": 35.0,
+          "correlation": {
+            "model": "plate_fin_channel",
+            "velocity_m_s": 1.5,
+            "spacing_mm": "(60 - fin_thickness) / (fin_count - 1) - fin_thickness",
+            "fin_thickness_mm": "fin_thickness",
+            "length_mm": 60
+          }
+        },
+        {
+          "group": "exposed_ny",
+          "sink": 35.0,
+          "correlation": {
+            "model": "plate_fin_channel",
+            "velocity_m_s": 1.5,
+            "spacing_mm": "(60 - fin_thickness) / (fin_count - 1) - fin_thickness",
+            "fin_thickness_mm": "fin_thickness",
+            "length_mm": 60
+          }
+        }
+      ]
+    }
+  ],
+  "objectives": [
+    {
+      "quantity": "mass_g",
+      "sense": "min"
+    },
+    {
+      "quantity": "peak_temperature",
+      "sense": "min"
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R1",
+      "quantity": "peak_temperature",
+      "op": "<=",
+      "value": 50,
+      "source": "brief: keep the module below 50 C"
+    }
+  ],
+  "mesh": {
+    "size": 2.5
+  }
+}

@@ -98,6 +98,20 @@ struct BuckleResult {
 BuckleResult solve_buckle(const Mesh& m, const Material& mat, const LoadCase& lc, int modes, const std::string& workdir,
                           const SolveOptions& o = {});
 
+// ---------------------------------------------------------------- structural dynamics over time (real-physics animation)
+// The load case is applied suddenly at t = 0 and held; implicit direct time integration with Rayleigh damping
+// at the stated ratio between two frequencies (alpha and beta fitted at f1_hz and f2_hz).
+struct DynamicResult {
+  std::vector<double> times;                                   // s, one per stored frame
+  std::vector<std::map<int, std::array<double, 3>>> disp;      // node -> displacement (mm) per frame
+  std::vector<std::map<int, double>> von_mises;                // node -> MPa per frame
+  double dt = 0, duration = 0, damping_ratio = 0, alpha = 0, beta = 0;
+  std::string solver_version;
+  double runtime_s = 0;
+};
+DynamicResult solve_dynamic(const Mesh& m, const Material& mat, const LoadCase& lc, double duration_s, double dt_s, double damping_ratio,
+                            double f1_hz, double f2_hz, int store_every, const std::string& workdir, const SolveOptions& o = {});
+
 // ---------------------------------------------------------------- steady heat transfer (C2 base)
 // Thermal inputs use watts consistently: k in W/(mm K), film h in W/(mm^2 K), flux in W/mm^2, power in W.
 struct FixedTemperature {

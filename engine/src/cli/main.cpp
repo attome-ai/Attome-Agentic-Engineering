@@ -161,6 +161,17 @@ int run(const Args& a) {
     std::cout << build_trust(spec, params_from(a), to).dump(2) << "\n";
     return 0;
   }
+  if (a.cmd == "dynamic") {  // real-physics animation data: sudden load, response over time
+    DesignSpec spec = DesignSpec::load(a.opt.at("spec"));
+    DynamicOptions o;
+    if (a.opt.count("mesh-size")) o.mesh_size = std::stod(a.opt.at("mesh-size"));
+    if (a.opt.count("threads")) o.threads = std::stoi(a.opt.at("threads"));
+    if (a.opt.count("damping")) o.damping_ratio = std::stod(a.opt.at("damping"));
+    if (a.opt.count("periods")) o.periods = std::stod(a.opt.at("periods"));
+    if (a.opt.count("steps-per-period")) o.steps_per_period = std::stoi(a.opt.at("steps-per-period"));
+    std::cout << dynamic_bundle(spec, params_from(a), a.opt.at("out"), o).dump(2) << "\n";
+    return 0;
+  }
   if (a.cmd == "evaluate" || a.cmd == "feasibility" || a.cmd == "spec") {  // DesignSpec commands
     DesignSpec spec = DesignSpec::load(a.opt.at("spec"));
     EvalOptions o;
