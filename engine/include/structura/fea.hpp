@@ -81,6 +81,12 @@ std::string write_deck(const Mesh& m, const Material& mat, const LoadCase& lc, s
 Result solve_static(const Mesh& m, const Material& mat, const LoadCase& lc, const std::string& workdir, const SolveOptions& o = {});
 
 // ---------------------------------------------------------------- modal and buckling (C1, before 3 Feb)
+// A carried mass (e.g. a crate on a shelf) lumped evenly onto the nodes of a named face group; tonne.
+struct PointMass {
+  std::string group;
+  double mass_t = 0;
+};
+
 struct ModalResult {
   std::vector<double> frequencies_hz;
   std::vector<std::map<int, std::array<double, 3>>> shapes;  // mode shape per frequency (node -> displacement, arbitrary scale)
@@ -88,7 +94,7 @@ struct ModalResult {
   double runtime_s = 0;
 };
 ModalResult solve_modal(const Mesh& m, const Material& mat, const std::vector<Support>& supports, int modes,
-                        const std::string& workdir, const SolveOptions& o = {});
+                        const std::string& workdir, const SolveOptions& o = {}, const std::vector<PointMass>& masses = {});
 
 struct BuckleResult {
   std::vector<double> factors;  // load multipliers at which the structure buckles
@@ -110,7 +116,8 @@ struct DynamicResult {
   double runtime_s = 0;
 };
 DynamicResult solve_dynamic(const Mesh& m, const Material& mat, const LoadCase& lc, double duration_s, double dt_s, double damping_ratio,
-                            double f1_hz, double f2_hz, int store_every, const std::string& workdir, const SolveOptions& o = {});
+                            double f1_hz, double f2_hz, int store_every, const std::string& workdir, const SolveOptions& o = {},
+                            const std::vector<PointMass>& masses = {});
 
 // ---------------------------------------------------------------- steady heat transfer (C2 base)
 // Thermal inputs use watts consistently: k in W/(mm K), film h in W/(mm^2 K), flux in W/mm^2, power in W.
@@ -127,6 +134,10 @@ struct FilmCorrelation {
   double velocity_m_s = 0;          // approach velocity of the air
   std::string spacing_mm, fin_thickness_mm, length_mm;  // channel gap between fins, fin thickness, flow length
   double film_temperature = -1e9;   // degC for the air properties; default sink + 20
+  // fan operating point instead of a fixed velocity (when fan_max_pressure_Pa > 0): the fan's linear pressure-flow
+  // curve dp = Pmax (1 - Q / Qmax) meets the fin channels' pressure drop; assumes the fan is ducted onto the fins
+  double fan_max_pressure_Pa = 0, fan_max_flow_m3_s = 0;
+  std::string fin_height_mm, channels;  // expressions: channel height and number of channels
 };
 struct Film {
   std::string group;
@@ -138,6 +149,12 @@ struct AirProperties {
 };
 AirProperties air_properties(double T_C);  // dry air at 1 atm, linear in Incropera Table A.4 between 250 and 400 K
 // h in W/(mm^2 K) for one design; `info` (optional) receives Re, Nu, h in W/(m^2 K) and the inputs.
+// Channel velocity (m/s) where a fan with a linear curve meets the channels' pressure drop: laminar parallel-plate friction
+// 12 mu L V / b^2 plus entry and exit losses 1.5 rho V^2 / 2. `info` receives the operating point.
+double fan_channel_velocity(double fan_max_pressure_Pa, double fan_max_flow_m3_s, double channels, double spacing_mm, double fin_height_mm,
+                            double length_mm, double film_T_C, nlohmann::json* info = nullptr);
+// h from a known channel velocity (the core of the plate-fin channel model)
+double channel_h(double channel_velocity_m_s, double spacing_mm, double length_mm, double film_T_C, nlohmann::json* info = nullptr);
 double plate_fin_channel_h(double velocity_m_s, double spacing_mm, double fin_thickness_mm, double length_mm, double film_T_C,
                            nlohmann::json* info = nullptr);
 struct Flux {

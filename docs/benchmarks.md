@@ -384,3 +384,22 @@ First-run details: the brackets that ran gave grade A (10 kg PLA, 15 kg PETG wit
   falls with the fins' pressure drop and the air bypasses the sink. The optimizer exploited a stated assumption.
   Fix: the fan's operating point (its pressure-flow curve against the fin channels' pressure drop) replaces the fixed
   velocity; the heat-sink results are re-run with it.
+
+## Real-physics animation: a 20 kg crate set down on the shelf (`structura dynamic`, `python -m structura.scene`)
+
+Recommended 20 kg bracket (trial 183), 6 mm mesh, PETG with print knock-down. The crate's 20 kg is lumped on the loaded
+face as mass (its inertia moves with the bracket) and its weight is applied at once at t = 0; implicit time integration
+in CalculiX with 3% Rayleigh damping (assumed), 85 frames over 181 ms, 372 s solve.
+
+| Check | Solver | Hand calculation | Difference |
+|---|---|---|---|
+| Bounce frequency with the crate | 22.12 Hz | sqrt(k/m)/2 pi = 21.97 Hz (k = 381 N/mm from the static solve) | 0.7% |
+| Dynamic amplification | 1.90 | single mass, 3% damping: 1 + exp(-pi z / sqrt(1 - z^2)) = 1.91 | 0.5% |
+| Time of the first peak | 23.6 ms | half a period: 22.6 ms | one time step |
+
+Peak stress 16.3 MPa against 8.6 MPa for a gently placed crate: still below the 25 MPa effective yield (margin 1.5
+instead of 2.9); the spec's 1.5 load factor covers it. Video: `runs/videos/bracket_20kg_crate_set_down.mp4`.
+
+An earlier version modelled the crate as a massless force: deflections were right but the motion ran at the bracket's
+own 770 Hz instead of 22 Hz. Fixed by the carried mass. The shelf board and crate are drawn rigid and follow a line fit
+to the solved displacement of the arm's top face.

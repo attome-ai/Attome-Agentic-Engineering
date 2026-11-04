@@ -48,6 +48,22 @@ void structural_preamble(std::ostream& d, const Mesh& m, const Material& mat, co
     for (char c : s.dofs) d << set_name(s.group) << "," << c << "," << c << "\n";
 }
 
+// Lumped carried masses: one MASS element per node of the group, the group's mass shared evenly.
+void write_point_masses(std::ostream& d, const Mesh& m, const std::vector<PointMass>& masses) {
+  int next = 0;
+  for (auto& t : m.tets) next = std::max(next, t[0]);
+  int k = 0;
+  for (auto& pm : masses) {
+    auto ns = m.nsets.find(pm.group);
+    if (pm.mass_t <= 0) continue;
+    if (ns == m.nsets.end() || ns->second.empty()) throw std::runtime_error("carried mass: no nodes in group '" + pm.group + "'");
+    std::string set = "EMASS" + std::to_string(++k);
+    d << "*ELEMENT,TYPE=MASS,ELSET=" << set << "\n";
+    for (int n : ns->second) d << ++next << "," << n << "\n";
+    d << "*MASS,ELSET=" << set << "\n" << num(pm.mass_t / static_cast<double>(ns->second.size())) << "\n";
+  }
+}
+
 // Rows of numbers that follow a header line containing `marker` in a .dat file.
 std::vector<std::vector<double>> dat_table(const std::string& dat, const std::string& marker) {
   std::vector<std::vector<double>> rows;
@@ -77,9 +93,10 @@ std::vector<std::vector<double>> dat_table(const std::string& dat, const std::st
 }  // namespace
 
 ModalResult solve_modal(const Mesh& m, const Material& mat, const std::vector<Support>& supports, int modes,
-                        const std::string& workdir, const SolveOptions& o) {
+                        const std::string& workdir, const SolveOptions& o, const std::vector<PointMass>& masses) {
   std::ostringstream d;
   structural_preamble(d, m, mat, supports);
+  write_point_masses(d, m, masses);
   d << "*STEP\n*FREQUENCY\n" << modes << "\n*NODE FILE\nU\n*END STEP\n";
   Run run = run_ccx(d.str(), workdir, o);
   std::string dat = read_file(fs::path(workdir) / "job.dat");
@@ -126,7 +143,8 @@ BuckleResult solve_buckle(const Mesh& m, const Material& mat, const LoadCase& lc
 }
 
 DynamicResult solve_dynamic(const Mesh& m, const Material& mat, const LoadCase& lc, double duration_s, double dt_s, double damping_ratio,
-                            double f1_hz, double f2_hz, int store_every, const std::string& workdir, const SolveOptions& o) {
+                            double f1_hz, double f2_hz, int store_every, const std::string& workdir, const SolveOptions& o,
+                            const std::vector<PointMass>& masses) {
   if (dt_s <= 0 || duration_s <= dt_s) throw std::runtime_error("dynamic: need 0 < dt < duration");
   DynamicResult r;
   r.dt = dt_s;
@@ -145,6 +163,7 @@ DynamicResult solve_dynamic(const Mesh& m, const Material& mat, const LoadCase& 
   d << "*SOLID SECTION,ELSET=EALL,MATERIAL=MAT\n*BOUNDARY\n";
   for (auto& s : lc.supports)
     for (char c : s.dofs) d << set_name(s.group) << "," << c << "," << c << "\n";
+  write_point_masses(d, m, masses);  // the carried mass's inertia (its weight is the load case's force)
   d << "*AMPLITUDE,NAME=SUDDEN\n0.,1.," << num(10 * duration_s) << ",1.\n";  // full load from t = 0 and held
   int steps = static_cast<int>(std::ceil(duration_s / dt_s));
   d << "*STEP,INC=" << steps + 10 << "\n*DYNAMIC,DIRECT\n" << num(dt_s) << "," << num(duration_s) << "\n";
@@ -194,12 +213,10 @@ AirProperties air_properties(double T_C) {
   return {K[i] + w * (K[i + 1] - K[i]), NU[i] + w * (NU[i + 1] - NU[i]), PR[i] + w * (PR[i + 1] - PR[i])};
 }
 
-double plate_fin_channel_h(double velocity_m_s, double spacing_mm, double fin_thickness_mm, double length_mm, double film_T_C,
-                           nlohmann::json* info) {
-  if (spacing_mm <= 0 || length_mm <= 0 || fin_thickness_mm < 0) throw std::runtime_error("plate_fin_channel: spacing and length must be positive");
+double channel_h(double channel_velocity_m_s, double spacing_mm, double length_mm, double film_T_C, nlohmann::json* info) {
+  if (spacing_mm <= 0 || length_mm <= 0) throw std::runtime_error("plate_fin_channel: spacing and length must be positive");
   AirProperties a = air_properties(film_T_C);
-  double b = spacing_mm * 1e-3, L = length_mm * 1e-3;
-  double v_ch = velocity_m_s * (spacing_mm + fin_thickness_mm) / spacing_mm;  // continuity: the fins block part of the inlet
+  double b = spacing_mm * 1e-3, L = length_mm * 1e-3, v_ch = channel_velocity_m_s;
   double re_b = v_ch * b / a.nu;
   double re_star = re_b * b / L;  // channel Reynolds number scaled by the gap-to-length ratio
   // Teertstra et al. (1999): fully developed limit Re* Pr / 2 blended with the developing (flat plate) limit
@@ -208,11 +225,41 @@ double plate_fin_channel_h(double velocity_m_s, double spacing_mm, double fin_th
   double nu_b = std::pow(std::pow(fd, -3.0) + std::pow(dev, -3.0), -1.0 / 3.0);
   double h_si = nu_b * a.k / b;  // W/(m^2 K)
   if (info)
-    *info = {{"model", "plate_fin_channel (Teertstra et al. 1999)"}, {"velocity_m_s", velocity_m_s}, {"channel_velocity_m_s", v_ch},
-             {"spacing_mm", spacing_mm}, {"fin_thickness_mm", fin_thickness_mm}, {"length_mm", length_mm}, {"film_temperature_C", film_T_C},
-             {"Re_b", re_b}, {"Re_star", re_star}, {"Nu_b", nu_b}, {"h_W_m2K", h_si},
-             {"laminar", re_b < 2300}, {"air", {{"k", a.k}, {"nu", a.nu}, {"Pr", a.Pr}, {"source", "Incropera Table A.4"}}}};
+    *info = {{"model", "plate_fin_channel (Teertstra et al. 1999)"}, {"channel_velocity_m_s", v_ch}, {"spacing_mm", spacing_mm},
+             {"length_mm", length_mm}, {"film_temperature_C", film_T_C}, {"Re_b", re_b}, {"Re_star", re_star}, {"Nu_b", nu_b},
+             {"h_W_m2K", h_si}, {"laminar", re_b < 2300}, {"air", {{"k", a.k}, {"nu", a.nu}, {"Pr", a.Pr}, {"source", "Incropera Table A.4"}}}};
   return h_si * 1e-6;  // W/(mm^2 K)
+}
+
+double plate_fin_channel_h(double velocity_m_s, double spacing_mm, double fin_thickness_mm, double length_mm, double film_T_C,
+                           nlohmann::json* info) {
+  if (spacing_mm <= 0 || length_mm <= 0 || fin_thickness_mm < 0) throw std::runtime_error("plate_fin_channel: spacing and length must be positive");
+  double v_ch = velocity_m_s * (spacing_mm + fin_thickness_mm) / spacing_mm;  // continuity: the fins block part of the inlet
+  double h = channel_h(v_ch, spacing_mm, length_mm, film_T_C, info);
+  if (info) {
+    (*info)["velocity_m_s"] = velocity_m_s;
+    (*info)["fin_thickness_mm"] = fin_thickness_mm;
+    (*info)["velocity_basis"] = "fixed approach velocity (continuity into the channels; flow bypass ignored)";
+  }
+  return h;
+}
+
+double fan_channel_velocity(double pmax, double qmax, double channels, double spacing_mm, double fin_height_mm, double length_mm,
+                            double film_T_C, nlohmann::json* info) {
+  if (pmax <= 0 || qmax <= 0 || channels < 1 || spacing_mm <= 0 || fin_height_mm <= 0 || length_mm <= 0)
+    throw std::runtime_error("fan operating point: fan pressure and flow, channels, gap, fin height and length must be positive");
+  AirProperties a = air_properties(film_T_C);
+  double T = film_T_C + 273.15, rho = 101325.0 / (287.05 * T), mu = a.nu * rho;
+  double b = spacing_mm * 1e-3, H = fin_height_mm * 1e-3, L = length_mm * 1e-3, area = channels * b * H;  // m, m^2
+  // pmax (1 - area V / qmax) = 12 mu L V / b^2 + 0.75 rho V^2   ->   A V^2 + B V - C = 0
+  double A = 0.75 * rho, B = 12 * mu * L / (b * b) + pmax * area / qmax, C = pmax;
+  double v = (-B + std::sqrt(B * B + 4 * A * C)) / (2 * A);
+  if (info)
+    *info = {{"fan_max_pressure_Pa", pmax}, {"fan_max_flow_m3_s", qmax}, {"channels", channels}, {"flow_area_mm2", area * 1e6},
+             {"channel_velocity_m_s", v}, {"flow_m3_s", area * v}, {"pressure_drop_Pa", pmax * (1 - area * v / qmax)},
+             {"fraction_of_free_flow", area * v / qmax},
+             {"assumption", "fan ducted onto the fins (no bypass); laminar parallel-plate friction plus entry and exit losses"}};
+  return v;
 }
 
 bool ThermalCase::has_correlation() const {
@@ -228,8 +275,18 @@ ThermalCase ThermalCase::resolved(const Values& params, nlohmann::json* info) co
     if (!f.correlation) continue;
     const FilmCorrelation& c = *f.correlation;
     nlohmann::json one;
-    f.h = plate_fin_channel_h(c.velocity_m_s, evaluate(c.spacing_mm, params), evaluate(c.fin_thickness_mm, params),
-                              evaluate(c.length_mm, params), c.film_temperature, &one);
+    if (c.fan_max_pressure_Pa > 0) {
+      nlohmann::json op;
+      double gap = evaluate(c.spacing_mm, params), len = evaluate(c.length_mm, params);
+      double v = fan_channel_velocity(c.fan_max_pressure_Pa, c.fan_max_flow_m3_s, evaluate(c.channels, params), gap,
+                                      evaluate(c.fin_height_mm, params), len, c.film_temperature, &op);
+      f.h = channel_h(v, gap, len, c.film_temperature, &one);
+      one["fan_operating_point"] = op;
+      one["velocity_basis"] = "fan operating point (fan curve against the fin channels' pressure drop)";
+    } else {
+      f.h = plate_fin_channel_h(c.velocity_m_s, evaluate(c.spacing_mm, params), evaluate(c.fin_thickness_mm, params),
+                                evaluate(c.length_mm, params), c.film_temperature, &one);
+    }
     all[f.group] = one;
   }
   if (info) *info = all;
@@ -249,12 +306,21 @@ ThermalCase ThermalCase::from_json(const nlohmann::json& j) {
       fc->model = c.value("model", std::string("plate_fin_channel"));
       if (fc->model != "plate_fin_channel") throw std::runtime_error("film '" + f.group + "': unknown correlation model '" + fc->model + "'");
       auto str = [&](const char* k) { return c.at(k).is_string() ? c.at(k).get<std::string>() : std::to_string(c.at(k).get<double>()); };
-      fc->velocity_m_s = c.at("velocity_m_s");
+      fc->velocity_m_s = c.value("velocity_m_s", 0.0);
+      if (c.contains("fan")) {
+        const auto& fan = c.at("fan");
+        fc->fan_max_pressure_Pa = fan.at("max_pressure_Pa");
+        fc->fan_max_flow_m3_s = fan.at("max_flow_m3_s");
+        fc->fin_height_mm = str("fin_height_mm");
+        fc->channels = str("channels");
+        if (fc->fan_max_pressure_Pa <= 0 || fc->fan_max_flow_m3_s <= 0) throw std::runtime_error("film '" + f.group + "': fan pressure and flow must be positive");
+      }
       fc->spacing_mm = str("spacing_mm");
       fc->fin_thickness_mm = str("fin_thickness_mm");
       fc->length_mm = str("length_mm");
       fc->film_temperature = c.value("film_temperature", f.sink + 20.0);
-      if (fc->velocity_m_s <= 0) throw std::runtime_error("film '" + f.group + "': velocity_m_s must be positive");
+      if (fc->velocity_m_s <= 0 && fc->fan_max_pressure_Pa <= 0)
+        throw std::runtime_error("film '" + f.group + "': give velocity_m_s or a fan (max_pressure_Pa, max_flow_m3_s)");
       f.correlation = fc;
     } else if (!x.contains("h")) {
       throw std::runtime_error("film '" + f.group + "' needs h or a correlation");

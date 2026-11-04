@@ -37,10 +37,14 @@ def heatsink(bid, brief, watts, t_max, velocity, expect):
     s.update(id=bid, brief=brief)
     tc = s["thermal_cases"][0]
     tc["fluxes"][0]["power"] = watts
-    for f in tc["films"]:
-        f["correlation"]["velocity_m_s"] = velocity
-    tc["source"] = (f"brief: {watts:g} W module, 35 C air, fan along the fins at {velocity:g} m/s (assumed from a small axial fan; "
-                    "confirm against its datasheet); h from the plate-fin channel correlation (Teertstra et al. 1999)")
+    for f in tc["films"]:  # the fan's operating point against the fins' pressure drop (60 mm fan, scaled by the stated speed)
+        c = f["correlation"]
+        c.pop("velocity_m_s", None)
+        c.update(fan={"max_pressure_Pa": round(32.0 * (velocity / 1.5) ** 2, 1), "max_flow_m3_s": round(0.0068 * velocity / 1.5, 5)},
+                 fin_height_mm="fin_height", channels="fin_count - 1")
+    tc["source"] = (f"brief: {watts:g} W module, 35 C air, a fan ducted onto the fins (a typical 60 mm fan, scaled with fan speed by "
+                    f"the fan laws to the brief's {velocity:g} m/s class; confirm against the fan's datasheet); channel air speed from the "
+                    "fan's operating point against the fins' pressure drop; h from the plate-fin channel correlation (Teertstra et al. 1999)")
     s["requirements"][0].update(value=t_max, source=f"brief: keep the module below {t_max:g} C")
     s["requirements"] = [r for r in s["requirements"] if r["quantity"] != "mass_g"]  # decision D9: no unstated mass cap
     return {"id": bid, "brief": brief, "family": "heatsink", "expect": expect, "spec": s}

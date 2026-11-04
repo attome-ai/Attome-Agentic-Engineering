@@ -84,7 +84,9 @@ DesignSpec DesignSpec::from_json(const nlohmann::json& j) {
     for (auto& x : t.films) if (!named(x.group)) throw SpecError("film group '" + x.group + "' is not a named face of family " + s.family);
     for (auto& x : t.films) {
       if (!x.correlation) continue;
-      for (const std::string* e : {&x.correlation->spacing_mm, &x.correlation->fin_thickness_mm, &x.correlation->length_mm}) {
+      for (const std::string* e : {&x.correlation->spacing_mm, &x.correlation->fin_thickness_mm, &x.correlation->length_mm,
+                                   &x.correlation->fin_height_mm, &x.correlation->channels}) {
+        if (e->empty()) continue;
         std::set<std::string> names;
         try {
           names = names_in(*e);

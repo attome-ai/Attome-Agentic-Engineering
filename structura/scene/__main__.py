@@ -59,6 +59,7 @@ class Scene:
         self.vm_max = float(self.frames[:, :, 3].max())
         load = next((m for m in self.meta["markers"] if m["kind"] == "load"), None)
         self.load_nodes = nodes_in_box(pts, load["bbox"]) if load else np.array([], int)
+        self.top_nodes = np.where(pts[:, 2] > hi[2] - 0.5)[0]  # the arm's top face: the shelf board rests on it
         self.lo, self.hi = lo, hi
         self.pl = pv.Plotter(off_screen=off_screen, window_size=size, lighting="three lights")
         self.pl.set_background("#eef0f2", top="#ffffff")
@@ -117,16 +118,18 @@ class Scene:
         u = fr[self.surf_ids, :3] * self.scale
         self.part.points = self.base + u
         self.part["von Mises (MPa)"] = fr[self.surf_ids, 3]
-        if self.bracket and len(self.load_nodes):
-            uz = float(fr[self.load_nodes, 2].mean()) * self.scale
-            x_end = float(self.grid.points[self.load_nodes, 0].mean())
-            ang = np.arctan2(uz, max(x_end, 1.0))  # rotate about the wall edge so the board follows the arm end
+        if self.bracket and len(self.top_nodes) > 2:
+            # the board rests on the arm's top face: fit the solved vertical displacement there as offset + slope along x,
+            # magnified like the part, and move the board (and the crate on it) with that line
+            xs = self.grid.points[self.top_nodes, 0]
+            slope, offset = np.polyfit(xs, fr[self.top_nodes, 2] * self.scale, 1)
+            ang = np.arctan(slope)
             c, s = np.cos(ang), np.sin(ang)
             for mesh, base in ((self.board, self.board_base), (self.crate, self.crate_base)):
                 q = base.copy()
                 x, z = q[:, 0].copy(), q[:, 2] - self.hi[2]
                 q[:, 0] = x * c - z * s
-                q[:, 2] = self.hi[2] + x * s + z * c
+                q[:, 2] = self.hi[2] + offset + x * s + z * c
                 mesh.points = q
         t_ms = 1000 * float(np.interp(f, np.arange(n), self.meta["times_s"]))
         self.info.SetText(2, f"t = {t_ms:6.2f} ms (real time)    slowed {slow:,.0f}x    deformation shown x{self.scale:.0f}")

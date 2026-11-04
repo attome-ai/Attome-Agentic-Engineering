@@ -75,3 +75,23 @@ TEST_CASE("C2: a correlation film is resolved per design and validated at spec l
   spec["thermal_cases"][0]["films"][0]["correlation"]["spacing_mm"] = "fin_gap * 2";
   CHECK_THROWS_AS(DesignSpec::from_json(spec), SpecError);
 }
+
+TEST_CASE("C2-T4: the fan operating point slows the air as the fins get denser") {
+  // a 60 mm fan (32 Pa, 0.0068 m^3/s free flow) on a 60 x 60 mm sink, fins 30 mm tall
+  const double P = 32, Q = 0.0068, H = 30, L = 60;
+  nlohmann::json wide, dense;
+  double v_wide = fan_channel_velocity(P, Q, 3, 16.7, H, L, 50, &wide);    // 4 fins, 16.7 mm gaps
+  double v_dense = fan_channel_velocity(P, Q, 15, 1.36, H, L, 50, &dense); // 16 fins, 1.36 mm gaps (the h04 design)
+  CHECK(v_dense < v_wide);
+  for (auto* op : {&wide, &dense}) {
+    CHECK((*op)["flow_m3_s"].get<double>() <= Q);
+    CHECK((*op)["pressure_drop_Pa"].get<double>() >= 0);
+    CHECK((*op)["pressure_drop_Pa"].get<double>() <= P);
+  }
+  CHECK(v_dense < 4.2);  // the fixed-velocity model assumed 4.2 m/s through these gaps
+  // the balance holds: fan pressure at that flow equals the channels' friction and entry/exit losses
+  AirProperties a = air_properties(50);
+  double rho = 101325.0 / (287.05 * 323.15), mu = a.nu * rho, b = 1.36e-3;
+  double loss = 12 * mu * (L * 1e-3) * v_dense / (b * b) + 0.75 * rho * v_dense * v_dense;
+  CHECK(dense["pressure_drop_Pa"].get<double>() == doctest::Approx(loss).epsilon(1e-6));
+}

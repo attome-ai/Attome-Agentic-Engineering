@@ -36,6 +36,7 @@ struct DynamicOptions {
   double periods = 4;           // simulated time in periods of the lowest computed mode
   int steps_per_period = 30;    // per period of the highest computed mode
   int store_every = 2;
+  bool carried_mass = true;     // the load is a mass whose inertia moves with the part (a crate), not a massless force
 };
 nlohmann::json dynamic_bundle(const DesignSpec& spec, const Values& free_params, const std::string& out, const DynamicOptions& o);
 

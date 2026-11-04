@@ -356,12 +356,24 @@ nlohmann::json dynamic_bundle(const DesignSpec& spec, const Values& free_params,
   so.exclude_near_bc_mm = spec.stress_exclude_near_bc_mm;
   Result st = solve_static(m, eff, lc, (fs::path(out) / "static").string(), so);
   write_vtu(m, st, (fs::path(out) / "mesh.vtu").string());
-  ModalResult mr = solve_modal(m, eff, lc.supports, 3, (fs::path(out) / "modal").string(), so);
+  // the load is a carried mass (a crate): its inertia goes into the dynamics, its weight is the load case's force
+  std::vector<PointMass> masses;
+  double carried_kg = 0;
+  if (o.carried_mass)
+    for (auto& l : lc.loads) {
+      double fn = std::sqrt(l.force[0] * l.force[0] + l.force[1] * l.force[1] + l.force[2] * l.force[2]);
+      masses.push_back({l.group, fn / 9810.0});  // N / (mm/s^2) = tonne
+      carried_kg += fn / 9.81;
+    }
+  ModalResult mr = solve_modal(m, eff, lc.supports, 3, (fs::path(out) / "modal").string(), so, masses);
+  // time step from the highest computed mode (the vertical response of a bracket is often its second mode, not the
+  // first), duration from the lowest; damping held near the stated ratio across all computed modes
   // time step from the highest computed mode (the vertical response of a bracket is often its second mode, not the
   // first), duration from the lowest; damping held near the stated ratio across all computed modes
   double f1 = mr.frequencies_hz.front(), fmax = mr.frequencies_hz.back();
   double dt = 1.0 / (fmax * o.steps_per_period), duration = o.periods / f1;
-  DynamicResult dr = solve_dynamic(m, eff, lc, duration, dt, o.damping_ratio, f1, fmax, o.store_every, (fs::path(out) / "dynamic").string(), so);
+  DynamicResult dr = solve_dynamic(m, eff, lc, duration, dt, o.damping_ratio, f1, fmax, o.store_every, (fs::path(out) / "dynamic").string(), so,
+                                   masses);
 
   // frames.bin: float32 [frame][node][ux, uy, uz, vm], nodes in ascending id order
   std::vector<int> ids;
@@ -402,7 +414,13 @@ nlohmann::json dynamic_bundle(const DesignSpec& spec, const Values& free_params,
   double static_disp = st.max_disp_mm;
   nlohmann::json j = {
       {"spec", spec.id}, {"params", d.params}, {"hash", d.hash()}, {"load_case", lc.name},
-      {"event", "the load case's nominal force applied suddenly at t = 0 and held (for example a weight set down at once)"},
+      {"event", o.carried_mass ? "a crate of the load case's weight set down at once at t = 0 (its mass lumped on the loaded face)"
+                               : "the load case's nominal force applied suddenly at t = 0 and held"},
+      {"carried_mass_kg", carried_kg},
+      {"hand_check", {{"stiffness_N_per_mm", st.max_disp_mm > 0 ? (carried_kg * 9.81) / st.max_disp_mm : 0.0},
+                      {"note", "single-mass estimate f = sqrt(k / m) / 2 pi with k = weight / static deflection"},
+                      {"frequency_hz", (carried_kg > 0 && st.max_disp_mm > 0)
+                                           ? std::sqrt((carried_kg * 9.81 / (st.max_disp_mm * 1e-3)) / carried_kg) / (2 * 3.14159265358979) : 0.0}}},
       {"mesh_size", mo.size}, {"nodes", ids.size()}, {"node_ids", ids}, {"frames", dr.times.size()}, {"times_s", dr.times},
       {"dt_s", dt}, {"duration_s", duration}, {"frequencies_hz", mr.frequencies_hz},
       {"damping", {{"ratio", o.damping_ratio}, {"rayleigh_alpha_per_s", dr.alpha}, {"rayleigh_beta_s", dr.beta},
