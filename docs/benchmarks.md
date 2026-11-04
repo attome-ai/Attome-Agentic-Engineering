@@ -58,3 +58,17 @@ arm's end face, bolts fixed and the wall face supported normal to the wall. Buil
 
 With the bolts as the only support the bracket pivots about the bottom holes (224 mm, 824 MPa); the wall bearing
 support is required for a realistic result.
+
+## In-house solver cross-check (task F2-T4)
+
+Same bracket mesh (62,448 DOF), loads and supports as the golden case, solved by CalculiX and by the engine's own
+quadratic-tetrahedron solver (Eigen, SimplicialLDLT, single thread).
+
+| Quantity | CalculiX | In-house | Difference |
+|---|---|---|---|
+| Max displacement | 13.5133 mm | 13.5133 mm | 6e-5 % |
+| Load-face mean vertical displacement | | | 1e-5 % |
+| Worst nodal displacement difference | | | 5.0e-5 mm |
+| Time | 1.26 s (4 threads) | 0.16 s assemble + 2.14 s solve | |
+
+The agreement confirms the CalculiX deck writer, node ordering and result parsing independently of CalculiX.

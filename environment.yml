@@ -26,3 +26,4 @@ dependencies:
   - ninja
   - nlohmann_json
   - doctest
+  - eigen

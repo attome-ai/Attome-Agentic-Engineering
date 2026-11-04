@@ -43,7 +43,7 @@ LGPL-2.1 **only** (with the Open CASCADE exception), not "or later".
 | nlohmann/json | 3.12.0 | MIT | https://raw.githubusercontent.com/nlohmann/json/develop/LICENSE.MIT | 2026-11-04 |
 | doctest | 2.5.3 | MIT | https://raw.githubusercontent.com/doctest/doctest/master/LICENSE.txt | 2026-11-04 |
 | Ninja | 1.13.2 | Apache-2.0 | https://raw.githubusercontent.com/ninja-build/ninja/master/COPYING | 2026-11-04 |
-| Eigen (planned, C1/D3 in-house solver) | not yet installed | MPL-2.0 | https://gitlab.com/libeigen/eigen/-/raw/master/COPYING.MPL2 | 2026-11-04 |
+| Eigen (in-house solver, F2-T4/D3-T3) | 5.0.1 | MPL-2.0 | https://gitlab.com/libeigen/eigen/-/raw/master/COPYING.MPL2 | 2026-11-04 |
 | three.js (dashboard) | not yet installed | MIT | https://raw.githubusercontent.com/mrdoob/three.js/dev/LICENSE | 2026-11-04 |
 | plotly.js (dashboard) | not yet installed | MIT | https://raw.githubusercontent.com/plotly/plotly.js/master/LICENSE | 2026-11-04 |
 

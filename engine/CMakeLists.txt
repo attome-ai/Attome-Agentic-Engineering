@@ -11,6 +11,7 @@ endif()
 find_package(OpenCASCADE REQUIRED CONFIG)
 find_package(nlohmann_json REQUIRED)
 find_package(doctest REQUIRED)
+find_package(Eigen3 REQUIRED CONFIG)
 
 set(OCCT_TOOLKITS TKernel TKMath TKG2d TKG3d TKGeomBase TKBRep TKGeomAlgo TKTopAlgo TKPrim TKBO TKBool
     TKFillet TKOffset TKShHealing TKMesh TKXSBase TKDESTEP TKDESTL TKDE TKXCAF TKLCAF TKCAF TKCDF TKV3d TKService)
@@ -32,10 +33,11 @@ add_library(structura STATIC
   src/export.cpp
   src/analyses.cpp
   src/validation.cpp
+  src/fem.cpp
 )
 set_target_properties(structura PROPERTIES OUTPUT_NAME structura_core)
 target_include_directories(structura PUBLIC include ${OpenCASCADE_INCLUDE_DIR})
-target_link_libraries(structura PUBLIC ${OCCT_TOOLKITS} nlohmann_json::nlohmann_json)
+target_link_libraries(structura PUBLIC ${OCCT_TOOLKITS} nlohmann_json::nlohmann_json Eigen3::Eigen)
 target_compile_definitions(structura PUBLIC STRUCTURA_ROOT="${CMAKE_SOURCE_DIR}/..")
 
 add_executable(structura_cli src/cli/main.cpp)
@@ -54,6 +56,7 @@ add_executable(engine_tests
   tests/test_export.cpp
   tests/test_validation.cpp
   tests/test_golden.cpp
+  tests/test_crosscheck.cpp
 )
 target_link_libraries(engine_tests PRIVATE structura doctest::doctest)
 
