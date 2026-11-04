@@ -355,3 +355,23 @@ for each structural load case, only when the spec asks for the quantity (test C3
 recommended 20 kg bracket: first natural frequency 391.5 Hz (then 769 and 852 Hz), buckling factor 55.8; the
 evaluation takes about 23 s instead of 4 s with both analyses. Solver accuracy for both is in the validation suite
 (buckling +0.06%, first frequency -0.26%).
+
+## Ten scripted briefs end to end (P3-t0, `benchmarks/brief_suite.py`)
+
+Ten briefs (`benchmarks/briefs/`): six brackets (PLA, PETG, aluminium; 10 to 100 kg; one with a 1 mm deflection limit)
+and four heat sinks (5 to 40 W, fan 1.5 or 2.5 m/s); two are expected to be infeasible (100 kg PETG, 40 W below 50 C).
+The spec for each brief was written by the agent from the brief text. Stages: spec, feasibility, optimize (150
+evaluations), verify (front on a finer mesh), trust.
+
+**First run (2026-11-04): 6 of 10, and three defects found.**
+- The heat-sink corner with 1.2 mm fins measured 1.1999999999 mm and failed the 1.2 mm minimum wall; the feasibility
+  check then called all four heat-sink briefs infeasible ("corner could not be evaluated"). Fixed: gate tolerance
+  (test B4-T4), and an unevaluable corner is now inconclusive instead of infeasible.
+- One of those four was "expected infeasible", so it was counted a success for the wrong reason; with the fix the
+  suite must reach that verdict from physics.
+- "30 kg shelf, lightest possible" found no feasible design because of a default 250 g mass cap the brief never asked
+  for. Decision D9: unstated defaults are hard requirements only when they protect the user.
+First-run details: the brackets that ran gave grade A (10 kg PLA, 15 kg PETG with 1 mm, 50 kg aluminium) and grade B
+(20 kg PETG, safety factor converging non-monotonically); 100 kg PETG was correctly reported infeasible in 10 s.
+
+**Second run** (fixed engine, D9 specs): see `benchmarks/brief_suite.json`.
