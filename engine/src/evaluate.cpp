@@ -142,6 +142,7 @@ nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params
       if (o.save_bundle) {
         r.save((fs::path(work) / ("result_" + lc.name)).string());
         write_vtu(m, r, (fs::path(work) / ("result_" + lc.name) / "result.vtu").string());
+        write_skin(m, r, (fs::path(work) / ("result_" + lc.name) / "skin.json").string(), eff.yield);
       }
     }
   } catch (const std::exception& e) {

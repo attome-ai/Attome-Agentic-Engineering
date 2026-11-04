@@ -48,7 +48,7 @@ LGPL-2.1 **only** (with the Open CASCADE exception), not "or later".
 | BoTorch | 0.17.2 | MIT | https://raw.githubusercontent.com/pytorch/botorch/main/LICENSE | 2026-11-04 |
 | PyTorch | 2.8.0 | BSD-3-Clause | https://raw.githubusercontent.com/pytorch/pytorch/main/LICENSE | 2026-11-04 |
 | SALib | 1.6.0 | MIT | https://raw.githubusercontent.com/SALib/SALib/main/LICENSE.md | 2026-11-04 |
-| three.js (dashboard) | not yet installed | MIT | https://raw.githubusercontent.com/mrdoob/three.js/dev/LICENSE | 2026-11-04 |
+| three.js (report viewer, vendored UMD build) | 0.149.0 | MIT | https://raw.githubusercontent.com/mrdoob/three.js/dev/LICENSE | 2026-11-04 |
 | plotly.js (dashboard) | not yet installed | MIT | https://raw.githubusercontent.com/plotly/plotly.js/master/LICENSE | 2026-11-04 |
 
 Planned later and to be verified when added: FastAPI (I2), the MCP Python SDK (E1),
