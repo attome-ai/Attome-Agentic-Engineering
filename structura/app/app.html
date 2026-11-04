@@ -89,6 +89,10 @@ footer{color:var(--muted);font-size:.8rem;margin-top:20px}
     <p class="muted" style="font-size:.8rem;margin:.3rem 0 0">Every design the optimizer evaluates appears as it finishes (real solves): teal meets every
       requirement, grey does not, orange is the best feasible design so far. Click a point to load it into the sliders and see it in 3D.</p>
   </section>
+  <section class="card" style="margin-top:14px">
+    <h2>Run history</h2>
+    <div class="tblw"><table id="hist"></table></div>
+  </section>
 </main>
 <script>__THREE__</script>
 <script>
@@ -273,6 +277,13 @@ $("#live").addEventListener("click", e => {
   $("#params").querySelectorAll("input").forEach(i => {if (r.params[i.dataset.k] != null) {i.value = r.params[i.dataset.k]; i.dispatchEvent(new Event("input"))}});
   run();
 });
+// ---------------------------------------------------------------- run history (I1)
+fetch("/api/history").then(r => r.json()).then(rows => {
+  $("#hist").innerHTML = "<tr><th>Run</th><th>Brief</th><th>Last step</th><th>Grade</th><th>Audit log</th><th>Report</th></tr>" +
+    (rows.length ? rows.map(r => `<tr><td>${esc(r.name)}</td><td>${esc(r.brief || "")}</td><td>${esc(r.last_step || "")}</td><td>${esc(r.grade || "–")}</td>` +
+      `<td>${r.audit ? `<span class="pill ${r.audit === "verified" ? "pass" : r.audit === "broken" ? "fail" : ""}">${esc(r.audit)}</span>` : "–"}</td>` +
+      `<td><a href="${esc(r.report)}" target="_blank">open</a>${r.pdf ? ` · <a href="${esc(r.pdf)}" target="_blank">PDF</a>` : ""}</td></tr>`).join("")
+     : `<tr><td colspan="6" class="muted">no runs with a report yet</td></tr>`)});
 $("#go").addEventListener("click", run);
 $("#spec").addEventListener("change", pickSpec);
 fetch("/api/specs").then(r => r.json()).then(s => {SPECS = s;

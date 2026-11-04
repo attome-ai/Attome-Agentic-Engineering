@@ -53,6 +53,33 @@ def evaluate(file: str, params: dict, mesh: float) -> dict:
     return res
 
 
+def history() -> list[dict]:
+    """Every run with a report or a study log (I1 run history): brief, last step, grade, audit-chain status, report link."""
+    from structura.agent import studies as S
+    runs = ROOT / "runs"
+    rows = []
+    for rep in sorted(runs.rglob("report.html")):
+        d = rep.parent
+        row = {"name": str(d.relative_to(runs)).replace("\\", "/"), "report": "/runs/" + str(rep.relative_to(runs)).replace("\\", "/"),
+               "pdf": None, "modified": rep.stat().st_mtime}
+        if rep.with_suffix(".pdf").exists():
+            row["pdf"] = row["report"][:-4] + "pdf"
+        for t in [d / "trust" / "trust.json", *sorted(d.glob("verify/*/trust.json"))]:
+            if t.exists():
+                tj = json.loads(t.read_text())
+                row["grade"] = tj.get("grade")
+        specs = sorted(d.glob("spec.v*.json")) or ([d / "spec.json"] if (d / "spec.json").exists() else [])
+        if specs:
+            row["brief"] = json.loads(specs[-1].read_text(encoding="utf-8")).get("brief", "")
+        if (d / "timeline.jsonl").exists():
+            tl = S.timeline(d.name)
+            row["last_step"] = f"{tl[-1]['step']}: {tl[-1]['outcome']}" if tl else ""
+            v = S.verify_log(d.name)
+            row["audit"] = "verified" if v["ok"] else ("not chained (older run)" if "before chaining" in v.get("reason", "") else "broken")
+        rows.append(row)
+    return sorted(rows, key=lambda r: -r["modified"])
+
+
 _job: dict = {}
 
 
@@ -97,6 +124,16 @@ class Handler(BaseHTTPRequestHandler):
         if self.path in ("/", "/index.html"):
             html = PAGE.read_text(encoding="utf-8").replace("__THREE__", THREE.read_text(encoding="utf-8"))
             self._send(200, html.encode(), "text/html; charset=utf-8")
+        elif self.path == "/api/history":
+            self._json(history())
+        elif self.path.startswith("/runs/"):
+            from urllib.parse import unquote
+            base = (ROOT / "runs").resolve()
+            f = (base / unquote(self.path[len("/runs/"):].split("?")[0].split("#")[0])).resolve()
+            if base not in f.parents or not f.is_file() or f.suffix not in (".html", ".pdf", ".png"):
+                return self._json({"error": "not found"}, 404)
+            ctype = {".html": "text/html; charset=utf-8", ".pdf": "application/pdf", ".png": "image/png"}[f.suffix]
+            self._send(200, f.read_bytes(), ctype)
         elif self.path == "/api/specs":
             self._json(specs())
         elif self.path.startswith("/api/progress"):
