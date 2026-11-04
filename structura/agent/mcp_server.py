@@ -34,6 +34,9 @@ INSTRUCTIONS = """You are driving the Attome AE engineering engine. Workflow:
 5. run_optimization (it runs in the background); poll get_job; then get_results for the front and the recommended
    design; use steer when the user states a preference; explain to compare two designs.
 6. verify the chosen design and report its trust grade; build_report and give the user the file.
+Geometry, in order of preference: an existing family (list_families); a design graph from the grammar (compose_design,
+describe_grammar); for the user's own part, upload_part then add_face / add_lightening_pocket; only when the grammar
+cannot express the shape, freeform_cad with CadQuery code (fixed geometry, gated like any other part).
 Never state a number the tools did not return. Never tune parameters yourself inside a loop: that is the optimizer's job."""
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -268,6 +271,52 @@ def add_lightening_pocket(family: str, face_id: int, margin_mm: float = 3.0, flo
     p.write_text(json.dumps(fam, indent=2), encoding="utf-8")
     return _ok(family=family, parameters={n: fam["parameters"][n] for n in fam["parameters"] if n.startswith(k)},
                frozen_interfaces=len(fam.get("preserve", [])))
+
+
+@mcp.tool(description="LAST RESORT for shapes the design grammar cannot express (B1): write CadQuery code that assigns the final solid to "
+                      "`result` (cq is imported; units mm). It runs in its own process with a time limit, is exported to STEP, inspected "
+                      "like an uploaded part (holes frozen, faces named) and checked by the geometry gate. Returns the gate verdict, the "
+                      "detected faces and holes, or a structured error to repair. The shape is fixed: optimize it afterwards with "
+                      "the uploaded-part operations (add_lightening_pocket) or by revising the code. Prefer compose_design whenever "
+                      "the grammar can express the part.")
+def freeform_cad(code: str, name: str, timeout_s: float = 120.0) -> dict:
+    import re
+    import subprocess
+    import sys
+    if not re.fullmatch(r"[a-z][a-z0-9_]{0,40}", name):
+        return _err("freeform", "name must be lowercase letters, digits and _ (start with a letter)")
+    work = ROOT / "runs" / "freeform" / name
+    work.mkdir(parents=True, exist_ok=True)
+    (work / "model.py").write_text(code, encoding="utf-8")
+    step = work / "part.step"
+    step.unlink(missing_ok=True)
+    runner = Path(__file__).with_name("freeform_runner.py")
+    try:
+        p = subprocess.run([sys.executable, "-I", str(runner), str(work / "model.py"), str(step)], cwd=str(work),
+                           capture_output=True, text=True, timeout=timeout_s)
+    except subprocess.TimeoutExpired:
+        return _err("freeform_timeout", f"the code ran longer than {timeout_s:.0f} s", "simplify the geometry or the loops")
+    lines = [ln for ln in p.stdout.splitlines() if ln.startswith("{")]
+    info = json.loads(lines[-1]) if lines else {"error": "runner", "message": (p.stderr or p.stdout)[-1500:]}
+    if p.returncode != 0 or not step.exists():
+        return _err("freeform_" + info.get("error", "runner"), info.get("message", "failed"),
+                    "fix the code and call freeform_cad again; the message is the CadQuery/Python error")
+    up = upload_part(str(step), name)
+    if not up.get("ok"):
+        return up
+    if up.get("solids") != 1:
+        return _err("freeform_geometry", f"the result has {up.get('solids')} solids; the engine needs exactly one",
+                    "fuse the bodies (union) or remove loose pieces", family=up["family"])
+    try:
+        g = engine.call("gate", family=up["family"])
+    except engine.EngineError as e:
+        return _err(e.kind, str(e), family=up["family"])
+    S_log = {"family": up["family"], "gate_ok": g.get("ok"), "reasons": g.get("reasons")}
+    return _ok(family=up["family"], code_file=str(work / "model.py"), gate=g, volume_mm3=up["volume_mm3"], envelope=up["envelope"],
+               holes=up["holes"], hole_patterns=up["hole_patterns"], named_faces=up["named_faces"], faces=up["faces"],
+               next=("create a study on this family (free_params {} analyses it as-is), naming load and support faces with add_face"
+                     if g.get("ok") else "the gate rejected the shape: fix the reasons in the code and call freeform_cad again"),
+               summary=S_log)
 
 
 # ------------------------------------------------------------------ geometry

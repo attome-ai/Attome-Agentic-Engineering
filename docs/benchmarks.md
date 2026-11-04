@@ -290,3 +290,13 @@ corner radius, or pockets in the ribs and wall plate, are the next redesign oper
 Two defects found and fixed on the way: the hole detector summed the angular spans of co-axial segments, so a corner
 fillet cut into four quarter-cylinders by three ribs looked like a full hole and was frozen (now measured as angular
 coverage, test A3-T3); and the engine's family listing did not include uploaded families.
+
+## Free-form CAD fallback (B1, MCP tool `freeform_cad`)
+
+For shapes the design grammar cannot express, the agent writes CadQuery code that assigns `result`. It runs in its own
+Python process (`python -I`, time limit, its own folder), is exported to STEP, inspected like an uploaded part (holes
+frozen, faces named) and gated by the engine; failures come back typed (`freeform_code`, `freeform_result`,
+`freeform_geometry`, `freeform_timeout`) with the Python/CadQuery message for repair. Tested with a plate, two holes
+and a lofted boss (a loft is not in the grammar): gate passes, both holes found. The shape is fixed geometry: it is
+analysed as-is and improved with the uploaded-part operations or by revising the code; the grammar stays the first
+choice (the agent's instructions say so). Best-of-N generation and a render review are still to do.

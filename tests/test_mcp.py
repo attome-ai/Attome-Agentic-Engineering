@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 SPEC = Path(__file__).resolve().parents[1] / "docs" / "examples" / "bracket_20kg.json"
 TOOLS = {"build_report", "derive_load", "rank_questions", "propose_relaxation", "list_families", "describe_grammar", "plan_study", "create_study", "accept_spec", "check_feasibility",
-         "compose_design", "evaluate_design", "run_optimization", "get_job", "get_results", "steer", "explain", "verify", "manufacturing_advice", "upload_part", "add_face"}
+         "compose_design", "evaluate_design", "run_optimization", "get_job", "get_results", "steer", "explain", "verify", "manufacturing_advice", "upload_part", "add_face", "add_lightening_pocket", "freeform_cad"}
 
 
 def test_tools_over_the_protocol():
@@ -159,6 +159,30 @@ def test_upload_and_analyse_a_step_part(tmp_path, monkeypatch):
                     break
                 time.sleep(0.5)
             assert j["state"] == "error"
+    finally:
+        for p in (ROOT / "families" / "uploads").glob(f"{name}.*"):
+            p.unlink()
+
+
+def test_freeform_cad_fallback():
+    """B1: model-written CadQuery runs isolated, is gated and inspected; errors come back structured for repair."""
+    code = '''
+plate = cq.Workplane("XY").box(80, 40, 10, centered=(False, False, False))
+plate = plate.faces(">Z").workplane(centerOption="CenterOfBoundBox").pushPoints([(-20, 0), (20, 0)]).hole(6.5)
+boss = (cq.Workplane("XY").workplane(offset=10).center(40, 20).rect(20, 20)
+        .workplane(offset=15).circle(6).loft())  # a loft: not in the design grammar
+result = plate.union(boss)
+'''
+    name = "pytest_freeform"
+    try:
+        r = srv.freeform_cad(code, name)
+        assert r["ok"], r
+        assert r["gate"]["ok"] and len(r["holes"]) == 2
+        assert r["family"] == f"uploads/{name}"
+        bad = srv.freeform_cad("result = cq.Workplane('XY').box(10, 10)", name)  # missing argument
+        assert not bad["ok"] and bad["error"] == "freeform_code"
+        none = srv.freeform_cad("x = cq.Workplane('XY').box(10, 10, 10)", name)
+        assert not none["ok"] and none["error"] == "freeform_result"
     finally:
         for p in (ROOT / "families" / "uploads").glob(f"{name}.*"):
             p.unlink()
