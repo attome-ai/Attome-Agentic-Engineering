@@ -144,7 +144,7 @@ typed grammar and the gate, not from a better mesher.
 
 ### 4.3 End to end: the 20 kg bracket brief
 
-> **Corrected (2026-11-04, decision D10):** an earlier result here (234 g, safety factor 2.06, grade A) was wrong: its peak stress sat at a sharp corner where each rib tip met the arm, which three uniform meshes could not see. Bracket family version 3 fillets those corners and the trust record now refines locally to catch this. **The search is not converged yet:** 200, 400 and 800 evaluations found 192.5, 179.6 and 162.2 g, so the numbers below are the best verified so far, not the final optimum.
+> **Corrected (2026-11-04, decision D10):** an earlier result here (234 g, safety factor 2.06, grade A) was wrong: its peak stress sat at a sharp corner where each rib tip met the arm, which three uniform meshes could not see. Bracket family version 3 fillets those corners and the trust record now refines locally to catch this. **The lightest design converges at 162-165 g** (192.5, 179.6, 162.2 and 164.7 g at 200, 400, 800 and 1600 evaluations), but those designs are only grade B or unverified: sharp edges along the rib flanks raise the local stress about 12%. The grade A design below is the lightest one proven so far.
 
 
 Source: `benchmarks/p2_demo_400.json`, `runs/p2_demo_400/`; command `python benchmarks/p2_demo.py --evals 400 --name p2_demo_400`.
@@ -158,10 +158,11 @@ Source: `benchmarks/p2_demo_400.json`, `runs/p2_demo_400/`; command `python benc
 What this shows, stated honestly: the hand design is **unsafe**, not a lighter version of a safe design. The error bars
 come from a three-level grid convergence study, and local refinement confirms the peak stress settles.
 
-**Not converged (decision D8).** The lightest design feasible on the finer mesh was 192.5 g at 200 evaluations, 179.6 g at
-400 and 162.2 g at 800. The 800-evaluation recommendation (169.6 g) is only grade B, because its peak still grows 14% under
-local refinement, at the rib's edge near its tip (`benchmarks/p2_demo_800.json`). Before submission this section needs
-a budget where the result changes by less than 2%.
+**Budget (decision D8).** The lightest design feasible on the finer mesh was 192.5, 179.6, 162.2 and 164.7 g at 200, 400, 800
+and 1600 evaluations, so the lightest design converges at 162-165 g (`benchmarks/p2_demo_800.json`, `benchmarks/p2_demo_1600.json`).
+Those lighter designs are not proven at grade A: at the sharp edges along the rib flanks, the peak grows about 14% under local
+refinement. With a 0.5 to 0.8 mm fillet on those edges the peak settles, about 12% above the uniform-mesh value, which would put a
+169.6 g design near safety factor 1.9. The owner must decide how to close this before submission (decision D10, still open).
 
 ### 4.4 Second physics on the same pipeline: a fan-cooled 10 W heat sink
 

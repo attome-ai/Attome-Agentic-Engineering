@@ -132,7 +132,7 @@ D5). The full 120-call run was stopped after the first BoTorch seed; partial res
 
 ## P2 exit demo: 20 kg bracket brief
 
-> **Corrected (2026-11-04, decision D10):** an earlier result here (234 g, safety factor 2.06, grade A) was wrong: its peak stress sat at a sharp corner where each rib tip met the arm, which three uniform meshes could not see. Bracket family version 3 fillets those corners and the trust record now refines locally to catch this. **The search is not converged yet:** 200, 400 and 800 evaluations found 192.5, 179.6 and 162.2 g, so the numbers below are the best verified so far, not the final optimum.
+> **Corrected (2026-11-04, decision D10):** an earlier result here (234 g, safety factor 2.06, grade A) was wrong: its peak stress sat at a sharp corner where each rib tip met the arm, which three uniform meshes could not see. Bracket family version 3 fillets those corners and the trust record now refines locally to catch this. **The lightest design converges at 162-165 g** (192.5, 179.6, 162.2 and 164.7 g at 200, 400, 800 and 1600 evaluations), but those designs are only grade B or unverified: sharp edges along the rib flanks raise the local stress about 12%. The grade A design below is the lightest one proven so far.
  (`benchmarks/p2_demo.py`, bracket family v2)
 
 200 NSGA-II evaluations at 4 mm (the portfolio chose NSGA-II from the measured evaluation cost), front re-solved at 3 mm,
@@ -435,13 +435,14 @@ search and NSGA-II: still better per solver call, by less than the single-seed 7
 
 Effective yield is 25 MPa, so the version 2 design's true safety factor was about 1.2 against the reported 2.3.
 
-**Budget (D8), 20 kg brief:** the study does not converge yet.
+**Budget (D8), 20 kg brief:** the lightest design converges at 162-165 g (800 to 1600 evaluations: +1.6%, within the 2% rule). The recommended knee design does not settle: it moves between 170 and 246 g across these runs.
 
 | Evaluations | Lightest feasible on the finer mesh | Recommended | Grade |
 |---|---|---|---|
 | 200 | 192.5 g, SF 2.47 | 245.8 g, SF 2.52 | B (sharp corner) |
 | 400 | 179.6 g, SF 2.07 | 179.6 g, SF 2.07 ± 0.5% | A |
 | 800 | 162.2 g, SF 2.01 | 169.6 g, SF 2.07 | B (peak grows 14% under refinement, at the rib edge near its tip) |
+| 1600 | 164.7 g, SF 2.04 | 195.7 g, SF 2.53 | B (same corner; numerical error 5.3%) |
 
 **Ten-brief suite: 10 of 10** (`benchmarks/brief_suite.json`), counting a grade B design as a success as the suite defines it.
 All five feasible brackets are grade B: 107.0 g (10 kg PLA), 170.7 g (20 kg PETG), 269.1 g (30 kg PETG), 148.9 g (15 kg, 1 mm), 179.2 g

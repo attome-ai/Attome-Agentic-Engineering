@@ -14,12 +14,12 @@ Entry for AIDTC 2027 (Gulf University, Bahrain). Status: working prototype; see 
 
 ## Results (measured, each traceable to a stored run)
 
-> **Corrected (2026-11-04, decision D10):** an earlier result here (234 g, safety factor 2.06, grade A) was wrong: its peak stress sat at a sharp corner where each rib tip met the arm, which three uniform meshes could not see. Bracket family version 3 fillets those corners and the trust record now refines locally to catch this. **The search is not converged yet:** 200, 400 and 800 evaluations found 192.5, 179.6 and 162.2 g, so the numbers below are the best verified so far, not the final optimum.
+> **Corrected (2026-11-04, decision D10):** an earlier result here (234 g, safety factor 2.06, grade A) was wrong: its peak stress sat at a sharp corner where each rib tip met the arm, which three uniform meshes could not see. Bracket family version 3 fillets those corners and the trust record now refines locally to catch this. **The lightest design converges at 162-165 g** (192.5, 179.6, 162.2 and 164.7 g at 200, 400, 800 and 1600 evaluations), but those designs are only grade B or unverified: sharp edges along the rib flanks raise the local stress about 12%. The grade A design below is the lightest one proven so far.
 
 
 | Brief | Hand design | Result | Trust |
 |---|---|---|---|
-| 20 kg PETG shelf bracket | 99 g, safety factor 0.48 (unsafe) | 179.6 g, safety factor 2.07 ± 0.5% (search not converged; see above) | grade A |
+| 20 kg PETG shelf bracket | 99 g, safety factor 0.48 (unsafe) | 179.6 g, safety factor 2.07 ± 0.5% (lightest grade A so far; see above) | grade A |
 | 10 W heat sink, small fan, below 75 °C | 103.7 g | 27.2 g (−74%), 66.3 °C, same at 300 and 600 evaluations; the lightest corner of the design space, so the limit does not govern | grade A |
 | Uploaded over-built bracket, same bolt holes | 354 g | 328 g (−7.3%), from before the stricter trust check; to be re-run | grade B |
 | 100 kg PETG bracket | – | reported infeasible: the family's strongest design carries about 33 kg | – |
