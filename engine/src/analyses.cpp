@@ -119,11 +119,86 @@ BuckleResult solve_buckle(const Mesh& m, const Material& mat, const LoadCase& lc
   return r;
 }
 
+AirProperties air_properties(double T_C) {
+  // Incropera, DeWitt, Bergman, Lavine, Fundamentals of Heat and Mass Transfer, Table A.4 (air at 1 atm)
+  static const double T[] = {250, 300, 350, 400};
+  static const double K[] = {22.3e-3, 26.3e-3, 30.0e-3, 33.8e-3};
+  static const double NU[] = {11.44e-6, 15.89e-6, 20.92e-6, 26.41e-6};
+  static const double PR[] = {0.720, 0.707, 0.700, 0.690};
+  double tk = T_C + 273.15;
+  if (tk < 250 || tk > 400) throw std::runtime_error("air properties: film temperature " + std::to_string(T_C) + " degC is outside 250-400 K");
+  int i = tk >= 350 ? 2 : tk >= 300 ? 1 : 0;
+  double w = (tk - T[i]) / (T[i + 1] - T[i]);
+  return {K[i] + w * (K[i + 1] - K[i]), NU[i] + w * (NU[i + 1] - NU[i]), PR[i] + w * (PR[i + 1] - PR[i])};
+}
+
+double plate_fin_channel_h(double velocity_m_s, double spacing_mm, double fin_thickness_mm, double length_mm, double film_T_C,
+                           nlohmann::json* info) {
+  if (spacing_mm <= 0 || length_mm <= 0 || fin_thickness_mm < 0) throw std::runtime_error("plate_fin_channel: spacing and length must be positive");
+  AirProperties a = air_properties(film_T_C);
+  double b = spacing_mm * 1e-3, L = length_mm * 1e-3;
+  double v_ch = velocity_m_s * (spacing_mm + fin_thickness_mm) / spacing_mm;  // continuity: the fins block part of the inlet
+  double re_b = v_ch * b / a.nu;
+  double re_star = re_b * b / L;  // channel Reynolds number scaled by the gap-to-length ratio
+  // Teertstra et al. (1999): fully developed limit Re* Pr / 2 blended with the developing (flat plate) limit
+  double fd = re_star * a.Pr / 2.0;
+  double dev = 0.664 * std::sqrt(re_star) * std::cbrt(a.Pr) * std::sqrt(1.0 + 3.65 / std::sqrt(re_star));
+  double nu_b = std::pow(std::pow(fd, -3.0) + std::pow(dev, -3.0), -1.0 / 3.0);
+  double h_si = nu_b * a.k / b;  // W/(m^2 K)
+  if (info)
+    *info = {{"model", "plate_fin_channel (Teertstra et al. 1999)"}, {"velocity_m_s", velocity_m_s}, {"channel_velocity_m_s", v_ch},
+             {"spacing_mm", spacing_mm}, {"fin_thickness_mm", fin_thickness_mm}, {"length_mm", length_mm}, {"film_temperature_C", film_T_C},
+             {"Re_b", re_b}, {"Re_star", re_star}, {"Nu_b", nu_b}, {"h_W_m2K", h_si},
+             {"laminar", re_b < 2300}, {"air", {{"k", a.k}, {"nu", a.nu}, {"Pr", a.Pr}, {"source", "Incropera Table A.4"}}}};
+  return h_si * 1e-6;  // W/(mm^2 K)
+}
+
+bool ThermalCase::has_correlation() const {
+  for (auto& f : films)
+    if (f.correlation) return true;
+  return false;
+}
+
+ThermalCase ThermalCase::resolved(const Values& params, nlohmann::json* info) const {
+  ThermalCase out = *this;
+  nlohmann::json all = nlohmann::json::object();
+  for (auto& f : out.films) {
+    if (!f.correlation) continue;
+    const FilmCorrelation& c = *f.correlation;
+    nlohmann::json one;
+    f.h = plate_fin_channel_h(c.velocity_m_s, evaluate(c.spacing_mm, params), evaluate(c.fin_thickness_mm, params),
+                              evaluate(c.length_mm, params), c.film_temperature, &one);
+    all[f.group] = one;
+  }
+  if (info) *info = all;
+  return out;
+}
+
 ThermalCase ThermalCase::from_json(const nlohmann::json& j) {
   ThermalCase tc;
   tc.name = j.value("name", std::string("thermal"));
   for (auto& x : j.value("temperatures", nlohmann::json::array())) tc.temperatures.push_back({x.at("group"), x.at("t")});
-  for (auto& x : j.value("films", nlohmann::json::array())) tc.films.push_back({x.at("group"), x.at("h"), x.value("sink", 0.0)});
+  for (auto& x : j.value("films", nlohmann::json::array())) {
+    Film f{x.at("group"), x.value("h", 0.0), x.value("sink", 0.0), nullptr};
+    if (x.contains("correlation")) {
+      if (x.contains("h")) throw std::runtime_error("film '" + f.group + "': give either h or a correlation, not both");
+      const auto& c = x.at("correlation");
+      auto fc = std::make_shared<FilmCorrelation>();
+      fc->model = c.value("model", std::string("plate_fin_channel"));
+      if (fc->model != "plate_fin_channel") throw std::runtime_error("film '" + f.group + "': unknown correlation model '" + fc->model + "'");
+      auto str = [&](const char* k) { return c.at(k).is_string() ? c.at(k).get<std::string>() : std::to_string(c.at(k).get<double>()); };
+      fc->velocity_m_s = c.at("velocity_m_s");
+      fc->spacing_mm = str("spacing_mm");
+      fc->fin_thickness_mm = str("fin_thickness_mm");
+      fc->length_mm = str("length_mm");
+      fc->film_temperature = c.value("film_temperature", f.sink + 20.0);
+      if (fc->velocity_m_s <= 0) throw std::runtime_error("film '" + f.group + "': velocity_m_s must be positive");
+      f.correlation = fc;
+    } else if (!x.contains("h")) {
+      throw std::runtime_error("film '" + f.group + "' needs h or a correlation");
+    }
+    tc.films.push_back(f);
+  }
   for (auto& x : j.value("fluxes", nlohmann::json::array())) tc.fluxes.push_back({x.at("group"), x.value("q", 0.0), x.value("power", 0.0)});
   if (tc.temperatures.empty() && tc.films.empty()) throw std::runtime_error("thermal case '" + tc.name + "' needs a fixed temperature or a film");
   return tc;

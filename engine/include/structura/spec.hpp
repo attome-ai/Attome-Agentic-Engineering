@@ -66,6 +66,7 @@ struct DesignSpec {
   std::string material = "PETG";
   bool apply_print_knockdown = true;
   std::array<double, 3> print_direction{0, 0, 1};
+  std::string process;  // "fdm" or "cnc": enables the cost quantity from data/processes.json (H1); empty = none
   std::vector<SpecLoadCase> load_cases;
   std::vector<ThermalCase> thermal_cases;  // steady heat transfer (C2); at least one structural or thermal case
   std::vector<Objective> objectives;

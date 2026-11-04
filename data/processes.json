@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "note": "Manufacturing rules and cost inputs (H1). Every rate and price is a stated input, not a quote: replace them with your own printer, shop and supplier numbers. Currency USD. Rules marked 'assumption' are typical values chosen for the demo.",
+  "currency": "USD",
+  "material_price_per_kg": {
+    "PETG": {
+      "value": 25,
+      "source": "assumption: typical retail PETG filament, 1 kg spools (20-30 USD)"
+    },
+    "PLA": {
+      "value": 20,
+      "source": "assumption: typical retail PLA filament, 1 kg spools (15-25 USD)"
+    },
+    "AL6061T6": {
+      "value": 8,
+      "source": "assumption: 6061-T6 plate or bar stock, small quantities (5-15 USD/kg)"
+    },
+    "S235": {
+      "value": 2,
+      "source": "assumption: structural steel plate, small quantities"
+    }
+  },
+  "fdm": {
+    "materials": {
+      "value": [
+        "PETG",
+        "PLA"
+      ],
+      "source": "FDM prints thermoplastics only"
+    },
+    "nozzle_mm": {
+      "value": 0.4,
+      "source": "most common desktop FDM nozzle"
+    },
+    "layer_mm": {
+      "value": 0.2,
+      "source": "common layer height for a 0.4 mm nozzle"
+    },
+    "min_wall_nozzles": {
+      "value": 2,
+      "source": "rule of thumb: a wall needs at least two extrusion widths"
+    },
+    "min_hole_mm": {
+      "value": 2.0,
+      "source": "assumption: smaller vertical holes close up and are drilled after printing"
+    },
+    "max_overhang_deg": {
+      "value": 45,
+      "source": "common support-free overhang limit, measured from vertical"
+    },
+    "build_volume_mm": {
+      "value": [
+        250,
+        210,
+        210
+      ],
+      "source": "assumption: typical desktop printer (e.g. 250 x 210 x 220 mm class)"
+    },
+    "volumetric_rate_mm3_s": {
+      "value": 5,
+      "source": "assumption: average deposition rate over a whole PETG print including travel and slower perimeters (hot ends peak at 10-20 mm^3/s)"
+    },
+    "support_fill": {
+      "value": 0.15,
+      "source": "assumption: support printed at about 15% density"
+    },
+    "machine_rate_per_h": {
+      "value": 1.5,
+      "source": "assumption: electricity, wear and depreciation of a desktop printer"
+    },
+    "setup_min": {
+      "value": 10,
+      "source": "assumption: slicing, bed preparation and part removal"
+    }
+  },
+  "cnc": {
+    "materials": {
+      "value": [
+        "AL6061T6",
+        "S235",
+        "PETG",
+        "PLA"
+      ],
+      "source": "3-axis milling of metals and plastics"
+    },
+    "approach_directions": {
+      "value": [
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          -1
+        ]
+      ],
+      "source": "assumption: 3-axis milling in two setups, from the top and flipped"
+    },
+    "tool_radius_mm": {
+      "value": 3,
+      "source": "assumption: 6 mm flat end mill for pockets and internal corners"
+    },
+    "max_depth_to_width": {
+      "value": 4,
+      "source": "rule of thumb: pocket depth up to about 4x the tool diameter"
+    },
+    "stock_margin_mm": {
+      "value": 2,
+      "source": "assumption: stock oversize per side"
+    },
+    "material_removal_rate_mm3_s": {
+      "value": 100,
+      "source": "assumption: average over roughing and finishing in aluminium on a small vertical mill"
+    },
+    "machine_rate_per_h": {
+      "value": 60,
+      "source": "assumption: small job-shop hourly rate (typically 40-120 USD/h)"
+    },
+    "setup_min": {
+      "value": 30,
+      "source": "assumption: per setup (fixturing, zeroing, first-article check)"
+    }
+  }
+}

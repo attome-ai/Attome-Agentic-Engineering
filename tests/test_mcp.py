@@ -10,7 +10,7 @@ from structura.agent import mcp_server as srv
 
 SPEC = Path(__file__).resolve().parents[1] / "docs" / "examples" / "bracket_20kg.json"
 TOOLS = {"build_report", "derive_load", "rank_questions", "propose_relaxation", "list_families", "describe_grammar", "plan_study", "create_study", "accept_spec", "check_feasibility",
-         "compose_design", "evaluate_design", "run_optimization", "get_job", "get_results", "steer", "explain", "verify"}
+         "compose_design", "evaluate_design", "run_optimization", "get_job", "get_results", "steer", "explain", "verify", "manufacturing_advice"}
 
 
 def test_tools_over_the_protocol():
@@ -115,3 +115,14 @@ def test_propose_relaxation_for_the_100kg_brief(tmp_path, monkeypatch):
     assert lo["id"] == "R1" and 0 < lo["load_fraction"] < 1  # the strongest design meets SF 2 at about a third of 100 kg
     assert not srv.S.accepted(sid)  # a proposal never inherits the old acceptance
     assert srv.run_optimization(sid, budget=4)["error"] == "approval"
+
+
+def test_manufacturing_advice(tmp_path, monkeypatch):
+    monkeypatch.setattr(srv.S, "STUDIES", tmp_path / "studies")
+    sid = "mfg-test"
+    srv.create_study(json.loads(SPEC.read_text()), study_id=sid)
+    r = srv.manufacturing_advice(sid, {"thickness": 11.773, "plate_width": 58.81, "rib_count": 2, "rib_thickness": 7.673, "fillet_radius": 2.778})
+    assert r["ok"] and r["recommended_process"] == "fdm"
+    assert r["fdm"]["cost"]["total"] > 0 and r["cnc"]["sharp_internal_corners"] > 0
+    al = srv.manufacturing_advice(sid, {"thickness": 8}, material="AL6061T6")
+    assert al["ok"] and "fdm" not in al and any(a["process"] == "fdm" and not a["fits"] for a in al["advice"])

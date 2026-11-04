@@ -69,6 +69,8 @@ DesignSpec DesignSpec::from_json(const nlohmann::json& j) {
   }
   s.apply_print_knockdown = j.value("apply_print_knockdown", true);
   if (j.contains("print_direction")) s.print_direction = j["print_direction"].get<std::array<double, 3>>();
+  s.process = j.value("process", std::string());
+  if (!s.process.empty() && s.process != "fdm" && s.process != "cnc") throw SpecError("process must be fdm or cnc, not '" + s.process + "'");
   const nlohmann::json tcs = j.value("thermal_cases", nlohmann::json::array());
   for (auto& tc : tcs) {
     ThermalCase t;
@@ -80,6 +82,20 @@ DesignSpec DesignSpec::from_json(const nlohmann::json& j) {
     auto named = [&](const std::string& grp) { return std::any_of(g.faces.begin(), g.faces.end(), [&](auto& f) { return f.first == grp; }); };
     for (auto& x : t.temperatures) if (!named(x.group)) throw SpecError("thermal group '" + x.group + "' is not a named face of family " + s.family);
     for (auto& x : t.films) if (!named(x.group)) throw SpecError("film group '" + x.group + "' is not a named face of family " + s.family);
+    for (auto& x : t.films) {
+      if (!x.correlation) continue;
+      for (const std::string* e : {&x.correlation->spacing_mm, &x.correlation->fin_thickness_mm, &x.correlation->length_mm}) {
+        std::set<std::string> names;
+        try {
+          names = names_in(*e);
+        } catch (const std::exception& ex) {
+          throw SpecError("film '" + x.group + "' correlation expression '" + *e + "': " + ex.what());
+        }
+        for (auto& n : names)
+          if (std::none_of(g.parameters.begin(), g.parameters.end(), [&](auto& p) { return p.first == n; }))
+            throw SpecError("film '" + x.group + "' correlation uses '" + n + "', which is not a parameter of family " + s.family);
+      }
+    }
     for (auto& x : t.fluxes) if (!named(x.group)) throw SpecError("flux group '" + x.group + "' is not a named face of family " + s.family);
     s.thermal_cases.push_back(t);
   }
@@ -120,6 +136,9 @@ DesignSpec DesignSpec::from_json(const nlohmann::json& j) {
   s.mesh_size = j.value("mesh", nlohmann::json::object()).value("size", 4.0);
   s.stress_exclude_near_bc_mm = j.value("stress_evaluation", nlohmann::json::object()).value("exclude_near_bc_mm", 3.0);
   if (s.stress_exclude_near_bc_mm < 0) throw SpecError("stress_evaluation.exclude_near_bc_mm must not be negative");
+  bool uses_cost = std::any_of(s.objectives.begin(), s.objectives.end(), [](auto& o) { return o.quantity == "cost"; }) ||
+                   std::any_of(s.requirements.begin(), s.requirements.end(), [](auto& r) { return r.quantity == "cost"; });
+  if (uses_cost && s.process.empty()) throw SpecError("the cost quantity needs a process (\"process\": \"fdm\" or \"cnc\")");
   return s;
 }
 

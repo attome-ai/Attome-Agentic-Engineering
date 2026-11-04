@@ -225,6 +225,23 @@ def evaluate_design(study_id: str, params: dict, mesh_size: float = 4.0) -> dict
     return _ok(**{k: r.get(k) for k in ("status", "metrics", "checks", "feasible", "governing_case", "hash", "gate")})
 
 
+@mcp.tool(description="Manufacturing check and cost for one design of the study's family: FDM printing (build volume, minimum wall, overhang, "
+                      "support volume per print direction, time, cost) and 3-axis CNC (undercuts, internal corners against the tool, stock, "
+                      "time, cost), with advice on which process fits and which rule is closest to its limit. Every rate and price comes "
+                      "from data/processes.json and is an assumption the user should replace with their own; say so when quoting a cost.")
+def manufacturing_advice(study_id: str, params: dict, material: str | None = None) -> dict:
+    spec = json.loads(S.latest_spec_path(study_id).read_text(encoding="utf-8"))
+    mat = material or spec.get("material", "PETG")
+    try:
+        r = engine.call("manufacture", family=spec["family"], set=[f"{k}={v}" for k, v in params.items()], material=mat,
+                        **{"print-dir": json.dumps(spec.get("print_direction", [0, 0, 1]))})
+    except engine.EngineError as e:
+        return _err(e.kind, str(e))
+    S.log(study_id, "manufacturing_advice", "done", params=params, material=mat, recommended=r.get("recommended_process"))
+    return _ok(material=mat, recommended_process=r.get("recommended_process"), advice=r.get("advice"),
+               **{p: {k: v for k, v in r[p].items() if k != "inputs"} for p in ("fdm", "cnc") if p in r})
+
+
 def _run_job(job_id: str, study_id: str, budget: int, method: str | None, mesh_size: float):
     job = _jobs[job_id]
 

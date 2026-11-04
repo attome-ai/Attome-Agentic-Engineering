@@ -31,6 +31,7 @@
 #include "structura/export.hpp"
 #include "structura/fea.hpp"
 #include "structura/gate.hpp"
+#include "structura/manufacture.hpp"
 #include "structura/mesh.hpp"
 #include "structura/meshability.hpp"
 #include "structura/occ.hpp"
@@ -382,6 +383,17 @@ int run(const Args& a) {
       std::ofstream(fs::path(dir) / "build.json") << out.dump(2);
       out["folder"] = fs::absolute(dir).string();
     }
+    std::cout << out.dump(2) << "\n";
+    return 0;
+  }
+  if (a.cmd == "manufacture") {  // H1: FDM and CNC rules, cost and process advice for one design
+    json P = load_processes(a.opt.count("processes") ? a.opt.at("processes") : "");
+    std::string mat = a.opt.count("material") ? a.opt.at("material") : "PETG";
+    std::array<double, 3> dir{0, 0, 1};
+    if (a.opt.count("print-dir")) dir = json::parse(a.opt.at("print-dir")).get<std::array<double, 3>>();
+    json out = manufacture_report(part.shape, mat, dir, P);
+    out["hash"] = d.hash();
+    out["params"] = d.params;
     std::cout << out.dump(2) << "\n";
     return 0;
   }

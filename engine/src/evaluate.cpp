@@ -1,4 +1,5 @@
 #include "structura/evaluate.hpp"
+#include "structura/manufacture.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -147,7 +148,9 @@ nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params
     }
     for (auto& tc : spec.thermal_cases) {  // steady heat transfer on the same mesh (C2)
       std::string dir = (fs::path(work) / ("thermal_" + tc.name)).string();
-      ThermalResult tr = solve_thermal(m, eff, tc, dir, so);
+      nlohmann::json films_info;
+      ThermalCase tcr = tc.resolved(d.params, &films_info);  // correlation films get this design's h
+      ThermalResult tr = solve_thermal(m, eff, tcr, dir, so);
       if (o.save_bundle) {
         fs::create_directories(fs::path(work) / ("result_" + tc.name));
         write_skin_scalar(m, tr.temperature, "temperature", "degC", (fs::path(work) / ("result_" + tc.name) / "skin.json").string());
@@ -156,10 +159,22 @@ nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params
       mt.by_case[tc.name] = {{"peak_temperature", tr.t_max}, {"mass_g", mass_g}};
       cases[tc.name] = tr.summary();
       cases[tc.name]["mass_g"] = mass_g;
+      if (!films_info.empty()) cases[tc.name]["films"] = films_info;
     }
   } catch (const std::exception& e) {
     out["error"] = e.what();
     return finish("solve_fail");
+  }
+  if (!spec.process.empty()) {  // manufacturing cost (H1): the same for every case, so it is added to each
+    try {
+      nlohmann::json detail;
+      double c = process_cost(rg.shape, spec.material, spec.print_direction, load_processes(), spec.process, &detail);
+      for (auto& [cname, met] : mt.by_case) met["cost"] = c;
+      out["manufacturing"] = detail;
+    } catch (const std::exception& e) {
+      out["error"] = std::string("cost model: ") + e.what();
+      return finish("solve_fail");
+    }
   }
   for (auto& [cname, met] : mt.by_case)
     for (auto& [q, v] : met) {

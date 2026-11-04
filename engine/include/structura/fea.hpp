@@ -3,12 +3,14 @@
 #pragma once
 #include <array>
 #include <map>
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
 
 #include <nlohmann/json.hpp>
 
+#include "structura/expr.hpp"
 #include "structura/mesh.hpp"
 
 namespace structura {
@@ -101,10 +103,28 @@ struct FixedTemperature {
   std::string group;
   double t = 0;
 };
+// Convection coefficient from a correlation instead of a fixed number (C2). Geometry inputs are expressions over the
+// design parameters (mm), resolved per design by resolve_films(). Model "plate_fin_channel": laminar forced flow between
+// parallel fins, Teertstra, Yovanovich, Culham and Lemczyk (1999) composite model, with air properties at the film
+// temperature (Incropera Table A.4).
+struct FilmCorrelation {
+  std::string model = "plate_fin_channel";
+  double velocity_m_s = 0;          // approach velocity of the air
+  std::string spacing_mm, fin_thickness_mm, length_mm;  // channel gap between fins, fin thickness, flow length
+  double film_temperature = -1e9;   // degC for the air properties; default sink + 20
+};
 struct Film {
   std::string group;
-  double h = 0, sink = 0;
+  double h = 0, sink = 0;           // h in W/(mm^2 K)
+  std::shared_ptr<FilmCorrelation> correlation;  // when set, h is computed per design
 };
+struct AirProperties {
+  double k, nu, Pr;  // W/(m K), m^2/s, 1
+};
+AirProperties air_properties(double T_C);  // dry air at 1 atm, linear in Incropera Table A.4 between 250 and 400 K
+// h in W/(mm^2 K) for one design; `info` (optional) receives Re, Nu, h in W/(m^2 K) and the inputs.
+double plate_fin_channel_h(double velocity_m_s, double spacing_mm, double fin_thickness_mm, double length_mm, double film_T_C,
+                           nlohmann::json* info = nullptr);
 struct Flux {
   std::string group;
   double q = 0;      // W/mm^2 into the part; if power > 0 it is converted using the face area
@@ -116,6 +136,9 @@ struct ThermalCase {
   std::vector<Film> films;
   std::vector<Flux> fluxes;
   static ThermalCase from_json(const nlohmann::json& j);
+  // Copy with every correlation film's h computed for these design parameters; `info` receives one entry per such film.
+  ThermalCase resolved(const Values& params, nlohmann::json* info = nullptr) const;
+  bool has_correlation() const;
 };
 struct ThermalResult {
   std::map<int, double> temperature;  // node -> temperature

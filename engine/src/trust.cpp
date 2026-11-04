@@ -178,8 +178,12 @@ nlohmann::json build_trust(const DesignSpec& spec, const Values& free, const Tru
   if (!spec.load_cases.empty())
     as.push_back("Linear elastic, isotropic material and small deflections (no yielding, buckling or contact is modelled in this result).");
   for (auto& tc : spec.thermal_cases)
-    as.push_back("Thermal case '" + tc.name + "': steady conduction in the part with a fixed convection coefficient on the exposed faces "
-                 "(no airflow is simulated); constant conductivity.");
+    as.push_back(tc.has_correlation()
+                     ? "Thermal case '" + tc.name + "': steady conduction in the part; convection from the plate-fin channel correlation of "
+                       "Teertstra et al. (1999) for laminar forced air at the stated velocity, one coefficient per face group, computed "
+                       "from this design's fin spacing (no airflow is simulated; flow bypass around the fins is ignored); constant conductivity."
+                     : "Thermal case '" + tc.name + "': steady conduction in the part with a fixed convection coefficient on the exposed faces "
+                       "(no airflow is simulated); constant conductivity.");
   as.push_back("Material: " + fine["material"].value("name", std::string("?")) + "; source: " + fine["material"].value("source", std::string("?")) +
                (fine["material"].value("verify", true) ? " (values to be confirmed against the datasheet)" : ""));
   for (auto& slc : spec.load_cases) {

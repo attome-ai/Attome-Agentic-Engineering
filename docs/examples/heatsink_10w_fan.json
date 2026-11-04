@@ -1,0 +1,124 @@
+{
+  "id": "heatsink-10w-fan",
+  "version": 1,
+  "brief": "A heat sink that keeps a 10 W module below 75 C in 35 C air with a small fan blowing along the fins, as light as possible, machined from aluminium.",
+  "family": "heatsink",
+  "free_params": {
+    "base_thickness": [
+      2,
+      8
+    ],
+    "fin_count": [
+      4,
+      16
+    ],
+    "fin_thickness": [
+      1.2,
+      3
+    ],
+    "fin_height": [
+      10,
+      40
+    ]
+  },
+  "material": "AL6061T6",
+  "apply_print_knockdown": false,
+  "thermal_cases": [
+    {
+      "name": "steady",
+      "source": "brief: 10 W module, 35 C air, small fan along the fins; assumed 1.5 m/s approach velocity (typical of a 40 mm axial fan at a short distance, to be confirmed against the fan datasheet); h from the plate-fin channel correlation of Teertstra et al. (1999), recomputed for every design from its fin spacing",
+      "fluxes": [
+        {
+          "group": "base_bottom",
+          "power": 10.0
+        }
+      ],
+      "films": [
+        {
+          "group": "exposed_top",
+          "sink": 35.0,
+          "correlation": {
+            "model": "plate_fin_channel",
+            "velocity_m_s": 1.5,
+            "spacing_mm": "(60 - fin_thickness) / (fin_count - 1) - fin_thickness",
+            "fin_thickness_mm": "fin_thickness",
+            "length_mm": 60
+          }
+        },
+        {
+          "group": "exposed_px",
+          "sink": 35.0,
+          "correlation": {
+            "model": "plate_fin_channel",
+            "velocity_m_s": 1.5,
+            "spacing_mm": "(60 - fin_thickness) / (fin_count - 1) - fin_thickness",
+            "fin_thickness_mm": "fin_thickness",
+            "length_mm": 60
+          }
+        },
+        {
+          "group": "exposed_nx",
+          "sink": 35.0,
+          "correlation": {
+            "model": "plate_fin_channel",
+            "velocity_m_s": 1.5,
+            "spacing_mm": "(60 - fin_thickness) / (fin_count - 1) - fin_thickness",
+            "fin_thickness_mm": "fin_thickness",
+            "length_mm": 60
+          }
+        },
+        {
+          "group": "exposed_py",
+          "sink": 35.0,
+          "correlation": {
+            "model": "plate_fin_channel",
+            "velocity_m_s": 1.5,
+            "spacing_mm": "(60 - fin_thickness) / (fin_count - 1) - fin_thickness",
+            "fin_thickness_mm": "fin_thickness",
+            "length_mm": 60
+          }
+        },
+        {
+          "group": "exposed_ny",
+          "sink": 35.0,
+          "correlation": {
+            "model": "plate_fin_channel",
+            "velocity_m_s": 1.5,
+            "spacing_mm": "(60 - fin_thickness) / (fin_count - 1) - fin_thickness",
+            "fin_thickness_mm": "fin_thickness",
+            "length_mm": 60
+          }
+        }
+      ]
+    }
+  ],
+  "objectives": [
+    {
+      "quantity": "mass_g",
+      "sense": "min"
+    },
+    {
+      "quantity": "peak_temperature",
+      "sense": "min"
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R1",
+      "quantity": "peak_temperature",
+      "op": "<=",
+      "value": 75.0,
+      "source": "brief: keep the module below 75 C"
+    },
+    {
+      "id": "R2",
+      "quantity": "mass_g",
+      "op": "<=",
+      "value": 200.0,
+      "source": "default: mass cap; 'as light as possible' is the objective"
+    }
+  ],
+  "mesh": {
+    "size": 2.5
+  }
+}
