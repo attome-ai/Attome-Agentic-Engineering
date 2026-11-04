@@ -65,6 +65,7 @@ footer{color:var(--muted);font-size:.8rem;margin-top:20px}
         </div>
         <label>Deformation × <input type="range" id="scale" min="0" max="1" step="0.01" value="0"> <span id="scaleval">0</span></label>
         <label><input type="checkbox" id="ghost" checked> undeformed ghost</label>
+        <label><input type="checkbox" id="marks" checked> loads &amp; supports</label>
         <div class="seg" id="whichseg" role="group" aria-label="Design"><button data-w="sel" aria-pressed="true">Selected</button><button data-w="base" aria-pressed="false">Baseline</button></div>
       </div>
       <div id="viewer"><canvas id="cv"></canvas><div id="probe">hover the part to read values</div><div id="legend"></div><div id="viewname"></div></div>
@@ -157,7 +158,34 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 5000);
 scene.add(new THREE.AmbientLight(0xffffff, 0.75));
 const sun = new THREE.DirectionalLight(0xffffff, 0.55); sun.position.set(1, -1.5, 2); scene.add(sun);
-let mesh = null, ghost = null, current = null, field = "vm", which = "sel";
+let mesh = null, ghost = null, marks = null, current = null, field = "vm", which = "sel";
+// loads (arrows along the force), supports (boxes over the held faces) and heat inputs, from the engine's skin markers
+function drawMarkers(skin, size){
+  if (marks) {scene.remove(marks); marks.traverse(o => {if (o.geometry) o.geometry.dispose()})}
+  marks = new THREE.Group(); marks.visible = $("#marks").checked;
+  const centre = mesh.geometry.boundingSphere.center, L = 0.35*size;
+  for (const m of skin.markers || []) {
+    const at = new THREE.Vector3(...m.at), b = m.bbox;
+    if (m.kind === "load" || m.kind === "heat") {
+      let dir;
+      if (m.kind === "load" && m.force && Math.hypot(...m.force) > 0) dir = new THREE.Vector3(...m.force).normalize();
+      else {const ext = [b[3]-b[0], b[4]-b[1], b[5]-b[2]], ax = ext.indexOf(Math.min(...ext)); dir = new THREE.Vector3(); dir.setComponent(ax, Math.sign(centre.getComponent(ax) - at.getComponent(ax)) || 1)}
+      const col = m.kind === "load" ? 0xd9480f : 0xc2255c;
+      marks.add(new THREE.ArrowHelper(dir, at.clone().addScaledVector(dir, -L), L, col, 0.28*L, 0.14*L));
+    } else {
+      const pad = 0.6, gx = Math.max(b[3]-b[0], 0) + 2*pad, gy = Math.max(b[4]-b[1], 0) + 2*pad, gz = Math.max(b[5]-b[2], 0) + 2*pad;
+      const fixed = (m.dofs || "123") === "123";
+      const bx = new THREE.Mesh(new THREE.BoxGeometry(gx, gy, gz), new THREE.MeshBasicMaterial({color: fixed ? 0x1c7ed6 : 0x74c0fc, transparent: true, opacity: fixed ? 0.35 : 0.22, depthWrite: false}));
+      bx.position.set((b[0]+b[3])/2, (b[1]+b[4])/2, (b[2]+b[5])/2); marks.add(bx);
+      const ed = new THREE.LineSegments(new THREE.EdgesGeometry(bx.geometry), new THREE.LineBasicMaterial({color: fixed ? 0x1864ab : 0x339af0}));
+      ed.position.copy(bx.position); marks.add(ed);
+    }
+  }
+  scene.add(marks);
+  const kinds = new Set((skin.markers || []).map(m => m.kind));
+  $("#marks").parentElement.style.display = kinds.size ? "" : "none";
+  return [...kinds];
+}
 let target = new THREE.Vector3(), radius = 300, theta = -0.9, phi = 1.05;
 function resize(){const w = box.clientWidth, h = box.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); draw()}
 function placeCamera(){camera.position.set(target.x + radius*Math.sin(phi)*Math.cos(theta), target.y + radius*Math.sin(phi)*Math.sin(theta), target.z + radius*Math.cos(phi));
@@ -197,8 +225,10 @@ function show(design, label){
   g.computeBoundingSphere(); target.copy(g.boundingSphere.center); radius = g.boundingSphere.radius * 3.2;
   const umax = Math.max(1e-9, design.skin.max_disp_mm), size = g.boundingSphere.radius;
   $("#scale").max = (0.15*size/umax).toFixed(2);
+  const kinds = drawMarkers(design.skin, size);
   const thermal = !!design.skin.scalar;
   $("#viewnote").textContent = thermal ? "Drag to rotate, wheel to zoom, shift-drag to pan. Colour: temperature on the surface of the part (hover to read it)." : "Drag to rotate, wheel to zoom, shift-drag to pan. Safety view: green above the required safety factor, amber within 10% of it, red below (local yield / von Mises).";
+  if (kinds.length) $("#viewnote").textContent += (thermal ? " Arrow: heat input." : " Orange arrow: applied load. Blue: supports (dark fully held, light held in one direction).");
   $("#fieldseg").style.display = thermal ? "none" : ""; $("#scale").parentElement.style.display = thermal ? "none" : ""; $("#ghost").parentElement.style.display = thermal ? "none" : "";
   colorize(); deform(); resize();
 }
@@ -247,7 +277,8 @@ $("#fieldseg").addEventListener("click", e => {const b = e.target.closest("butto
 $("#whichseg").addEventListener("click", e => {const b = e.target.closest("button"); if (!b) return; which = b.dataset.w;
   $("#whichseg").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
   if (which === "base" && D.baseline) show(D.baseline, "Baseline (hand design)"); else show(selected, label(selected))});
-$("#scale").addEventListener("input", deform); $("#ghost").addEventListener("change", deform);
+$("#scale").addEventListener("input", deform); $("#marks").addEventListener("change", e => {if (marks) {marks.visible = e.target.checked; draw()}});
+$("#ghost").addEventListener("change", deform);
 
 // ---------------------------------------------------------------- Pareto explorer
 let selected = rec;

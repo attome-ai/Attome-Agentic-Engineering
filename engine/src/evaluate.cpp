@@ -59,6 +59,33 @@ LoadCase scaled(const SpecLoadCase& s) {
   return lc;
 }
 
+
+// Where loads, supports and heat inputs act, for the viewer's markers (G1): centroid and bounding box of each group's
+// mesh nodes, with the force vector or the fixed directions; appended to the skin file.
+void add_markers(const std::string& skin_path, const Mesh& m, const nlohmann::json& items) {
+  std::ifstream in(skin_path);
+  if (!in) return;
+  nlohmann::json skin = nlohmann::json::parse(in);
+  in.close();
+  nlohmann::json out = nlohmann::json::array();
+  for (auto& it : items) {
+    auto ns = m.nsets.find(it["group"].get<std::string>());
+    if (ns == m.nsets.end() || ns->second.empty()) continue;
+    double c[3] = {0, 0, 0}, lo[3] = {1e300, 1e300, 1e300}, hi[3] = {-1e300, -1e300, -1e300};
+    for (int n : ns->second) {
+      auto& x = m.nodes.at(n);
+      for (int i = 0; i < 3; ++i) { c[i] += x[i]; lo[i] = std::min(lo[i], x[i]); hi[i] = std::max(hi[i], x[i]); }
+    }
+    double k = static_cast<double>(ns->second.size());
+    nlohmann::json mk = it;
+    mk["at"] = {c[0] / k, c[1] / k, c[2] / k};
+    mk["bbox"] = {lo[0], lo[1], lo[2], hi[0], hi[1], hi[2]};
+    out.push_back(mk);
+  }
+  skin["markers"] = out;
+  std::ofstream(skin_path) << skin.dump();
+}
+
 }  // namespace
 
 nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params, const EvalOptions& o) {
@@ -145,6 +172,10 @@ nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params
         r.save((fs::path(work) / ("result_" + lc.name)).string());
         write_vtu(m, r, (fs::path(work) / ("result_" + lc.name) / "result.vtu").string());
         write_skin(m, r, (fs::path(work) / ("result_" + lc.name) / "skin.json").string(), eff.yield);
+        nlohmann::json items = nlohmann::json::array();
+        for (auto& l : lc.loads) items.push_back({{"kind", "load"}, {"group", l.group}, {"force", l.force}, {"pressure", l.pressure}});
+        for (auto& sp : lc.supports) items.push_back({{"kind", "support"}, {"group", sp.group}, {"dofs", sp.dofs}});
+        add_markers((fs::path(work) / ("result_" + lc.name) / "skin.json").string(), m, items);
       }
     }
     for (auto& tc : spec.thermal_cases) {  // steady heat transfer on the same mesh (C2)
@@ -155,6 +186,9 @@ nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params
       if (o.save_bundle) {
         fs::create_directories(fs::path(work) / ("result_" + tc.name));
         write_skin_scalar(m, tr.temperature, "temperature", "degC", (fs::path(work) / ("result_" + tc.name) / "skin.json").string());
+        nlohmann::json items = nlohmann::json::array();
+        for (auto& f : tcr.fluxes) items.push_back({{"kind", "heat"}, {"group", f.group}, {"power", f.power}});
+        add_markers((fs::path(work) / ("result_" + tc.name) / "skin.json").string(), m, items);
       }
       double mass_g = volume(rg.shape) * eff.density * 1e6;
       mt.by_case[tc.name] = {{"peak_temperature", tr.t_max}, {"mass_g", mass_g}};
