@@ -12,6 +12,8 @@
 //   structura spec        --spec FILE                         validated spec summary
 //   structura evaluate    --spec FILE --set k=v ... [--out DIR] [--bundle 1] [--mesh-size MM]
 //   structura feasibility --spec FILE [--mesh-size MM]       can any design in the bounds meet the requirements?
+//   structura trust       --spec FILE --set k=v ... [--out DIR] [--fine-size MM]   trust record with error bars and grade
+//   structura reproduce   --dir DIR                           re-run a trust bundle and compare
 //   structura sweep  (--family NAME | --graph FILE) [--n 200] [--seed 1] [--out FILE]   random designs through the gate
 #include <chrono>
 #include <cmath>
@@ -33,6 +35,7 @@
 #include "structura/meshability.hpp"
 #include "structura/occ.hpp"
 #include "structura/repair.hpp"
+#include "structura/trust.hpp"
 #include "structura/validation.hpp"
 
 namespace fs = std::filesystem;
@@ -141,6 +144,21 @@ int run(const Args& a) {
     std::cout << out.dump(2) << "\n";
     return passed == rows.size() ? 0 : 1;
   }
+  if (a.cmd == "reproduce") {
+    json r = reproduce(a.opt.at("dir"));
+    std::cout << r.dump(2) << "\n";
+    return r["match"].get<bool>() ? 0 : 1;
+  }
+  if (a.cmd == "trust") {
+    DesignSpec spec = DesignSpec::load(a.opt.at("spec"));
+    TrustOptions to;
+    to.spec_path = fs::absolute(a.opt.at("spec")).string();
+    if (a.opt.count("fine-size")) to.fine_size = std::stod(a.opt.at("fine-size"));
+    if (a.opt.count("out")) to.workdir = a.opt.at("out");
+    if (a.opt.count("threads")) to.threads = std::stoi(a.opt.at("threads"));
+    std::cout << build_trust(spec, params_from(a), to).dump(2) << "\n";
+    return 0;
+  }
   if (a.cmd == "evaluate" || a.cmd == "feasibility" || a.cmd == "spec") {  // DesignSpec commands
     DesignSpec spec = DesignSpec::load(a.opt.at("spec"));
     EvalOptions o;
@@ -149,6 +167,7 @@ int run(const Args& a) {
     if (a.opt.count("out")) o.workdir = a.opt.at("out");
     o.save_bundle = a.opt.count("bundle") && a.opt.at("bundle") == "1";
     o.keep_files = a.opt.count("keep") && a.opt.at("keep") == "1";
+    o.screen = a.opt.count("screen") && a.opt.at("screen") == "1";
     json out;
     if (a.cmd == "spec") {
       json fp = json::object();

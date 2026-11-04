@@ -191,7 +191,7 @@ std::string write_deck(const Mesh& m, const Material& mat, const LoadCase& lc, s
   size_t pi = 0;
   for (auto& l : lc.loads)
     if (l.kind == "pressure") d << "*DSLOAD\n" << pressure_faces[pi++].first << ",P," << num(l.pressure) << "\n";
-  d << "*NODE FILE\nU\n*EL FILE\nS\n*NODE PRINT,NSET=SUPPORTS,TOTALS=ONLY\nRF\n*END STEP\n";
+  d << "*NODE FILE\nU\n*EL FILE\nS\n*NODE PRINT,NSET=SUPPORTS,TOTALS=ONLY\nRF\n*EL PRINT,ELSET=EALL,TOTALS=ONLY\nELSE\n*END STEP\n";
   if (applied) *applied = forces;
   return d.str();
 }
@@ -294,6 +294,19 @@ Result solve_static(const Mesh& m, const Material& mat, const LoadCase& lc, cons
   double fa = std::sqrt(r.applied_N[0] * r.applied_N[0] + r.applied_N[1] * r.applied_N[1] + r.applied_N[2] * r.applied_N[2]);
   double s0 = r.applied_N[0] + r.reaction_N[0], s1 = r.applied_N[1] + r.reaction_N[1], s2 = r.applied_N[2] + r.reaction_N[2];
   r.equilibrium_error = fa > 0 ? std::sqrt(s0 * s0 + s1 * s1 + s2 * s2) / fa : 0;
+  // energy check (Clapeyron): strain energy = half the work of the applied nodal forces (force loads only)
+  std::smatch em;
+  if (std::regex_search(dat, em, std::regex("total internal energy for set EALL[^\\n]*\\n\\s*\\n?\\s*([-+0-9.Ee]+)")))
+    r.strain_energy = std::stod(em[1]);
+  bool only_forces = std::all_of(lc.loads.begin(), lc.loads.end(), [](const Load& l) { return l.kind == "force"; });
+  if (only_forces) {
+    double w = 0;
+    for (auto& [n, f] : applied) {
+      auto it = r.disp.find(n);
+      if (it != r.disp.end()) w += f[0] * it->second[0] + f[1] * it->second[1] + f[2] * it->second[2];
+    }
+    r.external_work = 0.5 * w;
+  }
   for (auto& t : m.tets) r.volume_mm3 += tet_volume(m, t);
   r.mass_t = r.volume_mm3 * mat.density;
   r.mesh_report = m.report;
@@ -303,7 +316,8 @@ Result solve_static(const Mesh& m, const Material& mat, const LoadCase& lc, cons
 nlohmann::json Result::summary() const {
   return {{"mass_t", mass_t}, {"mass_g", mass_t * 1e6}, {"volume_mm3", volume_mm3}, {"max_von_mises_MPa", max_von_mises_MPa},
           {"max_disp_mm", max_disp_mm}, {"applied_N", applied_N}, {"reaction_N", reaction_N},
-          {"equilibrium_error", equilibrium_error}, {"solver", solver}, {"solver_version", solver_version},
+          {"equilibrium_error", equilibrium_error}, {"strain_energy_Nmm", strain_energy}, {"external_work_Nmm", external_work},
+          {"solver", solver}, {"solver_version", solver_version},
           {"load_case", load_case}, {"runtime_s", runtime_s}, {"nodes", disp.size()},
           {"units", {{"length", "mm"}, {"force", "N"}, {"stress", "MPa"}, {"mass", "tonne"}, {"time", "s"}}}};
 }

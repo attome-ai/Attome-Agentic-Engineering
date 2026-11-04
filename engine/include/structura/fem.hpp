@@ -15,6 +15,8 @@ namespace structura {
 struct FemResult {
   std::map<int, std::array<double, 3>> disp;  // node -> mm
   double max_disp_mm = 0;
+  std::map<int, double> von_mises;  // node -> MPa, averaged over the elements sharing the node
+  double max_von_mises_MPa = 0;
   size_t dof = 0, free_dof = 0;
   double assemble_s = 0, solve_s = 0;
 };

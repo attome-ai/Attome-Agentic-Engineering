@@ -39,6 +39,7 @@ add_library(structura STATIC
   src/spec.cpp
   src/evaluate.cpp
   src/trace.cpp
+  src/trust.cpp
 )
 set_target_properties(structura PROPERTIES OUTPUT_NAME structura_core)
 target_include_directories(structura PUBLIC include ${OpenCASCADE_INCLUDE_DIR})
@@ -66,6 +67,8 @@ add_executable(engine_tests
   tests/test_meshability.cpp
   tests/test_spec.cpp
   tests/test_trace.cpp
+  tests/test_trust.cpp
+  tests/test_screen.cpp
 )
 target_link_libraries(engine_tests PRIVATE structura doctest::doctest)
 

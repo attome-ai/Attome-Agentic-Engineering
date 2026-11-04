@@ -19,6 +19,7 @@ struct EvalOptions {
   std::string workdir;    // where meshes and solver files go
   bool keep_files = false;
   bool save_bundle = false;  // write design, STEP/STL, results and VTU to workdir
+  bool screen = false;       // in-process in-house solver instead of CalculiX: for screening only, never reported as final
 };
 
 nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params, const EvalOptions& o);

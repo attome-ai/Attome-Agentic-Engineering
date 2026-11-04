@@ -10,6 +10,7 @@
 #include "structura/compile.hpp"
 #include "structura/design.hpp"
 #include "structura/export.hpp"
+#include "structura/fem.hpp"
 #include "structura/occ.hpp"
 #include "structura/process.hpp"
 #include "structura/repair.hpp"
@@ -121,6 +122,16 @@ nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params
   try {
     for (auto& slc : spec.load_cases) {
       LoadCase lc = scaled(slc);
+      if (o.screen) {  // in-house solver, in process
+        FemResult fr = fem_static(m, eff, lc);
+        double mass_g = volume(rg.shape) * eff.density * 1e6;
+        std::map<std::string, double> met = {{"mass_g", mass_g}, {"max_von_mises_MPa", fr.max_von_mises_MPa}, {"max_disp_mm", fr.max_disp_mm},
+                                             {"safety_factor", fr.max_von_mises_MPa > 0 ? eff.yield / fr.max_von_mises_MPa : 1e9}};
+        mt.by_case[lc.name] = met;
+        cases[lc.name] = {{"solver", "in-house screening (Eigen)"}, {"max_von_mises_MPa", fr.max_von_mises_MPa}, {"max_disp_mm", fr.max_disp_mm},
+                          {"mass_g", mass_g}, {"dof", fr.dof}, {"runtime_s", fr.assemble_s + fr.solve_s}, {"factor", slc.factor_range[1]}};
+        continue;
+      }
       std::string dir = (fs::path(work) / ("solve_" + lc.name)).string();
       Result r = solve_static(m, eff, lc, dir, so);
       auto met = structural_metrics(r, eff);
@@ -153,6 +164,7 @@ nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params
     feasible = feasible && c.passed;
   }
   out["load_cases"] = cases;
+  out["screening"] = o.screen;
   out["metrics"] = mt.overall;
   out["governing_case"] = mt.governing_case;
   out["checks"] = jc;

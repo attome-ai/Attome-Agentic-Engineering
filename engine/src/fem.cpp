@@ -151,6 +151,54 @@ FemResult fem_static(const Mesh& m, const Material& mat, const LoadCase& lc) {
     out.disp[ids[i]] = d;
     out.max_disp_mm = std::max(out.max_disp_mm, std::sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]));
   }
+  // stress recovery: sigma = D B u at every element node, averaged over the elements sharing the node
+  const double nat[10][4] = {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}, {.5, .5, 0, 0},
+                             {0, .5, .5, 0}, {.5, 0, .5, 0}, {.5, 0, 0, .5}, {0, .5, 0, .5}, {0, 0, .5, .5}};
+  std::unordered_map<int, std::pair<double, int>> acc;
+  for (auto& t : m.tets) {
+    Eigen::Matrix<double, 10, 3> X;
+    Eigen::Matrix<double, 30, 1> ue;
+    for (int i = 0; i < 10; ++i) {
+      auto& c = m.nodes.at(t[1 + i]);
+      auto& d = out.disp.at(t[1 + i]);
+      for (int k = 0; k < 3; ++k) {
+        X(i, k) = c[k];
+        ue(3 * i + k) = d[k];
+      }
+    }
+    for (int a = 0; a < 10; ++a) {
+      double g[10][4];
+      dN_dL(nat[a], g);
+      Eigen::Matrix<double, 10, 3> dNdxi;
+      for (int i = 0; i < 10; ++i) {
+        dNdxi(i, 0) = g[i][1] - g[i][0];
+        dNdxi(i, 1) = g[i][2] - g[i][0];
+        dNdxi(i, 2) = g[i][3] - g[i][0];
+      }
+      Eigen::Matrix3d J = dNdxi.transpose() * X;
+      if (J.determinant() <= 0) continue;
+      Eigen::Matrix<double, 10, 3> dNdx = (J.inverse() * dNdxi.transpose()).transpose();
+      B.setZero();
+      for (int i = 0; i < 10; ++i) {
+        double nx = dNdx(i, 0), ny = dNdx(i, 1), nz = dNdx(i, 2);
+        B(0, 3 * i) = nx; B(1, 3 * i + 1) = ny; B(2, 3 * i + 2) = nz;
+        B(3, 3 * i) = ny; B(3, 3 * i + 1) = nx;
+        B(4, 3 * i + 1) = nz; B(4, 3 * i + 2) = ny;
+        B(5, 3 * i) = nz; B(5, 3 * i + 2) = nx;
+      }
+      Eigen::Matrix<double, 6, 1> s = D * B * ue;  // xx yy zz xy yz zx
+      double vm = std::sqrt(0.5 * ((s(0) - s(1)) * (s(0) - s(1)) + (s(1) - s(2)) * (s(1) - s(2)) + (s(2) - s(0)) * (s(2) - s(0))) +
+                            3 * (s(3) * s(3) + s(4) * s(4) + s(5) * s(5)));
+      auto& slot = acc[t[1 + a]];
+      slot.first += vm;
+      slot.second += 1;
+    }
+  }
+  for (auto& [n, v] : acc) {
+    double vm = v.first / v.second;
+    out.von_mises[n] = vm;
+    out.max_von_mises_MPa = std::max(out.max_von_mises_MPa, vm);
+  }
   out.assemble_s = std::chrono::duration<double>(t1 - t0).count();
   out.solve_s = std::chrono::duration<double>(t2 - t1).count();
   return out;

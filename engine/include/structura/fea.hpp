@@ -52,6 +52,8 @@ struct Result {
   std::array<double, 3> applied_N{0, 0, 0};
   std::array<double, 3> reaction_N{0, 0, 0};
   double equilibrium_error = 0;    // |applied + reaction| / |applied|
+  double strain_energy = -1;       // N mm, total internal energy reported by CalculiX (-1 = not available)
+  double external_work = -1;       // N mm, half the work of the applied nodal forces (-1 = not available)
   std::map<int, std::array<double, 3>> disp;  // node -> (ux, uy, uz) mm
   std::map<int, double> von_mises;            // node -> MPa (nodal, extrapolated)
   std::map<int, std::array<double, 6>> stress;  // node -> sxx syy szz sxy syz szx (MPa); not saved to fields.bin
