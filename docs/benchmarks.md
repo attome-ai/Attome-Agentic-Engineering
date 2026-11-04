@@ -112,3 +112,20 @@ Screening path (in-house solver, same coarse mesh, `--screen 1`): max displaceme
 Mises 51.921 vs 51.922 MPa. It is not faster at this size (1.52 s against 1.37 s for CalculiX with mesh I/O): Eigen's
 single-threaded LDLT costs about what CalculiX's multithreaded SPOOLES does. Its value today is the in-process cross-check;
 speed-up would need an iterative solver with factorization reuse.
+
+## Optimizer comparison (task D1-T3)
+
+Bracket, 20 kg spec, coarse mesh 6 mm (about 1 s per evaluation), hypervolume of the feasible front with reference
+point (400 g, safety factor 0). Equal solver calls, from `benchmarks/optimizer_at_budget.py --calls 40`:
+
+| Method | Seeds | Hypervolume at 40 calls | Wall clock to 40 calls |
+|---|---|---|---|
+| Random search | 3 | 566 | 18 s |
+| NSGA-II (constrained) | 3 | 573 | 15 s |
+| Optuna default sampler | 3 | 561 | 13 s |
+| BoTorch qNEHVI (Ax) | 1 | **733** | 1,735 s |
+
+At 120 calls the GA methods reached 594-693. BoTorch finds better designs per solver call but its model fitting costs
+about 43 s per trial against 1 s per evaluation, so the portfolio now chooses by measured evaluation cost (decision
+D5). The full 120-call run was stopped after the first BoTorch seed; partial results are in
+`benchmarks/optimizer_compare.json`.

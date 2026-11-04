@@ -54,3 +54,18 @@ estimate with 30 solved designs" no longer applies because nothing is estimated.
 **First result.** The 100 kg PETG bracket brief is infeasible within the family bounds: the strongest design
 (12 mm, 80 mm wide, 3 ribs, 354 g) reaches a safety factor of 0.89 against the required 2.0 with the printed-part
 knock-down applied. The demo therefore uses the 20 kg brief (`docs/examples/bracket_20kg.json`).
+
+## D5. The optimizer is chosen by measured evaluation cost, not by budget alone (2026-11-04)
+
+**Evidence.** Bracket, 20 kg spec, coarse mesh (about 1 s per evaluation), equal solver calls
+(`benchmarks/optimizer_compare_at40.json`): mean hypervolume at 40 calls was random 566, NSGA-II 573, Optuna default 561
+(3 seeds each) and BoTorch qNEHVI 733 (1 seed, +28% over NSGA-II; better than the GA methods reach at 120 calls, about
+650). Wall clock to 40 calls: 13-18 s for the GA methods, 1,735 s for BoTorch (about 43 s of model fitting per trial).
+The full 120-call, 3-seed run was stopped after the first BoTorch seed because it would have taken over 4 hours.
+
+**Decision.** Before a study the portfolio times one evaluation of the centre design. Bayesian optimization is used
+when one evaluation costs at least about half the model-fitting time and the budget is under 200; otherwise NSGA-II
+(NSGA-III for three or four objectives). Cheap structural studies therefore run NSGA-II in parallel; fine-mesh,
+thermal and later CFD studies get Bayesian optimization, where saving solver calls is worth the model cost.
+
+**Open.** BoTorch was measured on one seed only; repeat with three seeds on an expensive (fine-mesh) evaluation.

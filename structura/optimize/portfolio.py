@@ -1,7 +1,8 @@
-"""Method portfolio (D1-T2): choose the search method from the problem, run it, keep one history.
+"""Method portfolio (D1-T2, revised by decision D5): choose the search method from the problem, run it, keep one history.
 
-Bayesian optimization (BoTorch qNEHVI through Ax) when evaluations are expensive relative to the budget (under 200)
-and there are at most three objectives; NSGA-II for two objectives and NSGA-III for three or four otherwise.
+Bayesian optimization (BoTorch qNEHVI through Ax) when one evaluation costs about as much as fitting its model or more
+(measured on the centre design before the study) and the budget is under 200; otherwise NSGA-II for two objectives and
+NSGA-III for three or four.
 Integer parameters are native in both paths; the spec's requirements become Ax outcome constraints (feasibility-aware
 search) or Optuna constraint functions. Every Ax trial is also written into the study's Optuna SQLite storage, so the
 history and Pareto views read one source whichever method ran. The choice and its reason are stored on the study.
@@ -23,14 +24,31 @@ from .evaluate import SpecInfo, evaluate, load_spec
 logging.getLogger("ax").setLevel(logging.ERROR)
 
 
-def choose(spec: SpecInfo, budget: int) -> tuple[str, str]:
+# Measured on the bracket (decision D5): BoTorch qNEHVI reached 28% more hypervolume than NSGA-II at 40 solver calls,
+# but its model fitting cost about 43 s per trial against about 1 s per coarse evaluation (115x the wall clock).
+BO_MODEL_SECONDS = 43.0
+
+
+def choose(spec: SpecInfo, budget: int, eval_seconds: float | None = None) -> tuple[str, str]:
+    """Bayesian optimization when an evaluation costs about as much as fitting the model (or more), else NSGA."""
     n = len(spec.objectives)
-    if budget < 200 and n <= 3:
-        return "botorch_qnehvi", (f"budget {budget} < 200 evaluations and {n} objective(s): a Gaussian-process model "
-                                  "(BoTorch qNEHVI) spends each expensive evaluation where it most improves the Pareto front")
+    if n <= 3 and budget < 200 and (eval_seconds is None or eval_seconds >= 0.5 * BO_MODEL_SECONDS):
+        cost = "unmeasured" if eval_seconds is None else f"{eval_seconds:.1f} s"
+        return "botorch_qnehvi", (f"evaluations are expensive ({cost} each, model fit about {BO_MODEL_SECONDS:.0f} s) and the budget is "
+                                  f"{budget}: a Gaussian-process model (BoTorch qNEHVI) spends each evaluation where it most improves the front")
+    why = (f"evaluations are cheap ({eval_seconds:.1f} s each against about {BO_MODEL_SECONDS:.0f} s of model fitting per trial)"
+           if eval_seconds is not None else f"budget {budget} >= 200")
     if n <= 2:
-        return "nsga2", f"budget {budget} >= 200 with {n} objectives: NSGA-II scales to many cheap evaluations"
-    return "nsga3", f"budget {budget} >= 200 with {n} objectives: NSGA-III keeps diversity with three or more objectives"
+        return "nsga2", f"{why}: NSGA-II runs many evaluations in parallel for the same wall clock"
+    return "nsga3", f"{why}: NSGA-III keeps diversity with three or more objectives"
+
+
+def measure_eval_seconds(spec: SpecInfo, mesh_size: float | None) -> float:
+    """Time one uncached evaluation of the centre of the design space."""
+    centre = {k: (float(round((lo + hi) / 2)) if k in spec.integer else (lo + hi) / 2) for k, (lo, hi) in spec.free.items()}
+    t0 = time.perf_counter()
+    evaluate(spec, centre, mesh_size=mesh_size, use_cache=False)
+    return time.perf_counter() - t0
 
 
 def _ax_objective(spec: SpecInfo) -> str:
@@ -93,7 +111,7 @@ def run(spec_path: str | Path, budget: int, seed: int = 0, method: str | None = 
         mesh_size: float | None = None, threads: int = 1, n_jobs: int = 4, on_trial=None) -> optuna.Study:
     """on_trial(feasible: bool) is called after every finished evaluation (progress reporting without touching storage)."""
     spec = load_spec(spec_path)
-    chosen, reason = (method, "method set by the caller") if method else choose(spec, budget)
+    chosen, reason = (method, "method set by the caller") if method else choose(spec, budget, measure_eval_seconds(spec, mesh_size))
     study_dir = Path(study_dir or Path("runs") / f"{spec.id}-{chosen}-{seed}")
     study_dir.mkdir(parents=True, exist_ok=True)
     if chosen in ("nsga2", "nsga3", "random", "tpe", "default"):

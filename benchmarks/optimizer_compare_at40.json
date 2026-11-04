@@ -1,0 +1,91 @@
+{
+ "calls": 40,
+ "reference_minimized": [
+  400.0,
+  0.0
+ ],
+ "runs": {
+  "default-0": {
+   "trials": 120,
+   "hv_at_40": 535.5576068494391,
+   "hv_final": 671.4050737322485,
+   "wall_seconds_to_40": 16.055278
+  },
+  "default-1": {
+   "trials": 120,
+   "hv_at_40": 602.7622450471689,
+   "hv_final": 658.395312739527,
+   "wall_seconds_to_40": 12.516807
+  },
+  "default-2": {
+   "trials": 120,
+   "hv_at_40": 544.9887160066007,
+   "hv_final": 648.9064245860917,
+   "wall_seconds_to_40": 11.673594
+  },
+  "nsga2-0": {
+   "trials": 120,
+   "hv_at_40": 584.499956613985,
+   "hv_final": 593.8520378723712,
+   "wall_seconds_to_40": 15.024258
+  },
+  "nsga2-1": {
+   "trials": 120,
+   "hv_at_40": 559.3869317109577,
+   "hv_final": 651.7015795131599,
+   "wall_seconds_to_40": 15.564486
+  },
+  "nsga2-2": {
+   "trials": 120,
+   "hv_at_40": 576.2903843680351,
+   "hv_final": 649.1266959993537,
+   "wall_seconds_to_40": 13.791656
+  },
+  "portfolio-0": {
+   "trials": 42,
+   "hv_at_40": 733.3375853331862,
+   "hv_final": 733.6667816052058,
+   "wall_seconds_to_40": 1735.148671
+  },
+  "random-0": {
+   "trials": 120,
+   "hv_at_40": 442.9074269785378,
+   "hv_final": 629.3999453520818,
+   "wall_seconds_to_40": 16.090634
+  },
+  "random-1": {
+   "trials": 120,
+   "hv_at_40": 576.0748447523036,
+   "hv_final": 601.138859953311,
+   "wall_seconds_to_40": 18.795376
+  },
+  "random-2": {
+   "trials": 120,
+   "hv_at_40": 678.2796849811658,
+   "hv_final": 693.3853691869645,
+   "wall_seconds_to_40": 18.888056
+  }
+ },
+ "summary": {
+  "default": {
+   "mean_hv": 561.1028559677362,
+   "seeds": 3,
+   "mean_wall_s": 13.415226333333335
+  },
+  "nsga2": {
+   "mean_hv": 573.3924242309926,
+   "seeds": 3,
+   "mean_wall_s": 14.793466666666665
+  },
+  "portfolio": {
+   "mean_hv": 733.3375853331862,
+   "seeds": 1,
+   "mean_wall_s": 1735.148671
+  },
+  "random": {
+   "mean_hv": 565.7539855706691,
+   "seeds": 3,
+   "mean_wall_s": 17.924688666666665
+  }
+ }
+}
