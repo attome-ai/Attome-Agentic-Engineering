@@ -214,6 +214,7 @@ int run(const Args& a) {
         CompiledPart part = compile_graph(g, v);
         GateLimits lim;
         lim.design_space = part.design_space();
+        lim.preserve = part.graph.preserve;
         RepairGateResult rg = repair_and_gate(part.shape, lim, RepairOptions{});
         row["gate_ok_before_repair"] = rg.before.ok;
         row["gate_ok"] = rg.ok;
@@ -271,7 +272,7 @@ int run(const Args& a) {
     json out = inspect_shape(shape);
     if (a.opt.count("family-out")) {
       std::string name = a.opt.count("name") ? a.opt.at("name") : fs::path(step).stem().string();
-      json fam = draft_family(name, step, out);
+      json fam = draft_family(name, step, out, shape);
       fs::create_directories(fs::absolute(a.opt.at("family-out")).parent_path());
       std::ofstream(a.opt.at("family-out")) << fam.dump(2);
       out["family_file"] = fs::absolute(a.opt.at("family-out")).string();
@@ -282,15 +283,16 @@ int run(const Args& a) {
   }
   if (a.cmd == "families") {
     json out = json::array();
-    for (auto& e : fs::directory_iterator(families_dir()))
+    for (auto& e : fs::recursive_directory_iterator(families_dir()))  // uploads/<name> included (A3)
       if (e.path().extension() == ".json") {
         DesignGraph g = DesignGraph::load(e.path().string());
+        std::string fam_name = fs::relative(e.path(), families_dir()).replace_extension().generic_string();
         json ps = json::object();
         for (auto& [k, p] : g.parameters)
           ps[k] = {{"unit", p.unit}, {"low", p.low}, {"high", p.high}, {"default", p.def}, {"integer", p.integer}, {"doc", p.doc}};
         json faces = json::array();
         for (auto& [k, _] : g.faces) faces.push_back(k);
-        out.push_back({{"name", g.name}, {"version", g.version}, {"doc", g.doc}, {"parameters", ps}, {"faces", faces}});
+        out.push_back({{"name", fam_name}, {"version", g.version}, {"doc", g.doc}, {"parameters", ps}, {"faces", faces}});
       }
     std::cout << out.dump(2) << "\n";
     return 0;
@@ -308,6 +310,7 @@ int run(const Args& a) {
     export_bundle(part.shape, (fs::path(out) / "design").string());
     GateLimits lim = job.contains("gate") ? GateLimits::from_json(job["gate"]) : GateLimits{};
     if (!lim.design_space) lim.design_space = part.design_space();
+    if (lim.preserve.empty()) lim.preserve = part.graph.preserve;
     GateResult gr = gate(part.shape, lim);
     json res = {{"hash", d.hash()}, {"params", d.params}, {"gate", gr.to_json()}, {"folder", fs::absolute(out).string()}};
     if (!gr.ok) {
@@ -361,6 +364,7 @@ int run(const Args& a) {
         CompiledPart part = compile_graph(g, v);
         GateLimits lim;
         lim.design_space = part.design_space();
+        lim.preserve = part.graph.preserve;
         GateResult r = gate(part.shape, lim);
         passed += r.ok;
         row["ok"] = r.ok;
@@ -417,6 +421,7 @@ int run(const Args& a) {
   if (a.cmd == "gate") {
     GateLimits lim = a.opt.count("limits") ? GateLimits::from_json(read_json(a.opt.at("limits"))) : GateLimits{};
     if (!lim.design_space) lim.design_space = part.design_space();
+    if (lim.preserve.empty()) lim.preserve = part.graph.preserve;
     json out = gate(part.shape, lim).to_json();
     out["hash"] = d.hash();
     std::cout << out.dump(2) << "\n";

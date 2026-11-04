@@ -233,6 +233,43 @@ def add_face(family: str, face_id: int, name: str, doc: str = "") -> dict:
     return _ok(family=family, face=name, selector=f["selector"])
 
 
+@mcp.tool(description="Redesign an uploaded part (A3): add a lightening pocket cut down from one of its top (+z) planar faces, with "
+                      "length, width and depth as free parameters bounded by that face, leaving `margin_mm` of wall around it. Frozen "
+                      "interfaces (material around every detected hole) are enforced by the gate. Then create a study on the family "
+                      "with these parameters free; mass vs safety factor trades how much material the pocket removes.")
+def add_lightening_pocket(family: str, face_id: int, margin_mm: float = 3.0, floor_mm: float = 2.0) -> dict:
+    p = ROOT / "families" / f"{family}.json"
+    if not family.startswith("uploads/") or not p.exists():
+        return _err("upload", "only uploaded families can be edited")
+    fam = json.loads(p.read_text(encoding="utf-8"))
+    r = engine.call("inspect", step=str(ROOT / fam["features"][0]["params"]["file"]))
+    f = next((x for x in r["faces"] if x["id"] == face_id), None)
+    if f is None or f.get("selector", {}).get("normal") != "z":
+        return _err("upload", f"face {face_id} is not a top (+z) planar face; a pocket is cut downward from one")
+    x0, y0, _, x1, y1, z_top = f["bbox"]
+    # local thickness: the nearest downward-facing face below the pocket area (else the bottom of the envelope)
+    px0, px1, py0, py1 = x0 + margin_mm, x1 - margin_mm, y0 + margin_mm, y1 - margin_mm
+    below = [g["bbox"][5] for g in r["faces"] if g.get("selector", {}).get("normal") == "-z" and g["bbox"][5] < z_top - 1e-6
+             and g["bbox"][0] < px1 and g["bbox"][3] > px0 and g["bbox"][1] < py1 and g["bbox"][4] > py0]
+    z_floor = max(below) if below else r["envelope"][2]
+    lx, ly, dz = px1 - px0, py1 - py0, z_top - z_floor - floor_mm
+    if min(lx, ly, dz) < 2:
+        return _err("upload", "the face is too small for a pocket with this margin and floor")
+    k = f"p{face_id}"
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    fam["parameters"].update({
+        f"{k}_length": {"unit": "mm", "low": 2.0, "high": round(lx, 3), "default": round(lx / 2, 3), "doc": f"pocket length (x) in face {face_id}"},
+        f"{k}_width": {"unit": "mm", "low": 2.0, "high": round(ly, 3), "default": round(ly / 2, 3), "doc": f"pocket width (y) in face {face_id}"},
+        f"{k}_depth": {"unit": "mm", "low": 0.5, "high": round(dz, 3), "default": round(dz / 2, 3), "doc": f"pocket depth below face {face_id}"}})
+    fam["features"] = [x for x in fam["features"] if x["id"] != k] + [{
+        "id": k, "type": "pocket", "doc": f"lightening pocket centred in face {face_id}",
+        "params": {"x": f"{cx} - {k}_length / 2", "y": f"{cy} - {k}_width / 2", "z_top": z_top,
+                   "length": f"{k}_length", "width": f"{k}_width", "depth": f"{k}_depth", "corner_radius": 1.0}}]
+    p.write_text(json.dumps(fam, indent=2), encoding="utf-8")
+    return _ok(family=family, parameters={n: fam["parameters"][n] for n in fam["parameters"] if n.startswith(k)},
+               frozen_interfaces=len(fam.get("preserve", [])))
+
+
 # ------------------------------------------------------------------ geometry
 @mcp.tool(description="Build a design from a design graph (JSON) or a family with parameters, and run the geometry gate. Returns volume, named faces "
                       "and gate reasons. Use describe_grammar for feature types. Errors are typed: graph (bad value or reference), compile "

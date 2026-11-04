@@ -41,6 +41,7 @@ GateLimits GateLimits::from_json(const nlohmann::json& j) {
   GateLimits l;
   if (j.contains("design_space") && !j["design_space"].is_null()) l.design_space = j["design_space"].get<std::vector<double>>();
   if (j.contains("keep_out")) l.keep_out = j["keep_out"].get<std::vector<std::vector<double>>>();
+  if (j.contains("preserve")) l.preserve = j["preserve"].get<std::vector<std::vector<double>>>();
   l.min_wall = j.value("min_wall", l.min_wall);
   l.min_feature = j.value("min_feature", l.min_feature);
   l.min_hole_diameter = j.value("min_hole_diameter", l.min_hole_diameter);
@@ -159,6 +160,14 @@ GateResult gate(const TopoDS_Shape& shape, const GateLimits& lim) {
       TopoDS_Shape box = BRepPrimAPI_MakeBox(gp_Pnt(k[0], k[1], k[2]), k[3] - k[0], k[4] - k[1], k[5] - k[2]).Shape();
       BRepAlgoAPI_Common c(shape, box);
       if (c.IsDone() && volume(c.Shape()) > 1e-6) r.reasons.push_back("intrudes into keep-out zone " + std::to_string(i));
+    }
+    for (size_t i = 0; i < lim.preserve.size(); ++i) {
+      auto& k = lim.preserve[i];
+      TopoDS_Shape box = BRepPrimAPI_MakeBox(gp_Pnt(k[0], k[1], k[2]), k[3] - k[0], k[4] - k[1], k[5] - k[2]).Shape();
+      BRepAlgoAPI_Common c(shape, box);
+      double v = c.IsDone() ? volume(c.Shape()) : 0;
+      if (v < k[6] * (1 - 1e-4) - 1e-6)
+        r.reasons.push_back("removes material from frozen interface " + std::to_string(i) + " (" + f2(v) + " of " + f2(k[6]) + " mm^3 kept)");
     }
     for (auto& e : edges_of(shape)) {
       double l = edge_length(e);

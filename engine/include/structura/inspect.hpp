@@ -13,6 +13,9 @@ nlohmann::json inspect_shape(const TopoDS_Shape& shape);
 
 // A family with one import_step feature (file content pinned by SHA-256), no parameters, and named faces for the
 // axis-aligned mating candidates and holes found by inspect_shape.
-nlohmann::json draft_family(const std::string& name, const std::string& step_path, const nlohmann::json& inspection);
+// Every hole is frozen: a preserve box (the hole's extent, three diameters wide across its axis) keeps the original
+// material around it in every redesign.
+nlohmann::json draft_family(const std::string& name, const std::string& step_path, const nlohmann::json& inspection,
+                            const TopoDS_Shape& shape);
 
 }  // namespace structura

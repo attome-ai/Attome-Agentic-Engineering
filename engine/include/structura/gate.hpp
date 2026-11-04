@@ -17,6 +17,7 @@ namespace structura {
 struct GateLimits {
   std::optional<std::vector<double>> design_space;
   std::vector<std::vector<double>> keep_out;
+  std::vector<std::vector<double>> preserve;  // [box6, volume]: material that must stay (frozen interfaces, A3)
   double min_wall = 1.2;           // mm, three FDM perimeters at 0.4 mm
   double min_feature = 0.3;        // mm, shortest allowed edge
   double min_hole_diameter = 2.0;  // mm

@@ -9,6 +9,8 @@
 #include <numbers>
 
 #include <BRepAdaptor_Surface.hxx>
+#include <BRepAlgoAPI_Common.hxx>
+#include <BRepPrimAPI_MakeBox.hxx>
 #include <BRepGProp_Face.hxx>
 #include <BRepTools.hxx>
 #include <gp_Cylinder.hxx>
@@ -59,7 +61,7 @@ nlohmann::json inspect_shape(const TopoDS_Shape& shape) {
   auto bb = bbox(shape);
   double total_area = area(shape);
   nlohmann::json faces = nlohmann::json::array();
-  struct Cyl { int face; gp_Ax1 axis; double r; double span; double area; gp_Pnt c; };
+  struct Cyl { int face; gp_Ax1 axis; double r; double span; double area; gp_Pnt c; TopoDS_Face f; };
   std::vector<Cyl> concave;
   int idx = 0;
   for (auto& f : faces_of(shape)) {
@@ -67,7 +69,7 @@ nlohmann::json inspect_shape(const TopoDS_Shape& shape) {
     BRepAdaptor_Surface s(f);
     gp_Pnt c = centre(f);
     double a = area(f);
-    nlohmann::json x = {{"id", idx}, {"area_mm2", a}, {"centre", {c.X(), c.Y(), c.Z()}}};
+    nlohmann::json x = {{"id", idx}, {"area_mm2", a}, {"centre", {c.X(), c.Y(), c.Z()}}, {"bbox", bbox(f)}};
     switch (s.GetType()) {
       case GeomAbs_Plane: {
         gp_Dir n = normal(f);
@@ -86,7 +88,7 @@ nlohmann::json inspect_shape(const TopoDS_Shape& shape) {
         x["axis"] = {ax.X(), ax.Y(), ax.Z()};
         x["concave"] = inner;
         double span = s.LastUParameter() - s.FirstUParameter();
-        if (inner) concave.push_back({idx, cy.Axis(), cy.Radius(), span, a, c});
+        if (inner) concave.push_back({idx, cy.Axis(), cy.Radius(), span, a, c, f});
         break;
       }
       case GeomAbs_Cone: x["type"] = "cone"; break;
@@ -135,8 +137,27 @@ nlohmann::json inspect_shape(const TopoDS_Shape& shape) {
                         {"depth_mm", depth}, {"wrap_deg", span * 180 / std::numbers::pi}};
     std::string an = axis_name(d);
     if (!an.empty()) h["selector"] = {{"kind", "cylinder"}, {"axis", an.back() == 'x' ? "x" : an.back() == 'y' ? "y" : "z"}, {"radius", r6(c0.r)}};
-    if (span >= 2 * std::numbers::pi - 1e-3) holes.push_back(h);
-    else fillets.push_back({{"faces", ids}, {"radius_mm", c0.r}, {"wrap_deg", span * 180 / std::numbers::pi}});
+    // a hole wraps the full turn: angular coverage around the shared axis in one frame (36 bins of 10 degrees), so
+    // co-axial segments of a fillet split by ribs (each a quarter turn of the same angles) are not mistaken for a hole
+    gp_Dir xd = std::abs(d.X()) < 0.9 ? gp_Dir(gp_Vec(d).Crossed(gp_Vec(1, 0, 0))) : gp_Dir(gp_Vec(d).Crossed(gp_Vec(0, 1, 0)));
+    gp_Dir yd(gp_Vec(d).Crossed(gp_Vec(xd)));
+    std::vector<bool> bins(36, false);
+    for (int k : g) {
+      double u0, u1, v0, v1;
+      BRepTools::UVBounds(concave[k].f, u0, u1, v0, v1);
+      BRepAdaptor_Surface su(concave[k].f);
+      for (int i = 0; i <= 72; ++i) {
+        gp_Pnt q = su.Value(u0 + (u1 - u0) * i / 72.0, 0.5 * (v0 + v1));
+        gp_Vec rv(c0.axis.Location(), q);
+        double ang = std::atan2(rv.Dot(gp_Vec(yd)), rv.Dot(gp_Vec(xd)));
+        int b = static_cast<int>(std::floor((ang + std::numbers::pi) / (2 * std::numbers::pi) * 36)) % 36;
+        bins[b] = true;
+      }
+    }
+    int covered = static_cast<int>(std::count(bins.begin(), bins.end(), true));
+    h["wrap_deg"] = covered * 10.0;
+    if (covered >= 35) holes.push_back(h);
+    else fillets.push_back({{"faces", ids}, {"radius_mm", c0.r}, {"wrap_deg", covered * 10.0}});
   }
   // patterns: holes of the same diameter on parallel axes
   nlohmann::json patterns = nlohmann::json::array();
@@ -179,7 +200,8 @@ nlohmann::json inspect_shape(const TopoDS_Shape& shape) {
                      "Hole depth is estimated from the lateral area; check it against the drawing."}}};
 }
 
-nlohmann::json draft_family(const std::string& name, const std::string& step_path, const nlohmann::json& inspection) {
+nlohmann::json draft_family(const std::string& name, const std::string& step_path, const nlohmann::json& inspection,
+                            const TopoDS_Shape& shape) {
   std::ifstream in(step_path, std::ios::binary);
   if (!in) throw std::runtime_error("cannot read " + step_path);
   std::string bytes((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
@@ -201,8 +223,26 @@ nlohmann::json draft_family(const std::string& name, const std::string& step_pat
     if (!faces.contains(key)) faces[key] = sel;
     ++h;
   }
+  // frozen interfaces: material around every hole stays
+  nlohmann::json preserve = nlohmann::json::array();
+  for (auto& p : inspection.at("holes")) {
+    double d = p["diameter_mm"], depth = p["depth_mm"];
+    gp_Pnt c(p["centre"][0].get<double>(), p["centre"][1].get<double>(), p["centre"][2].get<double>());
+    gp_Dir ax(p["axis"][0].get<double>(), p["axis"][1].get<double>(), p["axis"][2].get<double>());
+    double lo[3], hi[3], cc[3] = {c.X(), c.Y(), c.Z()}, aa[3] = {ax.X(), ax.Y(), ax.Z()};
+    for (int i = 0; i < 3; ++i) {
+      double half = std::abs(aa[i]) * (depth / 2 + 1e-3) + (1 - std::abs(aa[i])) * 1.5 * d;  // along the axis: the hole; across: 3 d
+      lo[i] = cc[i] - half;
+      hi[i] = cc[i] + half;
+    }
+    TopoDS_Shape box = BRepPrimAPI_MakeBox(gp_Pnt(lo[0], lo[1], lo[2]), gp_Pnt(hi[0], hi[1], hi[2])).Shape();
+    BRepAlgoAPI_Common com(shape, box);
+    double v = com.IsDone() ? volume(com.Shape()) : 0;
+    preserve.push_back({lo[0], lo[1], lo[2], hi[0], hi[1], hi[2], v});
+  }
   return {{"name", name},
           {"version", "1"},
+          {"preserve", preserve},
           {"doc", "Uploaded part " + fs::path(step_path).filename().string() + " (A3): analysed as-is; redesign features are added after the user "
                   "confirms which interfaces are frozen."},
           {"parameters", nlohmann::json::object()},

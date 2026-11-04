@@ -266,3 +266,25 @@ by the user. Analysed with the 20 kg load case and no free parameters, at 3 mm:
 Identical to the last digit shown: importing, face selection and the solve lose nothing. The import pins the file's
 SHA-256, so a changed file is refused rather than served from the cache. Redesigning an uploaded part (template fit,
 or operations inside its envelope) is the next step; today an uploaded part is analysed and becomes the baseline.
+
+## Improving an uploaded part (A3, `benchmarks/a3_redesign_demo.py`)
+
+An over-built bracket (12 mm plate, 80 mm wide, three 10 mm ribs, 6 mm corner fillet) arrives as a STEP file.
+Inspection finds the two 6.6 mm bolt holes (frozen: the material around each must stay) and the faces; the user names
+the arm end (load) and the wall face (bearing). The improvement brief keeps the 20 kg load and SF >= 2 and replaces the
+from-scratch 250 g cap with "lighter than the uploaded part". Redesign: one lightening pocket in the arm top, its
+length, width and depth searched by NSGA-II (120 evaluations at 4 mm, front re-solved at 3 mm), about 12 minutes.
+
+| | Mass | Safety factor | Max displacement |
+|---|---|---|---|
+| Uploaded part as-is | 354.1 g | 3.20 | 0.46 mm |
+| Lightest redesign feasible on the fine mesh (pocket 108.8 x 33.7 x 5.6 mm) | **328.2 g (-7.3%)** | 2.32 | 0.66 mm |
+
+Front: 14 designs, all still feasible on the fine mesh. Trust grade **B**, not A: the safety factor's numerical error
+is 8.2% (the pocket's 1 mm corner radius concentrates stress), and the trust record marks R1 "not proven". To check
+before quoting: why R1 counts as not proven when its 16% margin is larger than the 8.2% error. A larger pocket
+corner radius, or pockets in the ribs and wall plate, are the next redesign operations.
+
+Two defects found and fixed on the way: the hole detector summed the angular spans of co-axial segments, so a corner
+fillet cut into four quarter-cylinders by three ribs looked like a full hole and was frozen (now measured as angular
+coverage, test A3-T3); and the engine's family listing did not include uploaded families.

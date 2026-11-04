@@ -1,0 +1,176 @@
+{
+  "evaluations": 120,
+  "method": "nsga2",
+  "seconds": 718.4,
+  "uploaded": {
+    "params_used_to_make_it": {
+      "thickness": 12,
+      "plate_width": 80,
+      "rib_count": 3,
+      "rib_thickness": 10,
+      "fillet_radius": 6
+    },
+    "holes": [
+      {
+        "diameter_mm": 6.6,
+        "axis": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "centre": [
+          6.0,
+          60.0,
+          12.0
+        ],
+        "depth_mm": 12.000000000000002
+      },
+      {
+        "diameter_mm": 6.6,
+        "axis": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "centre": [
+          6.0,
+          20.0,
+          12.0
+        ],
+        "depth_mm": 12.000000000000002
+      }
+    ],
+    "frozen_interfaces": 2
+  },
+  "as_is": {
+    "metrics": {
+      "mass_g": 354.13792887030564,
+      "max_disp_mm": 0.4634151093262093,
+      "max_von_mises_MPa": 7.814410953142918,
+      "safety_factor": 3.199217465002288
+    },
+    "feasible": false
+  },
+  "pocket_parameters": {
+    "p27_length": {
+      "unit": "mm",
+      "low": 2.0,
+      "high": 114.0,
+      "default": 57.0,
+      "doc": "pocket length (x) in face 27"
+    },
+    "p27_width": {
+      "unit": "mm",
+      "low": 2.0,
+      "high": 74.0,
+      "default": 37.0,
+      "doc": "pocket width (y) in face 27"
+    },
+    "p27_depth": {
+      "unit": "mm",
+      "low": 0.5,
+      "high": 10.0,
+      "default": 5.0,
+      "doc": "pocket depth below face 27"
+    }
+  },
+  "front_size": 14,
+  "front_still_feasible_on_fine_mesh": 14,
+  "lightest_feasible_fine": {
+    "trial": 53,
+    "params": {
+      "p27_depth": 5.5756558202388256,
+      "p27_length": 108.75975808629462,
+      "p27_width": 33.714609308160384
+    },
+    "coarse": [
+      328.1926388472738,
+      2.37505185170042
+    ],
+    "status": "ok",
+    "fine": [
+      328.1797444911775,
+      2.3214930612127866
+    ],
+    "change_pct": [
+      -0.003928898631499755,
+      -2.2550577348148377
+    ],
+    "feasible_fine": true
+  },
+  "recommended_knee": {
+    "trial": 72,
+    "params": {
+      "p27_depth": 7.0885678564786385,
+      "p27_length": 16.8808190076641,
+      "p27_width": 18.241541799604168
+    },
+    "values": [
+      351.3876823187761,
+      3.3514038030469675
+    ],
+    "front_size": 14,
+    "neighbours": [
+      {
+        "trial": 85,
+        "values": [
+          347.36531574711574,
+          3.295689395515502
+        ]
+      },
+      {
+        "trial": 89,
+        "values": [
+          341.4542504429803,
+          3.1393174661191905
+        ]
+      }
+    ]
+  },
+  "trust_of_lightest": {
+    "grade": "B",
+    "status": "verified",
+    "reasons": [
+      "a requirement margin is smaller than its numerical error",
+      "numerical error on a governing value is 8.22%"
+    ],
+    "requirements": [
+      {
+        "governing_case": "service",
+        "id": "R1",
+        "limit": 2.0,
+        "margin": 0.16074653060639332,
+        "numerical_error": 0.08215352855318814,
+        "op": ">=",
+        "quantity": "safety_factor",
+        "result": "not proven",
+        "unit": "1",
+        "value": 2.3214930612127866
+      },
+      {
+        "governing_case": "service",
+        "id": "R2",
+        "limit": 3.0,
+        "margin": 0.7815902670437005,
+        "numerical_error": 0.03235492307297267,
+        "op": "<=",
+        "quantity": "max_disp_mm",
+        "result": "pass",
+        "unit": "mm",
+        "value": 0.6552291988688987
+      },
+      {
+        "governing_case": "service",
+        "id": "R3",
+        "limit": 354.1,
+        "margin": 0.07320038268518088,
+        "numerical_error": 1.9303820027366694e-05,
+        "op": "<=",
+        "quantity": "mass_g",
+        "result": "pass",
+        "unit": "g",
+        "value": 328.1797444911775
+      }
+    ]
+  }
+}

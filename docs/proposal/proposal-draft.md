@@ -278,8 +278,9 @@ From `docs/agentic-engineering-roadmap.html`:
 - **Physical test predictions** (`benchmarks/h3_predictions.json`, `python benchmarks/gauge_point.py`): stiffness at
   the arm end 59.8 N/mm (baseline) against 389.9 N/mm (recommended), ratio 6.5×. Protocol: `docs/test-protocol-h3.md`.
 - **Before 10 January:** physical test, video, Hephaestus-CCX benchmark, measurements on an 8 GB laptop.
-- **11–24 January (P6):** improve an uploaded STEP part (keep its holes, make it lighter), a surrogate for faster
-  screening. (Print rules, the FDM/CNC cost model and the fin-channel correlation are already built.)
+- **11–24 January (P6):** redesign an uploaded STEP part (keep its holes, make it lighter), a surrogate for faster
+  screening. (Already built: uploading and analysing a STEP part as-is with detected holes and faces, which
+  reproduces the native result exactly; print rules; the FDM/CNC cost model; the fin-channel correlation.)
 - **25 January – 3 February (P7):** demo hardening: precomputed cache, offline mode, rehearsals.
 
 ## Evidence index

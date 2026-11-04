@@ -11,6 +11,7 @@
 
 #include "structura/compile.hpp"
 #include "structura/design.hpp"
+#include "structura/gate.hpp"
 #include "structura/graph.hpp"
 #include "structura/inspect.hpp"
 #include "structura/occ.hpp"
@@ -53,7 +54,7 @@ TEST_CASE("A3-T2: the draft family imports the STEP file, pins its content and n
   fs::create_directories(dir);
   std::string step = (dir / "plate.step").string();
   write_step(plate_with_holes(), step);
-  nlohmann::json fam = draft_family("plate_upload", step, inspect_shape(plate_with_holes()));
+  nlohmann::json fam = draft_family("plate_upload", step, inspect_shape(plate_with_holes()), plate_with_holes());
   CHECK(fam["features"][0]["type"] == "import_step");
   CHECK(fam["features"][0]["params"]["sha256"].get<std::string>().size() == 64);
   CHECK(fam["faces"].contains("holes_d65"));
@@ -64,7 +65,37 @@ TEST_CASE("A3-T2: the draft family imports the STEP file, pins its content and n
   auto named = part.named_faces();
   CHECK(named.at("holes_d65").size() == 2);  // one cylindrical face per hole
 
+  // the holes are frozen: a design that cuts into the material around one fails the gate
+  REQUIRE(fam["preserve"].size() == 2);
+  {
+    nlohmann::json cut = fam;
+    cut["features"].push_back({{"id", "lighten"}, {"type", "pocket"},
+                               {"params", {{"x", 10}, {"y", 10}, {"z_top", 10}, {"length", 20}, {"width", 20}, {"depth", 5}}}});
+    CompiledPart cp = compile_graph(DesignGraph::from_json(cut), {});
+    GateLimits lim;
+    lim.preserve = cp.graph.preserve;
+    GateResult gr = gate(cp.shape, lim);
+    CHECK_FALSE(gr.ok);
+    nlohmann::json away = fam;  // a pocket clear of both holes passes
+    away["features"].push_back({{"id", "lighten"}, {"type", "pocket"},
+                                {"params", {{"x", 33}, {"y", 8}, {"z_top", 10}, {"length", 14}, {"width", 24}, {"depth", 5}}}});
+    CompiledPart cp2 = compile_graph(DesignGraph::from_json(away), {});
+    lim.preserve = cp2.graph.preserve;
+    CHECK(gate(cp2.shape, lim).ok);
+  }
+
   // a changed file is refused: results can never be reused for different geometry
   { std::ofstream(step, std::ios::app) << "\n"; }
   CHECK_THROWS(compile_graph(g, {}));
+}
+
+TEST_CASE("A3-T3: a fillet split into quarter-turn segments by ribs is not a hole") {
+  // bracket with three ribs: the wall-to-arm fillet is cut into four co-axial quarter cylinders (4 x 90 = 360 degrees
+  // if spans were summed); only the two bolt holes wrap the full turn
+  CompiledPart part = compile_graph(load_family("bracket"),
+                                    {{"thickness", 12}, {"plate_width", 80}, {"rib_count", 3}, {"rib_thickness", 10}, {"fillet_radius", 6}});
+  nlohmann::json r = inspect_shape(part.shape);
+  CHECK(r["holes"].size() == 2);
+  for (auto& h : r["holes"]) CHECK(h["diameter_mm"].get<double>() == doctest::Approx(6.6));
+  CHECK(r["internal_fillets"].size() >= 1);
 }

@@ -185,6 +185,11 @@ DesignGraph DesignGraph::from_json(const ojson& j) {
         g.faces.emplace_back(k, fs);
       }
     }
+    if (j.contains("preserve")) {
+      g.preserve = j.at("preserve").get<std::vector<std::vector<double>>>();
+      for (auto& b : g.preserve)
+        if (b.size() != 7) throw GraphError("each preserve entry needs [x0, y0, z0, x1, y1, z1, volume_mm3]");
+    }
     if (j.contains("design_space") && !j.at("design_space").is_null())
       g.design_space = j.at("design_space").get<std::vector<ojson>>();
   } catch (const GraphError&) {
@@ -225,6 +230,7 @@ ojson DesignGraph::to_json() const {
   }
   j["faces"] = fa;
   j["design_space"] = design_space ? ojson(*design_space) : ojson();
+  if (!preserve.empty()) j["preserve"] = preserve;  // only when present: existing families keep their canonical JSON and hashes
   return j;
 }
 

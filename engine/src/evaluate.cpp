@@ -97,6 +97,7 @@ nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params
   }
   GateLimits lim;
   lim.design_space = part.design_space();
+  lim.preserve = part.graph.preserve;
   lim.print_direction = spec.print_direction;
   RepairGateResult rg = repair_and_gate(part.shape, lim, RepairOptions{});
   out["gate"] = rg.to_json();

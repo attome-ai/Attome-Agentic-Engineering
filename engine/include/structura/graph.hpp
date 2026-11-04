@@ -81,6 +81,8 @@ struct DesignGraph {
   std::vector<Feature> features;
   std::vector<std::pair<std::string, FaceSelector>> faces;
   std::optional<std::vector<ojson>> design_space;
+  // frozen interfaces (A3): boxes [x0 y0 z0 x1 y1 z1 volume_mm3]; a design keeps at least that much material in each box
+  std::vector<std::vector<double>> preserve;
 
   static DesignGraph from_json(const ojson& j);
   static DesignGraph load(const std::string& path);
