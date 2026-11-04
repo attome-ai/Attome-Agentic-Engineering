@@ -86,6 +86,15 @@ void add_markers(const std::string& skin_path, const Mesh& m, const nlohmann::js
   std::ofstream(skin_path) << skin.dump();
 }
 
+
+bool spec_uses(const DesignSpec& spec, const std::string& q) {
+  for (auto& o : spec.objectives)
+    if (o.quantity == q) return true;
+  for (auto& r : spec.requirements)
+    if (r.quantity == q) return true;
+  return false;
+}
+
 }  // namespace
 
 nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params, const EvalOptions& o) {
@@ -165,9 +174,20 @@ nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params
       std::string dir = (fs::path(work) / ("solve_" + lc.name)).string();
       Result r = solve_static(m, eff, lc, dir, so);
       auto met = structural_metrics(r, eff);
-      mt.by_case[lc.name] = met;
       cases[lc.name] = r.summary();
       cases[lc.name]["factor"] = slc.factor_range[1];
+      // further analyses on the same mesh, only when the spec asks for their quantity
+      if (spec_uses(spec, "buckling_factor")) {
+        BuckleResult br = solve_buckle(m, eff, lc, 1, (fs::path(work) / ("buckle_" + lc.name)).string(), so);
+        met["buckling_factor"] = br.factors.at(0);
+        cases[lc.name]["buckling_factors"] = br.factors;
+      }
+      if (spec_uses(spec, "first_frequency_hz")) {
+        ModalResult mr = solve_modal(m, eff, lc.supports, 3, (fs::path(work) / ("modal_" + lc.name)).string(), so);
+        met["first_frequency_hz"] = mr.frequencies_hz.at(0);
+        cases[lc.name]["frequencies_hz"] = mr.frequencies_hz;
+      }
+      mt.by_case[lc.name] = met;
       if (o.save_bundle) {
         r.save((fs::path(work) / ("result_" + lc.name)).string());
         write_vtu(m, r, (fs::path(work) / ("result_" + lc.name) / "result.vtu").string());

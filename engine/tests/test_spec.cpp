@@ -78,3 +78,26 @@ TEST_CASE("A2-T3: an impossible spec is stopped with the best achievable value")
   for (auto& p : f["problems"]) r1 = r1 || p["id"] == "R1";
   CHECK(r1);
 }
+
+TEST_CASE("C3-T2: frequency and buckling requirements are computed in evaluations, only when asked for") {
+  nlohmann::json j = example("bracket_20kg");
+  j["requirements"].push_back({{"id", "R4"}, {"quantity", "first_frequency_hz"}, {"op", ">="}, {"value", 50.0}});
+  j["requirements"].push_back({{"id", "R5"}, {"quantity", "buckling_factor"}, {"op", ">="}, {"value", 2.0}});
+  EvalOptions o;
+  o.mesh_size = 6;
+  o.threads = 4;
+  Values p = {{"thickness", 8}, {"plate_width", 50}, {"rib_count", 2}, {"rib_thickness", 6}, {"fillet_radius", 3}};
+  nlohmann::json ev = evaluate_design(DesignSpec::from_json(j), p, o);
+  REQUIRE(ev["status"] == "ok");
+  auto& c = ev["load_cases"]["service"];
+  REQUIRE(c["frequencies_hz"].size() == 3);
+  CHECK(c["frequencies_hz"][0].get<double>() > 0);
+  CHECK(c["frequencies_hz"][0].get<double>() <= c["frequencies_hz"][1].get<double>());  // ascending
+  CHECK(ev["metrics"]["first_frequency_hz"].get<double>() == doctest::Approx(c["frequencies_hz"][0].get<double>()));
+  CHECK(ev["metrics"]["buckling_factor"].get<double>() > 1);
+  CHECK(ev["checks"].size() == 5);
+  // a spec that does not ask for them does not pay for them
+  nlohmann::json plain = evaluate_design(DesignSpec::from_json(example("bracket_20kg")), p, o);
+  CHECK_FALSE(plain["load_cases"]["service"].contains("frequencies_hz"));
+  CHECK_FALSE(plain["metrics"].contains("buckling_factor"));
+}

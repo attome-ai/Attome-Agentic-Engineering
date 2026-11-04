@@ -346,3 +346,12 @@ needs the internet: the AI agent (Claude runs in the cloud). So with the network
 the workbench, live optimization and the reports, and the agent part needs a connection or the recorded video.
 Test to run on the demo machine: turn Wi-Fi off, then `python scripts/demo.py preflight`, `python scripts/demo.py live
 --budget 60`, open `runs/p2_demo/report.html` and `python -m structura.app`.
+
+## Frequency and buckling requirements in specs (C3)
+
+`first_frequency_hz` and `buckling_factor` were declared spec quantities but never computed, so a spec using them
+would have failed every design. Evaluations now run CalculiX frequency (3 modes) and buckling analyses on the same mesh
+for each structural load case, only when the spec asks for the quantity (test C3-T2 checks both directions). The
+recommended 20 kg bracket: first natural frequency 391.5 Hz (then 769 and 852 Hz), buckling factor 55.8; the
+evaluation takes about 23 s instead of 4 s with both analyses. Solver accuracy for both is in the validation suite
+(buckling +0.06%, first frequency -0.26%).
