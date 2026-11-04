@@ -70,6 +70,7 @@ struct DesignSpec {
   std::vector<Objective> objectives;
   std::vector<Requirement> requirements;
   double mesh_size = 4.0;
+  double stress_exclude_near_bc_mm = 3.0;  // Saint-Venant exclusion for the strength check (stress_evaluation in the spec)
   nlohmann::json raw;  // as loaded, for versioning and diffs
 
   static DesignSpec from_json(const nlohmann::json& j);  // validates against the family, materials and quantities

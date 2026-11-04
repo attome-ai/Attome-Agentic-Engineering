@@ -1,37 +1,165 @@
 {
   "name": "bracket",
-  "version": "1",
-  "doc": "Wall-mounted shelf bracket: a vertical wall plate with two M6 clearance holes in a row below the ribs, a horizontal arm, an inner-corner fillet and triangular ribs under the arm. The load acts on the arm's end face; the bracket is bolted through the mounting holes.",
+  "version": "2",
+  "doc": "Wall-mounted shelf bracket: a vertical wall plate with two M6 clearance holes in a row below the ribs, a horizontal arm, an inner-corner fillet and triangular ribs under the arm with blunt 3 mm tips. Version 2: knife-edge rib tips were a stress singularity that no mesh could converge (decision D6). The load acts on the arm's end face; the bracket is bolted through the mounting holes.",
   "parameters": {
-    "thickness":     {"unit": "mm", "low": 3,   "high": 12, "default": 6,  "doc": "wall plate and arm thickness"},
-    "plate_width":   {"unit": "mm", "low": 30,  "high": 80, "default": 50, "doc": "width of wall plate and arm (y)"},
-    "rib_count":     {"unit": "1",  "low": 1,   "high": 3,  "default": 1,  "integer": true, "doc": "number of ribs under the arm"},
-    "rib_thickness": {"unit": "mm", "low": 2,   "high": 10, "default": 4,  "doc": "thickness of each rib (y)"},
-    "fillet_radius": {"unit": "mm", "low": 0.5, "high": 6,  "default": 3,  "doc": "inner corner fillet between wall plate and arm"}
+    "thickness": {
+      "unit": "mm",
+      "low": 3,
+      "high": 12,
+      "default": 6,
+      "doc": "wall plate and arm thickness"
+    },
+    "plate_width": {
+      "unit": "mm",
+      "low": 30,
+      "high": 80,
+      "default": 50,
+      "doc": "width of wall plate and arm (y)"
+    },
+    "rib_count": {
+      "unit": "1",
+      "low": 1,
+      "high": 3,
+      "default": 1,
+      "integer": true,
+      "doc": "number of ribs under the arm"
+    },
+    "rib_thickness": {
+      "unit": "mm",
+      "low": 2,
+      "high": 10,
+      "default": 4,
+      "doc": "thickness of each rib (y)"
+    },
+    "fillet_radius": {
+      "unit": "mm",
+      "low": 0.5,
+      "high": 6,
+      "default": 3,
+      "doc": "inner corner fillet between wall plate and arm"
+    }
   },
   "features": [
-    {"id": "wall", "type": "plate", "doc": "vertical plate against the wall",
-     "params": {"x": 0, "y": 0, "z": 0, "length": "thickness", "width": "plate_width", "thickness": 100}},
-    {"id": "arm", "type": "plate", "doc": "horizontal arm carrying the load",
-     "params": {"x": 0, "y": 0, "z": "100 - thickness", "length": 120, "width": "plate_width", "thickness": "thickness"}},
-    {"id": "corner", "type": "fillet", "doc": "inner corner between wall plate and arm",
-     "params": {"radius": "fillet_radius", "edge_axis": "y",
-                "region": ["thickness - 0.01", -1, "100 - thickness - 0.01", "thickness + 0.01", "plate_width + 1", "100 - thickness + 0.01"]}},
-    {"id": "rib", "type": "rib", "doc": "first rib; leg_a along the arm, leg_b down the wall",
-     "params": {"x": "thickness", "y": "plate_width / (rib_count + 1) - rib_thickness / 2", "z": "100 - thickness",
-                "leg_a": "0.8 * (120 - thickness)", "leg_a_dir": "x", "leg_b": "0.7 * (100 - thickness)", "leg_b_dir": "-z",
-                "thickness": "rib_thickness"}},
-    {"id": "ribs", "type": "linear_pattern", "doc": "remaining ribs, evenly spaced across the width",
-     "params": {"target": "rib", "count": "rib_count", "dy": "plate_width / (rib_count + 1)"}},
-    {"id": "mount", "type": "hole_pattern", "doc": "two M6 clearance holes in a row below the ribs, so bolts and ribs never collide",
-     "params": {"x": -0.5, "y": "plate_width / 4", "z": 12, "diameter": 6.6, "depth": "thickness + 1", "axis": "x",
-                "n1": 2, "d1": "plate_width / 2", "n2": 1, "d2": 0}}
+    {
+      "id": "wall",
+      "type": "plate",
+      "doc": "vertical plate against the wall",
+      "params": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "length": "thickness",
+        "width": "plate_width",
+        "thickness": 100
+      }
+    },
+    {
+      "id": "arm",
+      "type": "plate",
+      "doc": "horizontal arm carrying the load",
+      "params": {
+        "x": 0,
+        "y": 0,
+        "z": "100 - thickness",
+        "length": 120,
+        "width": "plate_width",
+        "thickness": "thickness"
+      }
+    },
+    {
+      "id": "corner",
+      "type": "fillet",
+      "doc": "inner corner between wall plate and arm",
+      "params": {
+        "radius": "fillet_radius",
+        "edge_axis": "y",
+        "region": [
+          "thickness - 0.01",
+          -1,
+          "100 - thickness - 0.01",
+          "thickness + 0.01",
+          "plate_width + 1",
+          "100 - thickness + 0.01"
+        ]
+      }
+    },
+    {
+      "id": "rib",
+      "type": "rib",
+      "doc": "first rib; leg_a along the arm, leg_b down the wall",
+      "params": {
+        "x": "thickness",
+        "y": "plate_width / (rib_count + 1) - rib_thickness / 2",
+        "z": "100 - thickness",
+        "leg_a": "0.8 * (120 - thickness)",
+        "leg_a_dir": "x",
+        "leg_b": "0.7 * (100 - thickness)",
+        "leg_b_dir": "-z",
+        "thickness": "rib_thickness",
+        "tip_cut": "3"
+      }
+    },
+    {
+      "id": "ribs",
+      "type": "linear_pattern",
+      "doc": "remaining ribs, evenly spaced across the width",
+      "params": {
+        "target": "rib",
+        "count": "rib_count",
+        "dy": "plate_width / (rib_count + 1)"
+      }
+    },
+    {
+      "id": "mount",
+      "type": "hole_pattern",
+      "doc": "two M6 clearance holes in a row below the ribs, so bolts and ribs never collide",
+      "params": {
+        "x": -0.5,
+        "y": "plate_width / 4",
+        "z": 12,
+        "diameter": 6.6,
+        "depth": "thickness + 1",
+        "axis": "x",
+        "n1": 2,
+        "d1": "plate_width / 2",
+        "n2": 1,
+        "d2": 0
+      }
+    }
   ],
   "faces": {
-    "mount_holes": {"kind": "cylinder", "axis": "x", "radius": 3.3, "doc": "bolt bores; supports act here"},
-    "load_face":   {"kind": "plane", "normal": "x", "at": 120, "doc": "end face of the arm; the load acts here"},
-    "top_face":    {"kind": "plane", "normal": "z", "at": 100, "doc": "top of the arm, for distributed loads"},
-    "wall_face":   {"kind": "plane", "normal": "-x", "at": 0, "doc": "face against the wall"}
+    "mount_holes": {
+      "kind": "cylinder",
+      "axis": "x",
+      "radius": 3.3,
+      "doc": "bolt bores; supports act here"
+    },
+    "load_face": {
+      "kind": "plane",
+      "normal": "x",
+      "at": 120,
+      "doc": "end face of the arm; the load acts here"
+    },
+    "top_face": {
+      "kind": "plane",
+      "normal": "z",
+      "at": 100,
+      "doc": "top of the arm, for distributed loads"
+    },
+    "wall_face": {
+      "kind": "plane",
+      "normal": "-x",
+      "at": 0,
+      "doc": "face against the wall"
+    }
   },
-  "design_space": [0, 0, 0, 120, 80, 100]
+  "design_space": [
+    0,
+    0,
+    0,
+    120,
+    80,
+    100
+  ]
 }

@@ -103,6 +103,8 @@ DesignSpec DesignSpec::from_json(const nlohmann::json& j) {
   }
   if (s.requirements.empty()) throw SpecError("spec has no requirements");
   s.mesh_size = j.value("mesh", nlohmann::json::object()).value("size", 4.0);
+  s.stress_exclude_near_bc_mm = j.value("stress_evaluation", nlohmann::json::object()).value("exclude_near_bc_mm", 3.0);
+  if (s.stress_exclude_near_bc_mm < 0) throw SpecError("stress_evaluation.exclude_near_bc_mm must not be negative");
   return s;
 }
 

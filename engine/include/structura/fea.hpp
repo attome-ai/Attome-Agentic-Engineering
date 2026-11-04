@@ -47,7 +47,9 @@ std::map<int, std::array<double, 3>> distribute_force(const Mesh& m, const std::
 struct Result {
   double mass_t = 0;               // tonne
   double volume_mm3 = 0;
-  double max_von_mises_MPa = 0;
+  double max_von_mises_MPa = 0;      // peak over the evaluation region (see SolveOptions::exclude_near_bc_mm)
+  double max_von_mises_raw_MPa = 0;  // raw peak over every node
+  double excluded_mm = 0;
   double max_disp_mm = 0;
   std::array<double, 3> applied_N{0, 0, 0};
   std::array<double, 3> reaction_N{0, 0, 0};
@@ -69,6 +71,9 @@ struct Result {
 struct SolveOptions {
   int threads = 1;
   double timeout_s = 600;
+  // Saint-Venant: stress within this distance (mm) of a load or support face is a modelling artefact of how the
+  // load/support is applied; max_von_mises_MPa excludes it, max_von_mises_raw_MPa keeps the raw peak. 0 = no exclusion.
+  double exclude_near_bc_mm = 0;
 };
 std::string write_deck(const Mesh& m, const Material& mat, const LoadCase& lc, std::map<int, std::array<double, 3>>* applied = nullptr);
 Result solve_static(const Mesh& m, const Material& mat, const LoadCase& lc, const std::string& workdir, const SolveOptions& o = {});

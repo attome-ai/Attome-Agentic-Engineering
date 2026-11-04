@@ -20,7 +20,7 @@ TEST_CASE("B3-T3: design hashes are stable and change with any input") {
   CHECK(a.hash() == Design(g, {{"thickness", 5.0000000001}}).hash());
   CHECK(a.hash() != Design(g, {{"thickness", 5.1}}).hash());
   DesignGraph g2 = g;
-  g2.version = "2";
+  g2.version = "99";
   CHECK(a.hash() != Design(g2, {{"thickness", 5.0}}).hash());
 }
 

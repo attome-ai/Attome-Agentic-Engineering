@@ -50,18 +50,20 @@ std::map<std::string, FeatureType> build_registry() {
         P("diameter", "length", "diameter"), P("depth", "length", "depth"), P("axis", "axis", "drilling direction", "-z"),
         P("n1", "count", "holes along the first direction", 1), P("d1", "pos", "spacing along the first direction", 0.0),
         P("n2", "count", "holes along the second direction", 1), P("d2", "pos", "spacing along the second direction", 0.0)}},
-      {"rib", "Triangular gusset with its right-angle corner at (x, y, z), legs along two perpendicular axes, extruded by thickness along their cross product.",
+      {"rib", "Triangular gusset with its right-angle corner at (x, y, z), legs along two perpendicular axes, extruded by thickness along their cross product. tip_cut > 0 truncates both acute tips square to their legs (blunt ends avoid knife-edge stress singularities and print better).",
        {P("x", "pos", "corner x"), P("y", "pos", "corner y"), P("z", "pos", "corner z"),
         P("leg_a", "length", "first leg length"), P("leg_a_dir", "axis", "first leg direction"),
         P("leg_b", "length", "second leg length"), P("leg_b_dir", "axis", "second leg direction"),
-        P("thickness", "length", "rib thickness")}},
+        P("thickness", "length", "rib thickness"), P("tip_cut", "pos", "length cut off each acute tip, along its leg (0 = sharp)", 0.0)}},
       {"pocket", "Rectangular pocket cut downward from z_top, with optional rounded vertical corners.",
        {P("x", "pos", "min corner x"), P("y", "pos", "min corner y"), P("z_top", "pos", "top of the pocket"),
         P("length", "length", "size along x"), P("width", "length", "size along y"), P("depth", "length", "depth"),
         P("corner_radius", "pos", "vertical corner radius (0 for sharp)", 0.0)}},
-      {"fillet", "Rounds straight edges parallel to edge_axis whose midpoints lie inside region.",
+      {"fillet", "Rounds straight edges parallel to edge_axis whose midpoints lie inside region; an optional second set (edge_axis_2, region_2) is rounded in the same operation, which OCCT needs when the two sets meet.",
        {P("radius", "length", "fillet radius"), P("edge_axis", "axis", "edge direction"),
-        P("region", "bbox", "[xmin, ymin, zmin, xmax, ymax, zmax]")}, true},
+        P("region", "bbox", "[xmin, ymin, zmin, xmax, ymax, zmax]"),
+        P("edge_axis_2", "axis_opt", "second edge direction or none", "none"),
+        P("region_2", "bbox_opt", "second region or [] for none", ojson::array())}, true},
       {"chamfer", "Chamfers straight edges parallel to edge_axis whose midpoints lie inside region.",
        {P("length", "length", "chamfer length"), P("edge_axis", "axis", "edge direction"),
         P("region", "bbox", "[xmin, ymin, zmin, xmax, ymax, zmax]")}, true},
@@ -287,6 +289,15 @@ std::vector<Resolved> DesignGraph::resolve(const Values& overrides) const {
           if (!raw.is_string() || !is_axis(raw.get<std::string>()))
             throw GraphError(w + " = " + raw.dump() + " is not one of -x, -y, -z, x, y, z");
           r.str[spec.name] = raw.get<std::string>();
+        } else if (spec.kind == "axis_opt") {
+          if (!raw.is_string() || (raw != "none" && !is_axis(raw.get<std::string>())))
+            throw GraphError(w + " = " + raw.dump() + " is not none or one of -x, -y, -z, x, y, z");
+          r.str[spec.name] = raw.get<std::string>();
+        } else if (spec.kind == "bbox_opt") {
+          if (!raw.is_array() || (!raw.empty() && raw.size() != 6)) throw GraphError(w + " needs 6 values or []");
+          std::vector<double> q;
+          for (auto& c : raw) q.push_back(check_kind("pos", eval_value(c, vals), w));
+          r.vec[spec.name] = q;
         } else if (spec.kind == "op") {
           if (!raw.is_string() || (raw != "add" && raw != "cut")) throw GraphError(w + " must be 'add' or 'cut'");
           r.str[spec.name] = raw.get<std::string>();

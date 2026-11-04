@@ -69,3 +69,25 @@ when one evaluation costs at least about half the model-fitting time and the bud
 thermal and later CFD studies get Bayesian optimization, where saving solver calls is worth the model cost.
 
 **Open.** BoTorch was measured on one seed only; repeat with three seeds on an expensive (fine-mesh) evaluation.
+
+## D6. Bracket ribs end in blunt tips; stress is checked away from load and support faces (2026-11-04)
+
+**Evidence.** The first trust record of the optimized knee design showed a 76% Grid Convergence Index on peak stress:
+the peak sat where each triangular rib's knife-edge tip meets the arm (a true singularity, stress growing 10.6 -> 11.7 ->
+13.1 MPa as the mesh refined). Root fillets were tried and removed (their blend ends create 0.03 mm edges that the gate
+rightly rejects; gate pass fell to 88.5%).
+
+**Decision.** The grammar's `rib` gains `tip_cut`; bracket family version 2 cuts 3 mm off each acute tip. The strength
+check uses the peak von Mises stress at least 3 mm from any load or support face (Saint-Venant; spec field
+`stress_evaluation.exclude_near_bc_mm`), and the raw peak is reported alongside. Result: gate pass back to 200 of 200, and
+the peak-stress error fell to 3.8%. The grammar's fillet can now round two edge sets in one operation.
+
+## D7. The search mesh is no coarser than 4 mm for stress requirements (2026-11-04)
+
+**Evidence.** With a 6 mm search mesh the safety factor of every Pareto design fell 28-30% on the 3 mm verification mesh
+and 0 of 3 front designs stayed feasible; 3 mm and 4.5 mm agree within about 1%.
+
+**Decision.** Studies search at the spec's mesh size (4 mm for the bracket) and verify the front at 3 mm. Result on
+the 20 kg brief: 3 of 4 front designs stay feasible on the fine mesh, the ranking does not change, and the recommended
+design (234 g, safety factor 2.06) gets trust grade A. The cache key now includes every family file and the materials
+table, so geometry changes never serve stale results.

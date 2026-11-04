@@ -255,7 +255,38 @@ Result solve_static(const Mesh& m, const Material& mat, const LoadCase& lc, cons
     double s = von_mises(v);
     r.von_mises[n] = s;
     r.stress[n] = {v[0], v[1], v[2], v[3], v[4], v[5]};
-    r.max_von_mises_MPa = std::max(r.max_von_mises_MPa, s);
+    r.max_von_mises_raw_MPa = std::max(r.max_von_mises_raw_MPa, s);
+  }
+  // evaluation-region peak: skip nodes within exclude_near_bc_mm of any load or support node (spatial hash)
+  r.excluded_mm = o.exclude_near_bc_mm;
+  if (o.exclude_near_bc_mm <= 0) {
+    r.max_von_mises_MPa = r.max_von_mises_raw_MPa;
+  } else {
+    const double d = o.exclude_near_bc_mm, d2 = d * d;
+    std::map<std::array<long long, 3>, std::vector<int>> grid;
+    auto cell = [&](const std::array<double, 3>& c) {
+      return std::array<long long, 3>{(long long)std::floor(c[0] / d), (long long)std::floor(c[1] / d), (long long)std::floor(c[2] / d)};
+    };
+    std::set<int> bc;
+    for (auto& sp : lc.supports) bc.insert(m.nsets.at(sp.group).begin(), m.nsets.at(sp.group).end());
+    for (auto& l : lc.loads) bc.insert(m.nsets.at(l.group).begin(), m.nsets.at(l.group).end());
+    for (int n : bc) grid[cell(m.nodes.at(n))].push_back(n);
+    for (auto& [n, s] : r.von_mises) {
+      auto& c = m.nodes.at(n);
+      auto k = cell(c);
+      bool near = false;
+      for (long long i = -1; i <= 1 && !near; ++i)
+        for (long long j = -1; j <= 1 && !near; ++j)
+          for (long long q = -1; q <= 1 && !near; ++q) {
+            auto it = grid.find({k[0] + i, k[1] + j, k[2] + q});
+            if (it == grid.end()) continue;
+            for (int b : it->second) {
+              auto& e = m.nodes.at(b);
+              if ((c[0] - e[0]) * (c[0] - e[0]) + (c[1] - e[1]) * (c[1] - e[1]) + (c[2] - e[2]) * (c[2] - e[2]) < d2) { near = true; break; }
+            }
+          }
+      if (!near) r.max_von_mises_MPa = std::max(r.max_von_mises_MPa, s);
+    }
   }
   for (auto& [_, f] : applied)
     for (int c = 0; c < 3; ++c) r.applied_N[c] += f[c];
@@ -314,7 +345,7 @@ Result solve_static(const Mesh& m, const Material& mat, const LoadCase& lc, cons
 }
 
 nlohmann::json Result::summary() const {
-  return {{"mass_t", mass_t}, {"mass_g", mass_t * 1e6}, {"volume_mm3", volume_mm3}, {"max_von_mises_MPa", max_von_mises_MPa},
+  return {{"mass_t", mass_t}, {"mass_g", mass_t * 1e6}, {"volume_mm3", volume_mm3}, {"max_von_mises_MPa", max_von_mises_MPa}, {"max_von_mises_raw_MPa", max_von_mises_raw_MPa}, {"stress_excluded_near_bc_mm", excluded_mm},
           {"max_disp_mm", max_disp_mm}, {"applied_N", applied_N}, {"reaction_N", reaction_N},
           {"equilibrium_error", equilibrium_error}, {"strain_energy_Nmm", strain_energy}, {"external_work_Nmm", external_work},
           {"solver", solver}, {"solver_version", solver_version},

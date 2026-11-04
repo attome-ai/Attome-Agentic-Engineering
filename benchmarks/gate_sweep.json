@@ -49,7 +49,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 9.170772760226528,
+   "min_wall_mm": 8.8718947063199,
    "ok": true,
    "params": {
     "fillet_radius": 2.223833016798637,
@@ -61,7 +61,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 8.633175287199403,
+   "min_wall_mm": 8.633175287199402,
    "ok": true,
    "params": {
     "fillet_radius": 5.062818505910165,
@@ -97,7 +97,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 8.001154499192106,
+   "min_wall_mm": 8.00115449919211,
    "ok": true,
    "params": {
     "fillet_radius": 5.938735981921703,
@@ -109,8 +109,8 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 3.7769963886389086,
-   "ok": true,
+   "min_wall_mm": 3.776996388638912,
+   "ok": false,
    "params": {
     "fillet_radius": 0.9035029583768317,
     "plate_width": 44.02219961512014,
@@ -118,10 +118,12 @@
     "rib_thickness": 3.7769963886389117,
     "thickness": 9.733490879169135
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.00 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
-   "min_wall_mm": 4.3022027460921,
+   "min_wall_mm": 4.302202746092097,
    "ok": true,
    "params": {
     "fillet_radius": 1.2151571304204865,
@@ -157,8 +159,8 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 6.077357442049621,
-   "ok": true,
+   "min_wall_mm": 8.933647442044373,
+   "ok": false,
    "params": {
     "fillet_radius": 3.211827765060402,
     "plate_width": 35.116721524752386,
@@ -166,7 +168,9 @@
     "rib_thickness": 9.599505069505527,
     "thickness": 9.297825254581126
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.11 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
    "min_wall_mm": 7.310357190753044,
@@ -217,7 +221,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 4.159423151543796,
+   "min_wall_mm": 4.159423151543794,
    "ok": true,
    "params": {
     "fillet_radius": 5.427374185053846,
@@ -230,7 +234,7 @@
   },
   {
    "min_wall_mm": 5.984872556595955,
-   "ok": true,
+   "ok": false,
    "params": {
     "fillet_radius": 0.905856061358779,
     "plate_width": 78.24200246810612,
@@ -238,10 +242,12 @@
     "rib_thickness": 5.9848725565959535,
     "thickness": 6.852820714184803
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.00 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
-   "min_wall_mm": 5.048215962737547,
+   "min_wall_mm": 6.550002018331952,
    "ok": true,
    "params": {
     "fillet_radius": 2.7447524238797145,
@@ -289,7 +295,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 3.097086000204968,
+   "min_wall_mm": 3.09708600020497,
    "ok": true,
    "params": {
     "fillet_radius": 5.629275057717507,
@@ -301,7 +307,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 5.084237396025255,
+   "min_wall_mm": 6.065980301714432,
    "ok": true,
    "params": {
     "fillet_radius": 1.6471256964482173,
@@ -314,7 +320,7 @@
   },
   {
    "min_wall_mm": 2.1590410567303686,
-   "ok": true,
+   "ok": false,
    "params": {
     "fillet_radius": 0.6441604303381692,
     "plate_width": 55.94309377846686,
@@ -322,7 +328,9 @@
     "rib_thickness": 2.159041056730371,
     "thickness": 3.443738213578988
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.00 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
    "min_wall_mm": 3.2547584022316816,
@@ -361,7 +369,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 8.90833482225781,
+   "min_wall_mm": 8.715981302062346,
    "ok": true,
    "params": {
     "fillet_radius": 4.609169018486352,
@@ -434,7 +442,7 @@
   },
   {
    "min_wall_mm": 2.148609589337094,
-   "ok": true,
+   "ok": false,
    "params": {
     "fillet_radius": 0.8851217973467803,
     "plate_width": 74.65106059598016,
@@ -442,10 +450,12 @@
     "rib_thickness": 2.148609589337089,
     "thickness": 11.835809716391283
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.00 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
-   "min_wall_mm": 5.642259760888012,
+   "min_wall_mm": 5.642259760888014,
    "ok": true,
    "params": {
     "fillet_radius": 3.4250454550482083,
@@ -469,7 +479,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 8.113932900254307,
+   "min_wall_mm": 8.113932900254303,
    "ok": true,
    "params": {
     "fillet_radius": 1.6700353219722075,
@@ -542,7 +552,7 @@
   },
   {
    "min_wall_mm": 3.3356127412728775,
-   "ok": true,
+   "ok": false,
    "params": {
     "fillet_radius": 0.6325589393553569,
     "plate_width": 49.50038591081219,
@@ -550,7 +560,9 @@
     "rib_thickness": 3.335612741272879,
     "thickness": 8.774095860326668
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.00 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
    "min_wall_mm": 5.159004912466512,
@@ -566,7 +578,7 @@
   },
   {
    "min_wall_mm": 4.565600991089265,
-   "ok": true,
+   "ok": false,
    "params": {
     "fillet_radius": 0.5699196652931023,
     "plate_width": 36.31647602834945,
@@ -574,7 +586,9 @@
     "rib_thickness": 7.545481585217787,
     "thickness": 4.565600991089275
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.00 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
    "min_wall_mm": 2.1201518389101772,
@@ -589,7 +603,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 5.842781868528653,
+   "min_wall_mm": 5.9885721546477795,
    "ok": true,
    "params": {
     "fillet_radius": 2.048122211451654,
@@ -613,7 +627,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 6.616541064900537,
+   "min_wall_mm": 6.616541064900539,
    "ok": true,
    "params": {
     "fillet_radius": 1.195893871032505,
@@ -637,7 +651,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 8.144220019847374,
+   "min_wall_mm": 8.520800459930465,
    "ok": true,
    "params": {
     "fillet_radius": 3.4914348038561207,
@@ -661,7 +675,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 8.940139638260755,
+   "min_wall_mm": 8.725085136001061,
    "ok": true,
    "params": {
     "fillet_radius": 4.823892304411198,
@@ -673,7 +687,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 5.238338711172616,
+   "min_wall_mm": 5.292324726793264,
    "ok": true,
    "params": {
     "fillet_radius": 3.6609132936345903,
@@ -686,7 +700,7 @@
   },
   {
    "min_wall_mm": 7.580075967287334,
-   "ok": true,
+   "ok": false,
    "params": {
     "fillet_radius": 0.9109814116091277,
     "plate_width": 44.27881386302982,
@@ -694,7 +708,9 @@
     "rib_thickness": 7.580075967287334,
     "thickness": 8.652685820999658
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.00 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
    "min_wall_mm": 3.3282273210875744,
@@ -710,7 +726,7 @@
   },
   {
    "min_wall_mm": 3.92174106162433,
-   "ok": true,
+   "ok": false,
    "params": {
     "fillet_radius": 0.6274280172678317,
     "plate_width": 52.54369675027413,
@@ -718,7 +734,9 @@
     "rib_thickness": 3.9217410616243304,
     "thickness": 9.037099119829438
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.00 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
    "min_wall_mm": 5.441978215354417,
@@ -793,7 +811,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 4.799756439148625,
+   "min_wall_mm": 4.757631015779748,
    "ok": true,
    "params": {
     "fillet_radius": 5.312289083785841,
@@ -805,7 +823,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 6.178292544858475,
+   "min_wall_mm": 6.178292544858478,
    "ok": true,
    "params": {
     "fillet_radius": 5.4713359456667305,
@@ -841,7 +859,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 3.9842684744027683,
+   "min_wall_mm": 3.98426847440277,
    "ok": true,
    "params": {
     "fillet_radius": 5.184195331228503,
@@ -878,7 +896,7 @@
   },
   {
    "min_wall_mm": 3.157535254492475,
-   "ok": true,
+   "ok": false,
    "params": {
     "fillet_radius": 0.7656500663657831,
     "plate_width": 37.227276958412965,
@@ -886,7 +904,9 @@
     "rib_thickness": 3.157535254492476,
     "thickness": 8.88723612656024
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.00 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
    "min_wall_mm": 4.5948996996699405,
@@ -925,7 +945,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 6.6828737054664105,
+   "min_wall_mm": 6.682873705466409,
    "ok": true,
    "params": {
     "fillet_radius": 5.8326047882987915,
@@ -1045,7 +1065,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 2.708930074411319,
+   "min_wall_mm": 2.708930074411317,
    "ok": true,
    "params": {
     "fillet_radius": 1.4112930222510176,
@@ -1117,7 +1137,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 5.998109423519286,
+   "min_wall_mm": 6.82795717954335,
    "ok": true,
    "params": {
     "fillet_radius": 4.240105304657675,
@@ -1153,7 +1173,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 5.219140129147934,
+   "min_wall_mm": 5.219140129147935,
    "ok": true,
    "params": {
     "fillet_radius": 5.4757738511048375,
@@ -1177,7 +1197,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 6.200673393015251,
+   "min_wall_mm": 8.479317799697919,
    "ok": true,
    "params": {
     "fillet_radius": 5.479711187018356,
@@ -1201,7 +1221,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 9.919641413828463,
+   "min_wall_mm": 8.853261958863449,
    "ok": true,
    "params": {
     "fillet_radius": 4.41117349505344,
@@ -1237,7 +1257,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 8.085981978165043,
+   "min_wall_mm": 8.755372988354507,
    "ok": true,
    "params": {
     "fillet_radius": 4.898136562077913,
@@ -1249,7 +1269,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 4.9324531427105525,
+   "min_wall_mm": 4.932453142710549,
    "ok": true,
    "params": {
     "fillet_radius": 2.884757817272469,
@@ -1309,8 +1329,8 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 8.933840779601368,
-   "ok": true,
+   "min_wall_mm": 8.715206352340589,
+   "ok": false,
    "params": {
     "fillet_radius": 0.8269699169420903,
     "plate_width": 51.32373939411244,
@@ -1318,10 +1338,12 @@
     "rib_thickness": 9.591816127761074,
     "thickness": 11.247652660950445
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.00 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
-   "min_wall_mm": 9.02546328941253,
+   "min_wall_mm": 9.361652121653494,
    "ok": true,
    "params": {
     "fillet_radius": 1.7534516082436258,
@@ -1393,8 +1415,8 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 2.2594106022769993,
-   "ok": true,
+   "min_wall_mm": 2.2594106022769957,
+   "ok": false,
    "params": {
     "fillet_radius": 1.0146740417487505,
     "plate_width": 68.20619725041979,
@@ -1402,7 +1424,9 @@
     "rib_thickness": 2.259410602276999,
     "thickness": 5.737897432358912
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.02 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
    "min_wall_mm": 3.588345454247,
@@ -1417,7 +1441,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 8.593902731679176,
+   "min_wall_mm": 8.593902731679178,
    "ok": true,
    "params": {
     "fillet_radius": 3.979387004024618,
@@ -1429,7 +1453,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 9.018594937776975,
+   "min_wall_mm": 8.716740413171973,
    "ok": true,
    "params": {
     "fillet_radius": 4.743785585612415,
@@ -1573,7 +1597,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 3.304715390772506,
+   "min_wall_mm": 3.3047153907725098,
    "ok": true,
    "params": {
     "fillet_radius": 1.5042685876175947,
@@ -1585,8 +1609,8 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 5.016660791809236,
-   "ok": true,
+   "min_wall_mm": 5.016660791809239,
+   "ok": false,
    "params": {
     "fillet_radius": 0.6464533835036416,
     "plate_width": 43.634943382336616,
@@ -1594,7 +1618,9 @@
     "rib_thickness": 5.0166607918092385,
     "thickness": 7.8716332043816815
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.00 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
    "min_wall_mm": 3.9982833144401106,
@@ -1622,7 +1648,7 @@
   },
   {
    "min_wall_mm": 5.740661870135308,
-   "ok": true,
+   "ok": false,
    "params": {
     "fillet_radius": 1.0539669149040731,
     "plate_width": 71.7427023229403,
@@ -1630,7 +1656,9 @@
     "rib_thickness": 6.94318757101019,
     "thickness": 5.740661870135311
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.08 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
    "min_wall_mm": 3.2544255245836595,
@@ -1657,7 +1685,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 4.887896836042367,
+   "min_wall_mm": 4.798861375112779,
    "ok": true,
    "params": {
     "fillet_radius": 1.659028150948642,
@@ -1694,7 +1722,7 @@
   },
   {
    "min_wall_mm": 3.505269361204051,
-   "ok": true,
+   "ok": false,
    "params": {
     "fillet_radius": 0.9527935337212478,
     "plate_width": 71.76358015731651,
@@ -1702,7 +1730,9 @@
     "rib_thickness": 5.726643583164084,
     "thickness": 3.505269361204051
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.00 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
    "min_wall_mm": 4.799685029243288,
@@ -1717,7 +1747,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 5.966149746784388,
+   "min_wall_mm": 7.447046380496853,
    "ok": true,
    "params": {
     "fillet_radius": 5.160392176224626,
@@ -1753,7 +1783,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 6.2232318027530935,
+   "min_wall_mm": 5.126986802446206,
    "ok": true,
    "params": {
     "fillet_radius": 4.570426491487899,
@@ -1777,7 +1807,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 2.158200794797493,
+   "min_wall_mm": 2.1582007947974895,
    "ok": true,
    "params": {
     "fillet_radius": 5.231303477102032,
@@ -1789,7 +1819,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 3.670325928849627,
+   "min_wall_mm": 3.6703259288496235,
    "ok": true,
    "params": {
     "fillet_radius": 4.594593100702182,
@@ -1801,7 +1831,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 8.928730506732597,
+   "min_wall_mm": 8.714885252042134,
    "ok": true,
    "params": {
     "fillet_radius": 5.218434071037252,
@@ -1837,7 +1867,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 4.244232055492945,
+   "min_wall_mm": 4.580748413409681,
    "ok": true,
    "params": {
     "fillet_radius": 4.4778047660203395,
@@ -1849,7 +1879,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 4.416773854487489,
+   "min_wall_mm": 4.416773854487487,
    "ok": true,
    "params": {
     "fillet_radius": 5.356656802470075,
@@ -1873,7 +1903,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 5.1810226676709314,
+   "min_wall_mm": 5.37422443646855,
    "ok": true,
    "params": {
     "fillet_radius": 5.054744489230999,
@@ -1897,7 +1927,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 9.018883784685965,
+   "min_wall_mm": 8.710962724176031,
    "ok": true,
    "params": {
     "fillet_radius": 2.9622895086714918,
@@ -1909,8 +1939,8 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 9.600253722921439,
-   "ok": true,
+   "min_wall_mm": 8.716125414480855,
+   "ok": false,
    "params": {
     "fillet_radius": 1.190228464017884,
     "plate_width": 52.84828514632531,
@@ -1918,7 +1948,9 @@
     "rib_thickness": 9.60025372292144,
     "thickness": 10.060116772551844
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.30 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
    "min_wall_mm": 4.180925202997595,
@@ -1945,7 +1977,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 5.95475528496967,
+   "min_wall_mm": 5.775575597631504,
    "ok": true,
    "params": {
     "fillet_radius": 1.8840152790176332,
@@ -1957,7 +1989,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 8.855392921620671,
+   "min_wall_mm": 8.853261958863449,
    "ok": true,
    "params": {
     "fillet_radius": 4.369246240107773,
@@ -1981,7 +2013,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 2.681279010740534,
+   "min_wall_mm": 2.681279010740536,
    "ok": true,
    "params": {
     "fillet_radius": 2.858118309927327,
@@ -2005,7 +2037,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 3.957537806577131,
+   "min_wall_mm": 3.9575378065771383,
    "ok": true,
    "params": {
     "fillet_radius": 4.1000029386980135,
@@ -2017,7 +2049,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 5.0985068318036415,
+   "min_wall_mm": 5.055146773221645,
    "ok": true,
    "params": {
     "fillet_radius": 1.5425343296840117,
@@ -2041,7 +2073,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 6.793453057947917,
+   "min_wall_mm": 7.664328139403463,
    "ok": true,
    "params": {
     "fillet_radius": 3.2889395858107644,
@@ -2065,7 +2097,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 3.3808369586448515,
+   "min_wall_mm": 3.380836958644848,
    "ok": true,
    "params": {
     "fillet_radius": 2.7475047088813267,
@@ -2077,7 +2109,7 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 2.7741921673998626,
+   "min_wall_mm": 2.7741921673998644,
    "ok": true,
    "params": {
     "fillet_radius": 1.3047862331759545,
@@ -2150,7 +2182,7 @@
   },
   {
    "min_wall_mm": 5.120587046597996,
-   "ok": true,
+   "ok": false,
    "params": {
     "fillet_radius": 0.7578169310593817,
     "plate_width": 60.44155843613939,
@@ -2158,7 +2190,9 @@
     "rib_thickness": 5.120587046597998,
     "thickness": 5.51091803733614
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.00 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
    "min_wall_mm": 4.744224872987998,
@@ -2270,7 +2304,7 @@
   },
   {
    "min_wall_mm": 2.482651863479522,
-   "ok": true,
+   "ok": false,
    "params": {
     "fillet_radius": 0.5587302225381677,
     "plate_width": 61.67370046504929,
@@ -2278,7 +2312,9 @@
     "rib_thickness": 2.482651863479523,
     "thickness": 9.044385396351531
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.00 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
    "min_wall_mm": 3.2137989904753526,
@@ -2294,7 +2330,7 @@
   },
   {
    "min_wall_mm": 7.20720475619293,
-   "ok": true,
+   "ok": false,
    "params": {
     "fillet_radius": 0.8494477445017503,
     "plate_width": 53.43329173234903,
@@ -2302,11 +2338,13 @@
     "rib_thickness": 7.207204756192932,
     "thickness": 8.090958997339678
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.00 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
    "min_wall_mm": 5.745235618587979,
-   "ok": true,
+   "ok": false,
    "params": {
     "fillet_radius": 0.8560698931683453,
     "plate_width": 54.58588595910837,
@@ -2314,7 +2352,9 @@
     "rib_thickness": 9.397633476949384,
     "thickness": 5.745235618587985
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.00 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
    "min_wall_mm": 5.48822122183853,
@@ -2330,7 +2370,7 @@
   },
   {
    "min_wall_mm": 3.912658734705199,
-   "ok": true,
+   "ok": false,
    "params": {
     "fillet_radius": 0.8357017453615825,
     "plate_width": 59.246887851316366,
@@ -2338,11 +2378,13 @@
     "rib_thickness": 4.276991028166438,
     "thickness": 3.912658734705201
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.00 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
-   "min_wall_mm": 2.7279037877518335,
-   "ok": true,
+   "min_wall_mm": 2.72790378775183,
+   "ok": false,
    "params": {
     "fillet_radius": 0.5211409920675367,
     "plate_width": 63.42280864279023,
@@ -2350,10 +2392,12 @@
     "rib_thickness": 2.727903787751832,
     "thickness": 9.331674029114861
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.00 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
-   "min_wall_mm": 5.154451434485667,
+   "min_wall_mm": 5.693361353452761,
    "ok": true,
    "params": {
     "fillet_radius": 3.3911819407953065,
@@ -2365,8 +2409,8 @@
    "reasons": []
   },
   {
-   "min_wall_mm": 2.518975882512804,
-   "ok": true,
+   "min_wall_mm": 2.5189758825128075,
+   "ok": false,
    "params": {
     "fillet_radius": 0.5512548393478212,
     "plate_width": 62.21160135101,
@@ -2374,10 +2418,12 @@
     "rib_thickness": 2.518975882512808,
     "thickness": 3.2564176573646946
    },
-   "reasons": []
+   "reasons": [
+    "edge of 0.00 mm is shorter than the minimum feature size 0.3 mm"
+   ]
   },
   {
-   "min_wall_mm": 6.540326173000598,
+   "min_wall_mm": 7.6096560457679265,
    "ok": true,
    "params": {
     "fillet_radius": 2.5040793829283396,
@@ -2403,9 +2449,11 @@
  ],
  "family": "bracket",
  "n": 200,
- "pass_rate": 1.0,
- "passed": 200,
- "reasons": {},
- "seconds": 12.2,
+ "pass_rate": 0.885,
+ "passed": 177,
+ "reasons": {
+  "edge": 23
+ },
+ "seconds": 24.4,
  "seed": 1
 }

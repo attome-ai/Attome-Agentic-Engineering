@@ -121,8 +121,17 @@ std::vector<Prim> build_primitives(const Resolved& r, const std::map<std::string
     if (std::fabs(a.Dot(b)) > 1e-9) throw std::runtime_error("rib legs must be perpendicular");
     gp_Vec n = a.Crossed(b);
     gp_Pnt o(r.n("x"), r.n("y"), r.n("z"));
-    gp_Pnt pa = o.Translated(a * r.n("leg_a")), pb = o.Translated(b * r.n("leg_b"));
-    return one(prism_polygon({o, pa, pb}, n * r.n("thickness")), false);
+    double La = r.n("leg_a"), Lb = r.n("leg_b"), c = r.n("tip_cut");
+    if (c < 0) throw std::runtime_error("rib tip_cut must not be negative");
+    if (c <= 0) {
+      gp_Pnt pa = o.Translated(a * La), pb = o.Translated(b * Lb);
+      return one(prism_polygon({o, pa, pb}, n * r.n("thickness")), false);
+    }
+    if (c >= 0.5 * std::min(La, Lb)) throw std::runtime_error("rib tip_cut must be less than half the shorter leg");
+    // cut each acute tip square to its leg: (La - c, 0) up to the hypotenuse, and (0, Lb - c) across to it
+    std::vector<gp_Pnt> pts = {o, o.Translated(a * (La - c)), o.Translated(a * (La - c) + b * (Lb * c / La)),
+                               o.Translated(a * (La * c / Lb) + b * (Lb - c)), o.Translated(b * (Lb - c))};
+    return one(prism_polygon(pts, n * r.n("thickness")), false);
   }
 
   if (t == "pocket") {
@@ -196,6 +205,8 @@ TopoDS_Shape apply_modifier(const TopoDS_Shape& part, const Resolved& r) {
   const std::string& t = r.type->name;
   if (t == "fillet" || t == "chamfer") {
     auto edges = edges_in(part, r.s("edge_axis"), r.vec.at("region"));
+    if (r.str.count("edge_axis_2") && r.s("edge_axis_2") != "none" && r.vec.count("region_2") && r.vec.at("region_2").size() == 6)
+      for (auto& e : edges_in(part, r.s("edge_axis_2"), r.vec.at("region_2"))) edges.push_back(e);
     if (edges.empty()) throw std::runtime_error(t + " selects no edges");
     if (t == "fillet") {
       BRepFilletAPI_MakeFillet mk(part);

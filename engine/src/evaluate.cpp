@@ -118,6 +118,7 @@ nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params
   Metrics mt;
   SolveOptions so;
   so.threads = o.threads;
+  so.exclude_near_bc_mm = spec.stress_exclude_near_bc_mm;
   nlohmann::json cases = nlohmann::json::object();
   try {
     for (auto& slc : spec.load_cases) {

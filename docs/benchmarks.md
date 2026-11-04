@@ -129,3 +129,17 @@ At 120 calls the GA methods reached 594-693. BoTorch finds better designs per so
 about 43 s per trial against 1 s per evaluation, so the portfolio now chooses by measured evaluation cost (decision
 D5). The full 120-call run was stopped after the first BoTorch seed; partial results are in
 `benchmarks/optimizer_compare.json`.
+
+## P2 exit demo: 20 kg bracket brief (`benchmarks/p2_demo.py`, bracket family v2)
+
+200 NSGA-II evaluations at 4 mm (the portfolio chose NSGA-II from the measured evaluation cost), front re-solved at 3 mm,
+knee design verified with three mesh levels. About 4.5 minutes in total on the development machine.
+
+| | Mass | Safety factor | Max displacement | Result |
+|---|---|---|---|---|
+| Hand baseline (6 mm, 1 rib) | 96 g | 0.37 | 5.0 mm | fails R1 (factor 5 short) and R2 |
+| Recommended knee design | 234 g | 2.06 | below 3 mm | all requirements met, **trust grade A (verified)** |
+
+Front: 4 designs, 3 still feasible on the fine mesh, ranking unchanged. The honest framing: the baseline is not lighter
+than a safe design, it is unsafe; the optimizer finds the lightest design that is proven to meet the brief.
+Golden result regenerated for bracket v2 (geometry change, decision D6).

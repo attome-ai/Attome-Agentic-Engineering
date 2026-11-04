@@ -1,6 +1,6 @@
 """Content-hash cache for evaluations (D3-T1).
 
-Key = sha256(spec hash, parameters rounded to 6 significant digits, mesh size, engine build). The engine build is the
+Key = sha256(spec hash, parameters rounded to 6 significant digits, mesh size, engine build, families and materials). The engine build is the
 engine executable's size and modification time, so rebuilding the engine (a possible change in physics) never serves
 stale results. Timeouts and engine crashes are not cached; gate, mesh and solve failures are, because they are
 deterministic outcomes of the design.
@@ -31,9 +31,18 @@ def engine_build() -> str:
         return "unknown"
 
 
+def data_hash() -> str:
+    """Hash of every part family and the materials table: changing geometry or material data invalidates the cache."""
+    h = hashlib.sha256()
+    for p in sorted((ROOT / "families").glob("*.json")) + [ROOT / "data" / "materials.json"]:
+        h.update(p.name.encode())
+        h.update(p.read_bytes())
+    return h.hexdigest()
+
+
 def key(spec_hash: str, params: dict[str, float], mesh_size: float | None) -> str:
     payload = {"spec": spec_hash, "params": {k: _round(v) for k, v in sorted(params.items())},
-               "mesh": _round(mesh_size) if mesh_size else None, "engine": engine_build()}
+               "mesh": _round(mesh_size) if mesh_size else None, "engine": engine_build(), "data": data_hash()}
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
 
 
