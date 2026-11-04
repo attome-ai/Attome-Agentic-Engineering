@@ -35,6 +35,10 @@ add_library(structura STATIC
   src/validation.cpp
   src/fem.cpp
   src/repair.cpp
+  src/meshability.cpp
+  src/spec.cpp
+  src/evaluate.cpp
+  src/trace.cpp
 )
 set_target_properties(structura PROPERTIES OUTPUT_NAME structura_core)
 target_include_directories(structura PUBLIC include ${OpenCASCADE_INCLUDE_DIR})
@@ -59,6 +63,9 @@ add_executable(engine_tests
   tests/test_golden.cpp
   tests/test_crosscheck.cpp
   tests/test_repair.cpp
+  tests/test_meshability.cpp
+  tests/test_spec.cpp
+  tests/test_trace.cpp
 )
 target_link_libraries(engine_tests PRIVATE structura doctest::doctest)
 

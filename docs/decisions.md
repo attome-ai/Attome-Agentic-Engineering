@@ -39,3 +39,18 @@ and the ribs reach 70% of the wall height.
 
 **Why.** The first gate sweep found that with the holes on the centre line a rib could cut into a bolt hole, leaving
 slivers under 0.2 mm and blocking the bolt. After the change 200 of 200 random designs pass the gate.
+
+## D4. Feasibility is checked with real physics at the parameter corners, not beam formulas (2026-11-04)
+
+**Decision.** `check_feasibility` evaluates the most-material and least-material corners of the spec's free
+parameters (direction found by comparing volumes) with the full engine path on a coarse mesh. If even the strongest
+design fails a strength or stiffness requirement, or the lightest still breaks the mass limit, the spec is reported
+infeasible with the best achievable value.
+
+**Why.** It works for any part family without hand-written formulas per family, and it is exact for the model
+rather than an estimate. Cost: two coarse evaluations (about 3 s for the bracket). The planned step "compare the
+estimate with 30 solved designs" no longer applies because nothing is estimated.
+
+**First result.** The 100 kg PETG bracket brief is infeasible within the family bounds: the strongest design
+(12 mm, 80 mm wide, 3 ribs, 354 g) reaches a safety factor of 0.89 against the required 2.0 with the printed-part
+knock-down applied. The demo therefore uses the 20 kg brief (`docs/examples/bracket_20kg.json`).

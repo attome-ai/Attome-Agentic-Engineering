@@ -8,6 +8,10 @@
 //   structura mesh   (--family NAME | --graph FILE) [--params FILE] [--set k=v ...] --out DIR [--size MM] [--order 1|2]
 //   structura solve  --job FILE [--out DIR]     build, gate, mesh and solve every load case of a job
 //   structura validate [--case ID] [--out report.md] [--json file] [--machine TEXT]   standing validation suite
+//   structura meshsweep (--family NAME) [--n 500] [--seed 2] [--size 4] [--out FILE] [--model FILE]   gate, repair, mesh; fit mesh-ability
+//   structura spec        --spec FILE                         validated spec summary
+//   structura evaluate    --spec FILE --set k=v ... [--out DIR] [--bundle 1] [--mesh-size MM]
+//   structura feasibility --spec FILE [--mesh-size MM]       can any design in the bounds meet the requirements?
 //   structura sweep  (--family NAME | --graph FILE) [--n 200] [--seed 1] [--out FILE]   random designs through the gate
 #include <chrono>
 #include <cmath>
@@ -21,11 +25,14 @@
 
 #include "structura/compile.hpp"
 #include "structura/design.hpp"
+#include "structura/evaluate.hpp"
 #include "structura/export.hpp"
 #include "structura/fea.hpp"
 #include "structura/gate.hpp"
 #include "structura/mesh.hpp"
+#include "structura/meshability.hpp"
 #include "structura/occ.hpp"
+#include "structura/repair.hpp"
 #include "structura/validation.hpp"
 
 namespace fs = std::filesystem;
@@ -133,6 +140,108 @@ int run(const Args& a) {
     if (a.opt.count("json")) std::ofstream(a.opt.at("json")) << out.dump(2);
     std::cout << out.dump(2) << "\n";
     return passed == rows.size() ? 0 : 1;
+  }
+  if (a.cmd == "evaluate" || a.cmd == "feasibility" || a.cmd == "spec") {  // DesignSpec commands
+    DesignSpec spec = DesignSpec::load(a.opt.at("spec"));
+    EvalOptions o;
+    if (a.opt.count("mesh-size")) o.mesh_size = std::stod(a.opt.at("mesh-size"));
+    if (a.opt.count("threads")) o.threads = std::stoi(a.opt.at("threads"));
+    if (a.opt.count("out")) o.workdir = a.opt.at("out");
+    o.save_bundle = a.opt.count("bundle") && a.opt.at("bundle") == "1";
+    o.keep_files = a.opt.count("keep") && a.opt.at("keep") == "1";
+    json out;
+    if (a.cmd == "spec") {
+      json fp = json::object();
+      for (auto& [k, b] : spec.free_params) fp[k] = b;
+      json req = json::array();
+      for (auto& r : spec.requirements)
+        req.push_back({{"id", r.id}, {"quantity", r.quantity}, {"op", r.op}, {"value", r.value}, {"unit", quantities().at(r.quantity).unit}, {"source", r.source}});
+      json obj = json::array();
+      for (auto& ob : spec.objectives) obj.push_back({{"quantity", ob.quantity}, {"sense", ob.sense}});
+      Material eff = spec.effective_material();
+      out = {{"id", spec.id}, {"version", spec.version}, {"hash", spec.hash()}, {"family", spec.family}, {"free_params", fp},
+             {"fixed_params", spec.fixed_params}, {"requirements", req}, {"objectives", obj},
+             {"material", {{"id", eff.id}, {"name", eff.name}, {"yield_effective", eff.yield}, {"E", eff.E}}},
+             {"load_cases", spec.raw["load_cases"]}, {"mesh_size", spec.mesh_size}};
+    } else if (a.cmd == "feasibility") {
+      out = check_feasibility(spec, o);
+    } else {
+      out = evaluate_design(spec, params_from(a), o);
+    }
+    std::cout << out.dump(2) << "\n";
+    return 0;
+  }
+  if (a.cmd == "meshsweep") {  // B4-T3: random designs through gate, repair and mesh; fit the mesh-ability model
+    DesignGraph g = graph_from(a);
+    int n = a.opt.count("n") ? std::stoi(a.opt.at("n")) : 500;
+    unsigned seed = a.opt.count("seed") ? static_cast<unsigned>(std::stoul(a.opt.at("seed"))) : 2u;
+    double size = a.opt.count("size") ? std::stod(a.opt.at("size")) : 4.0;
+    std::string work = a.opt.count("work") ? a.opt.at("work") : (fs::temp_directory_path() / "structura_meshsweep").string();
+    std::mt19937 rng(seed);
+    std::vector<MeshFeatures> feats;
+    std::vector<int> first_ok;
+    int gated = 0, repaired = 0, meshed = 0, meshed_first = 0;
+    json rows = json::array();
+    auto t0 = std::chrono::steady_clock::now();
+    for (int i = 0; i < n; ++i) {
+      Values v;
+      for (auto& [k, p] : g.parameters)
+        v[k] = p.integer ? double(std::uniform_int_distribution<int>(int(p.low), int(p.high))(rng))
+                         : std::uniform_real_distribution<double>(p.low, p.high)(rng);
+      json row = {{"params", v}};
+      try {
+        CompiledPart part = compile_graph(g, v);
+        GateLimits lim;
+        lim.design_space = part.design_space();
+        RepairGateResult rg = repair_and_gate(part.shape, lim, RepairOptions{});
+        row["gate_ok_before_repair"] = rg.before.ok;
+        row["gate_ok"] = rg.ok;
+        if (!rg.ok) { rows.push_back(row); continue; }
+        ++gated;
+        repaired += !rg.before.ok;
+        MeshFeatures mf = mesh_features(rg.shape, rg.after.min_wall_mm.value_or(0));
+        row["features"] = mf.to_json();
+        MeshOptions mo;
+        mo.size = size;
+        mo.timeout_s = 60;
+        bool ok = true;
+        json att;
+        try {
+          Mesh m = mesh_shape(rg.shape, part.named_faces(), (fs::path(work) / std::to_string(i)).string(), mo);
+          att = m.report["attempts"];
+        } catch (const MeshError& e) {
+          ok = false;
+          att = e.attempts;
+        }
+        bool first = ok && att.size() == 1;
+        meshed += ok;
+        meshed_first += first;
+        feats.push_back(mf);
+        first_ok.push_back(first ? 1 : 0);
+        row["meshed"] = ok;
+        row["meshed_first_attempt"] = first;
+        row["attempts"] = att.size();
+        fs::remove_all(fs::path(work) / std::to_string(i));
+      } catch (const std::exception& e) {
+        row["error"] = e.what();
+      }
+      rows.push_back(row);
+    }
+    MeshabilityModel model = fit_meshability(feats, first_ok);
+    double secs = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
+    json out = {{"family", g.name}, {"n", n}, {"seed", seed}, {"mesh_size", size}, {"gate_pass", gated},
+                {"repaired_then_passed", repaired}, {"meshed", meshed}, {"meshed_first_attempt", meshed_first},
+                {"gate_pass_to_mesh_success", gated ? double(meshed) / gated : 0.0},
+                {"gate_pass_to_first_attempt_success", gated ? double(meshed_first) / gated : 0.0},
+                {"model", model.to_json()}, {"seconds", std::round(secs)}};
+    if (a.opt.count("model")) std::ofstream(a.opt.at("model")) << model.to_json().dump(2);
+    if (a.opt.count("out")) {
+      json full = out;
+      full["designs"] = rows;
+      std::ofstream(a.opt.at("out")) << full.dump(1);
+    }
+    std::cout << out.dump(2) << "\n";
+    return 0;
   }
   if (a.cmd == "families") {
     json out = json::array();
@@ -290,6 +399,8 @@ int main(int argc, char** argv) {
     std::cout << json{{"error", "graph"}, {"message", e.what()}}.dump(2) << "\n";
   } catch (const CompileError& e) {
     std::cout << json{{"error", "compile"}, {"feature", e.feature_id}, {"message", e.what()}}.dump(2) << "\n";
+  } catch (const SpecError& e) {
+    std::cout << json{{"error", "spec"}, {"message", e.what()}}.dump(2) << "\n";
   } catch (const MeshError& e) {
     std::cout << json{{"error", "mesh"}, {"message", e.what()}, {"attempts", e.attempts}}.dump(2) << "\n";
   } catch (...) {
