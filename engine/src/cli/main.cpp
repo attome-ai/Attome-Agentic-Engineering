@@ -285,7 +285,12 @@ int run(const Args& a) {
     json out = json::array();
     for (auto& e : fs::recursive_directory_iterator(families_dir()))  // uploads/<name> included (A3)
       if (e.path().extension() == ".json") {
-        DesignGraph g = DesignGraph::load(e.path().string());
+        DesignGraph g;
+        try {
+          g = DesignGraph::load(e.path().string());
+        } catch (const std::exception&) {
+          continue;  // an unloadable file (e.g. a rejected candidate) must not hide the valid families
+        }
         std::string fam_name = fs::relative(e.path(), families_dir()).replace_extension().generic_string();
         json ps = json::object();
         for (auto& [k, p] : g.parameters)

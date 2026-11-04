@@ -299,4 +299,10 @@ frozen, faces named) and gated by the engine; failures come back typed (`freefor
 `freeform_geometry`, `freeform_timeout`) with the Python/CadQuery message for repair. Tested with a plate, two holes
 and a lofted boss (a loft is not in the grammar): gate passes, both holes found. The shape is fixed geometry: it is
 analysed as-is and improved with the uploaded-part operations or by revising the code; the grammar stays the first
-choice (the agent's instructions say so). Best-of-N generation and a render review are still to do.
+choice (the agent's instructions say so).
+
+Best of N (`compose_candidates`): the agent proposes several design graphs at once; each is built, gated and solved
+once at its default parameters against the study's spec (coarse mesh, a screening) and they come back ranked (gate
+pass, meets every requirement, first objective), with the reason each loser lost (a missing load or support face, a
+graph error, a gate reason, or the failed requirement). Rejected graphs leave no family file behind, and the engine's
+family listing skips unloadable files. A six-view render review is still to do.

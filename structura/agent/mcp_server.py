@@ -347,6 +347,67 @@ def compose_design(family: str | None = None, params: dict | None = None, graph:
     return _ok(build=b, gate=g)
 
 
+@mcp.tool(description="Best of N (B1): propose several candidate design graphs for the study's brief at once (3-5 is typical). Each is "
+                      "built, gated and solved once at its default parameters against the study's spec; they come back ranked (gate "
+                      "pass, then meets every requirement, then the first objective) with the reason each loser lost. Every graph needs "
+                      "the face names the spec's load cases use and parameters with bounds; the winner's family name can go into a new "
+                      "spec version (family + its parameters as free_params) for the optimizer.")
+def compose_candidates(study_id: str, candidates: list[dict], mesh_size: float = 6.0) -> dict:
+    import re
+    spec = json.loads(S.latest_spec_path(study_id).read_text(encoding="utf-8"))
+    groups = {g for lc in spec.get("load_cases", []) for g in [x["group"] for x in lc.get("supports", []) + lc.get("loads", [])]}
+    groups |= {x["group"] for tc in spec.get("thermal_cases", []) for k in ("films", "fluxes", "temperatures") for x in tc.get(k, [])}
+    sense = (spec.get("objectives") or [{"quantity": "mass_g", "sense": "min"}])[0]
+    up = ROOT / "families" / "uploads"
+    up.mkdir(parents=True, exist_ok=True)
+    tag = re.sub(r"[^a-z0-9_]", "_", study_id.lower())[:24]
+    rows = []
+    for i, c in enumerate(candidates):
+        name = re.sub(r"[^a-z0-9_]", "_", str(c.get("name") or f"c{i}").lower())[:24] or f"c{i}"
+        fam = f"uploads/cand_{tag}_{name}"
+        row = {"name": name, "family": fam}
+        graph = dict(c.get("graph") or {}, name=f"cand_{tag}_{name}")
+        missing = sorted(groups - set((graph.get("faces") or {}).keys()))
+        if missing:
+            rows.append(row | {"stage": "faces", "reason": f"the graph does not name the faces the load cases use: {', '.join(missing)}"})
+            continue
+        (up / f"cand_{tag}_{name}.json").write_text(json.dumps(graph, indent=2), encoding="utf-8")
+        try:
+            g = engine.call("gate", family=fam)
+        except engine.EngineError as e:
+            (up / f"cand_{tag}_{name}.json").unlink(missing_ok=True)  # never leave an unloadable family behind
+            rows.append(row | {"stage": e.kind, "reason": str(e)[:400]})
+            continue
+        if not g.get("ok"):
+            rows.append(row | {"stage": "gate", "reason": "; ".join(g.get("reasons", []))})
+            continue
+        sp = dict(spec, id=f"{spec['id']}-cand-{name}", family=fam, free_params={})
+        spath = S.folder(study_id) / "candidates" / f"{name}.json"
+        spath.parent.mkdir(parents=True, exist_ok=True)
+        spath.write_text(json.dumps(sp, indent=2), encoding="utf-8")
+        try:
+            r = engine.call("evaluate", spec=str(spath), **{"mesh-size": mesh_size, "threads": 4})
+        except engine.EngineError as e:
+            rows.append(row | {"stage": e.kind, "reason": str(e)[:400]})
+            continue
+        if r.get("status") != "ok":
+            rows.append(row | {"stage": r.get("status"), "reason": r.get("error") or json.dumps(r.get("gate"))[:300]})
+            continue
+        failed = [f"{c2['id']} {c2['quantity']} {c2['value']:.4g} (limit {c2['op']} {c2['limit']})" for c2 in r["checks"] if not c2["passed"]]
+        rows.append(row | {"stage": "solved", "feasible": r["feasible"], "metrics": r["metrics"],
+                           "reason": "meets every requirement" if r["feasible"] else "fails " + "; ".join(failed)})
+    key_q, flip = sense["quantity"], (1 if sense["sense"] == "min" else -1)
+    order = {"solved": 0, "gate": 1}
+    rows.sort(key=lambda r: (order.get(r["stage"], 2), not r.get("feasible", False),
+                             flip * (r.get("metrics") or {}).get(key_q, float("inf")) if r.get("metrics") else float("inf")))
+    for rank, r in enumerate(rows, 1):
+        r["rank"] = rank
+    S.log(study_id, "compose_candidates", "ok", n=len(rows), winner=rows[0]["family"] if rows else None,
+          ranking=[(r["name"], r["stage"], r.get("feasible")) for r in rows])
+    return _ok(ranked=rows, winner=rows[0] if rows and rows[0]["stage"] == "solved" else None,
+               note="ranked at default parameters on a coarse mesh: a screening, not a verdict; optimize the winner, then verify")
+
+
 # ------------------------------------------------------------------ evaluation and optimization
 @mcp.tool(description="Evaluate one candidate against the study's spec: build, gate, mesh, solve every load case at its worst factor, check every "
                       "requirement. Use for a baseline or a user-proposed design; do not use it to search (run_optimization does that).")

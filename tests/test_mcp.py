@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 SPEC = Path(__file__).resolve().parents[1] / "docs" / "examples" / "bracket_20kg.json"
 TOOLS = {"build_report", "derive_load", "rank_questions", "propose_relaxation", "list_families", "describe_grammar", "plan_study", "create_study", "accept_spec", "check_feasibility",
-         "compose_design", "evaluate_design", "run_optimization", "get_job", "get_results", "steer", "explain", "verify", "manufacturing_advice", "upload_part", "add_face", "add_lightening_pocket", "freeform_cad"}
+         "compose_design", "evaluate_design", "run_optimization", "get_job", "get_results", "steer", "explain", "verify", "manufacturing_advice", "upload_part", "add_face", "add_lightening_pocket", "freeform_cad", "compose_candidates"}
 
 
 def test_tools_over_the_protocol():
@@ -185,4 +185,34 @@ result = plate.union(boss)
         assert not none["ok"] and none["error"] == "freeform_result"
     finally:
         for p in (ROOT / "families" / "uploads").glob(f"{name}.*"):
+            p.unlink()
+
+
+def test_compose_candidates_best_of_n(tmp_path, monkeypatch):
+    """B1: several candidate graphs are gated, solved and ranked; broken ones come back with the reason."""
+    import copy
+    monkeypatch.setattr(srv.S, "STUDIES", tmp_path / "studies")
+    sid = "bestofn"
+    srv.create_study(json.loads(SPEC.read_text()), study_id=sid)
+    base = json.loads((ROOT / "families" / "bracket.json").read_text())
+    thick = copy.deepcopy(base)
+    thick["parameters"]["thickness"]["default"] = 12
+    thick["parameters"]["rib_count"]["default"] = 3
+    noface = copy.deepcopy(base)
+    noface["faces"].pop("load_face")
+    broken = copy.deepcopy(base)
+    broken["features"][0]["type"] = "no_such_feature"
+    try:
+        r = srv.compose_candidates(sid, [{"name": "default", "graph": base}, {"name": "thick", "graph": thick},
+                                         {"name": "noface", "graph": noface}, {"name": "broken", "graph": broken}])
+        assert r["ok"]
+        by = {x["name"]: x for x in r["ranked"]}
+        assert by["default"]["stage"] == "solved" and by["thick"]["stage"] == "solved"
+        assert by["thick"]["metrics"]["safety_factor"] > by["default"]["metrics"]["safety_factor"]
+        assert by["noface"]["stage"] == "faces" and "load_face" in by["noface"]["reason"]
+        assert by["broken"]["stage"] not in ("solved", "faces")
+        assert [x["name"] for x in r["ranked"]][-2:] != ["default", "thick"]  # failures rank last
+        assert r["ranked"][0]["stage"] == "solved"
+    finally:
+        for p in (ROOT / "families" / "uploads").glob("cand_bestofn_*.json"):
             p.unlink()
