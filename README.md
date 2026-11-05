@@ -30,7 +30,7 @@ Solver validation: 7 of 7 cases pass (NAFEMS LE10 +0.14%, LE1 −0.40%, cantilev
 
 ## What it does
 
-- **Brief → spec card**: requirements with sources, load cases at their design factor, material with print knock-down;
+- **Brief → spec card**: from text or a picture (a sketch's accuracy is not measured yet); requirements with sources, load cases at their design factor, material with print knock-down;
   infeasible briefs are detected before any search and a relaxation is proposed.
 - **Geometry**: a typed design grammar (14 feature types, bounded parameters, named faces) on OpenCASCADE; best-of-N
   candidates and a six-view visual review; uploaded STEP parts (holes detected and frozen, redesigned); free-form
@@ -43,9 +43,13 @@ Solver validation: 7 of 7 cases pass (NAFEMS LE10 +0.14%, LE1 −0.40%, cantilev
   checks, validation suite status, an A/B/C grade, a `reproduce` command and a hash-chained audit log.
 - **Manufacturing**: FDM and 3-axis CNC rules (support volume, undercuts, internal corners), time and cost from stated
   rates, process advice; STEP, STL and VTU export.
-- **Visualization**: a single offline HTML report (3D fields with load and support markers, side-by-side comparison,
-  Pareto explorer, parallel coordinates, history, trust panel, PDF export) and a hands-on workbench with live
-  optimization.
+- **Visualization**: a single offline HTML report (3D fields with load and support markers, cut plane, mode shapes,
+  side-by-side comparison, Pareto explorer, parallel coordinates, history, trust panel, PDF export) and a hands-on
+  workbench with live optimization. Replay the search through real rebuilt geometry, or click any agent step to see the
+  spec and design as they stood then.
+- **Hands on**: served by the REST door, the report lets you drag a target on the Pareto chart to steer the search and
+  click a face to add a load or support; the spec records the face so it is found again when the design changes, and
+  a new spec version needs a new acceptance.
 
 ## Quick start (Windows)
 
