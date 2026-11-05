@@ -341,6 +341,45 @@ The search itself is not replayed trial for trial: NSGA-II evaluates in parallel
 varies between runs (the live rehearsal found 231.4 g where the stored run found 234.1 g; both grade A). What is
 delivered, a design with its verified numbers, reproduces exactly.
 
+**Linux (2026-11-05).** Reproduce failed intermittently in the Docker image, because gmsh on Linux gives a slightly different
+mesh each run when given several threads (peak stress differed by 0.024% at the same thread count, 0.24% at a different one).
+Meshing now uses one thread everywhere and the record stores the thread count. Three repeats on Linux: difference 0 on every
+quantity. Windows results did not change. A Windows result and a Linux result of the same design are not compared here, and
+are not expected to be bit-identical.
+
+## Minimum hardware, and Linux (J1, `Dockerfile`)
+
+Docker on the development machine, limited to 4 cores (`--cpuset-cpus=0-3`) and 8 GB (`--memory=8g --memory-swap=8g`), no GPU.
+This limits a fast desktop's cores; it is not a laptop, whose cores would be slower, so a real 4-core laptop needs its own run.
+2026-11-05:
+
+| Measurement | Result |
+|---|---|
+| Image build, including compiling the engine | works; found one MSVC-only line of C++, now fixed |
+| Engine test cases | 75 of 75 pass |
+| 120-evaluation bracket study: search, front re-solve, trust, report | 364 s |
+| Peak working memory of that study, sampled each second, without file cache | 3.24 GB |
+| Out-of-memory kills during that study | 0 |
+
+Only one test hits the limit, C4-T1, which deliberately feeds gmsh an input it cannot mesh; the test still passes. `demo.py
+preflight` reports one failure in the image, the precomputed fallback report, because `runs/` is not copied in. Not measured
+under these limits: the delivered geometry's trust record, whose CalculiX solves reached 4.8 GB each on the development machine.
+
+## Steering: does it reach the target? (D2, `benchmarks/steer_vs_random.json`)
+
+Three targets just beyond the 400-evaluation front, three seeds each, 16 evaluations at 6 mm, against 16 random designs. The
+distance is how far short of the target on the worse objective, in widths of the front; the existing front is 0.05 by
+construction, because the targets were placed there.
+
+| Version | Closer than random | Median distance (random 0.56) | Feasible evaluations per run |
+|---|---|---|---|
+| New sampler each time (first version) | 4 of 9 | 0.54 | 0-3 of 16 |
+| Started from everything the study has solved | 9 of 9 | 0.07 | 15-16 of 16 |
+
+So the first version was no better than chance, and the drag-to-steer page built on it would have looked as if it worked. The
+current version passed the existing front in 2 of 9 runs and came close in the others; these targets are on a front already
+well searched, so most of what it finds is near the front, not far beyond it.
+
 ## Offline readiness (P7-t1, static check; the network-off test is still to do)
 
 No network access in the engine, the Python layer, the reports or the workbench (search of `engine/src`, `structura/`,

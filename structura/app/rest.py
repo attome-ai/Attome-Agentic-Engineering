@@ -228,14 +228,15 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"ok": False, "error": "tool", "message": str(e)}, 400)
 
 
-def serve(port: int = 8765) -> ThreadingHTTPServer:
+def serve(port: int = 8765, host: str = "127.0.0.1") -> ThreadingHTTPServer:
     tools()  # discover once, before any request
-    return ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    return ThreadingHTTPServer((host, port), Handler)
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=8765)
+    ap.add_argument("--host", default="127.0.0.1", help="0.0.0.0 inside a container, with its port published to 127.0.0.1 only")
     ap.add_argument("--docs", action="store_true", help="regenerate docs/api.md and exit")
     a = ap.parse_args()
     if a.docs:
@@ -243,7 +244,7 @@ def main():
         print("wrote docs/api.md")
         return
     print(f"http://127.0.0.1:{a.port}/openapi.json", flush=True)
-    serve(a.port).serve_forever()
+    serve(a.port, a.host).serve_forever()
 
 
 if __name__ == "__main__":

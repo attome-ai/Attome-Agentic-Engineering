@@ -57,6 +57,13 @@ micromamba run -n attome-ae python scripts/demo.py preflight # check the machine
 micromamba run -n attome-ae python scripts/demo.py live      # the 20 kg brief end to end (about 8 minutes)
 ```
 
+On Linux or macOS, or to avoid installing anything but Docker (a 4-core, 8 GB limit is measured in `docs/benchmarks.md`):
+
+```
+docker build -t attome-ae .
+docker run --rm -p 127.0.0.1:8765:8765 attome-ae python -m structura.app.rest --host 0.0.0.0 --port 8765
+```
+
 With Claude Code in this folder, the MCP server in `.mcp.json` gives the agent the engine's tools; ask it to design
 a part.
 

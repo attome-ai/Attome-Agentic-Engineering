@@ -1,7 +1,7 @@
 # J1: Attome Agentic Engineering on Linux or macOS, with the engine built inside the image.
 #   docker build -t attome-ae .
 #   docker run --rm attome-ae python scripts/demo.py preflight
-#   docker run --rm -p 127.0.0.1:8765:8765 attome-ae python -m structura.app.rest --port 8765
+#   docker run --rm -p 127.0.0.1:8765:8765 attome-ae python -m structura.app.rest --host 0.0.0.0 --port 8765
 FROM mambaorg/micromamba:2.0.5
 USER root
 ENV MAMBA_ROOT_PREFIX=/opt/mamba CONDA_PREFIX=/opt/mamba/envs/attome-ae
