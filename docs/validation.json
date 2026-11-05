@@ -1,6 +1,6 @@
 {
   "cases": 7,
-  "date": "2026-11-04T03:38:10Z",
+  "date": "2026-11-05T16:05:10Z",
   "passed": 7,
   "rows": [
     {
@@ -13,7 +13,7 @@
       "quantity": "tip deflection",
       "reference": 0.19196190476190475,
       "reference_source": "Timoshenko beam: PL^3/3EI + PL/(kGA), k = 5/6",
-      "seconds": 0.7110435,
+      "seconds": 0.7883714000000001,
       "tolerance_pct": 2.0,
       "unit": "mm",
       "value": 0.19043549504950497
@@ -28,7 +28,7 @@
       "quantity": "sigma_yy at D (2, 0, 0.3)",
       "reference": -5.38,
       "reference_source": "NAFEMS LE10 target",
-      "seconds": 14.9256302,
+      "seconds": 16.4512253,
       "tolerance_pct": 2.0,
       "unit": "MPa",
       "value": -5.37262
@@ -43,7 +43,7 @@
       "quantity": "sigma_yy at D (2, 0)",
       "reference": 92.7,
       "reference_source": "NAFEMS LE1 target",
-      "seconds": 5.0720418,
+      "seconds": 5.7803118,
       "tolerance_pct": 3.0,
       "unit": "MPa",
       "value": 92.32585
@@ -58,7 +58,7 @@
       "quantity": "buckling load factor",
       "reference": 10.794879813691484,
       "reference_source": "Euler: P_cr = pi^2 EI / (2L)^2 for a fixed-free column",
-      "seconds": 1.1985841,
+      "seconds": 1.3395786,
       "tolerance_pct": 3.0,
       "unit": "1",
       "value": 10.80131
@@ -73,7 +73,7 @@
       "quantity": "f1",
       "reference": 835.516594433421,
       "reference_source": "Euler-Bernoulli cantilever: (1.875^2 / 2 pi) sqrt(EI / (rho A L^4))",
-      "seconds": 0.9308254,
+      "seconds": 1.0316367,
       "tolerance_pct": 3.0,
       "unit": "Hz",
       "value": 833.3361
@@ -88,7 +88,7 @@
       "quantity": "temperature at mid-plane (worst node error 0.0000)",
       "reference": 50.0,
       "reference_source": "1D conduction: linear profile",
-      "seconds": 0.318175,
+      "seconds": 0.3523261,
       "tolerance_pct": 0.5,
       "unit": "degC",
       "value": 50.00000330237149
@@ -103,7 +103,7 @@
       "quantity": "tip temperature",
       "reference": 92.29592950684456,
       "reference_source": "1D fin with insulated tip: T_tip = T_b / cosh(mL)",
-      "seconds": 1.6335038,
+      "seconds": 1.7407652,
       "tolerance_pct": 3.0,
       "unit": "degC",
       "value": 92.2944834101382
