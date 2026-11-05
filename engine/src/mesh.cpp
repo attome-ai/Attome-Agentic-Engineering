@@ -180,7 +180,8 @@ Mesh mesh_shape(const TopoDS_Shape& shape, const std::map<std::string, std::vect
     std::error_code ec;
     fs::remove(out, ec);
     std::ofstream(fs::path(workdir) / "mesh.geo") << geo_text(step.generic_string(), size, rung.code, opt, groups, rung.straight, rung.high_order_optimize);
-    ProcessResult pr = run_process({gmsh, "mesh.geo", "-3", "-format", "inp", "-o", "mesh.inp", "-nt", std::to_string(rung.code == 10 ? 1 : opt.threads)},
+    // one thread always: with several, the Linux gmsh gives a slightly different mesh each run, which breaks reproduce
+    ProcessResult pr = run_process({gmsh, "mesh.geo", "-3", "-format", "inp", "-o", "mesh.inp", "-nt", "1"},
                                    workdir, opt.timeout_s);
     nlohmann::json att = {{"algorithm", rung.algo}, {"size", size}, {"seconds", std::round(pr.seconds * 100) / 100}};
     bool ok = !pr.timed_out && pr.exit_code == 0 && fs::exists(out) && fs::file_size(out) > 0 &&
