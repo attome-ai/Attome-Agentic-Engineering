@@ -150,6 +150,15 @@ BuckleResult solve_buckle(const Mesh& m, const Material& mat, const LoadCase& lc
   for (auto& row : dat_table(dat, "B U C K L I N G   F A C T O R   O U T P U T"))
     if (row.size() >= 2) r.factors.push_back(row[1]);
   if (r.factors.empty()) throw std::runtime_error("no buckling factor output in job.dat");
+  std::vector<std::map<int, std::array<double, 3>>> shapes;
+  for (auto& blk : read_frd_blocks((fs::path(workdir) / "job.frd").string(), "DISP")) {
+    std::map<int, std::array<double, 3>> sh;
+    for (auto& [n, v] : blk)
+      if (v.size() >= 3) sh[n] = {v[0], v[1], v[2]};
+    shapes.push_back(std::move(sh));
+  }
+  // the file may hold the static pre-load solution first; the buckled shapes are the last blocks, one per factor
+  if (shapes.size() >= r.factors.size()) r.shapes.assign(shapes.end() - r.factors.size(), shapes.end());
   return r;
 }
 

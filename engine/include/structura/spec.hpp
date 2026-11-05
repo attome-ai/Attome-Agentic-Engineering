@@ -72,6 +72,8 @@ struct DesignSpec {
   std::vector<Objective> objectives;
   std::vector<Requirement> requirements;
   double mesh_size = 4.0;
+  int mesh_curvature_points = 12;      // elements per 2*pi of curvature; lower it for small fillets along long edges (decision D10)
+  double mesh_size_min_factor = 0.2;   // smallest element as a fraction of the mesh size
   double stress_exclude_near_bc_mm = 3.0;  // Saint-Venant exclusion for the strength check (stress_evaluation in the spec)
   nlohmann::json raw;  // as loaded, for versioning and diffs
 

@@ -101,3 +101,25 @@ TEST_CASE("C3-T2: frequency and buckling requirements are computed in evaluation
   CHECK_FALSE(plain["load_cases"]["service"].contains("frequencies_hz"));
   CHECK_FALSE(plain["metrics"].contains("buckling_factor"));
 }
+
+TEST_CASE("G2: a saved bundle holds the buckled shape, labelled with its load factor, separate from the vibration mode") {
+  nlohmann::json j = example("bracket_20kg");
+  j["requirements"].push_back({{"id", "R5"}, {"quantity", "buckling_factor"}, {"op", ">="}, {"value", 2.0}});
+  EvalOptions o;
+  o.mesh_size = 6;
+  o.threads = 4;
+  o.save_bundle = true;
+  o.workdir = (fs::temp_directory_path() / "structura_buckle_bundle").string();
+  fs::remove_all(o.workdir);
+  Values p = {{"thickness", 8}, {"plate_width", 50}, {"rib_count", 2}, {"rib_thickness", 6}, {"fillet_radius", 3}};
+  nlohmann::json ev = evaluate_design(DesignSpec::from_json(j), p, o);
+  REQUIRE(ev["status"] == "ok");
+  fs::path b = fs::path(o.workdir) / "result_service" / "buckle1.json";
+  REQUIRE(fs::exists(b));
+  std::ifstream in(b);
+  nlohmann::json s = nlohmann::json::parse(in);
+  CHECK(s["load_factor"].get<double>() == doctest::Approx(ev["metrics"]["buckling_factor"].get<double>()));
+  CHECK(s["disp"].get<std::string>().size() > 100);
+  CHECK(s["amplitude"].get<std::string>().size() > 100);
+  CHECK_FALSE(fs::exists(fs::path(o.workdir) / "result_service" / "mode1.json"));  // not asked for, not paid for
+}

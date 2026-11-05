@@ -136,6 +136,10 @@ DesignSpec DesignSpec::from_json(const nlohmann::json& j) {
   }
   if (s.requirements.empty()) throw SpecError("spec has no requirements");
   s.mesh_size = j.value("mesh", nlohmann::json::object()).value("size", 4.0);
+  s.mesh_curvature_points = j.value("mesh", nlohmann::json::object()).value("curvature_points", 12);
+  s.mesh_size_min_factor = j.value("mesh", nlohmann::json::object()).value("size_min_factor", 0.2);
+  if (s.mesh_curvature_points < 0) throw SpecError("mesh.curvature_points must not be negative");
+  if (s.mesh_size_min_factor <= 0 || s.mesh_size_min_factor > 1) throw SpecError("mesh.size_min_factor must be in (0, 1]");
   s.stress_exclude_near_bc_mm = j.value("stress_evaluation", nlohmann::json::object()).value("exclude_near_bc_mm", 3.0);
   if (s.stress_exclude_near_bc_mm < 0) throw SpecError("stress_evaluation.exclude_near_bc_mm must not be negative");
   bool uses_cost = std::any_of(s.objectives.begin(), s.objectives.end(), [](auto& o) { return o.quantity == "cost"; }) ||

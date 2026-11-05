@@ -21,11 +21,13 @@ struct Rung {
   int code;
   double scale;
   bool straight = false;  // straight-sided quadratic elements (mid-side nodes not moved onto curved surfaces)
+  int high_order_optimize = 0;  // gmsh Mesh.HighOrderOptimize: 2 untangles curved elements while keeping them on the surface
 };
 // Delaunay first: gmsh's default and the most robust. HXT runs single-threaded because with several threads it can
 // hang on Windows (found in the validation suite: 120 s timeouts on simple boxes). Curved quadratic elements can fold
-// near tight fillets (CalculiX: "nonpositive jacobian"), so the second rung repeats Delaunay with straight sides.
-const Rung kLadder[] = {{"delaunay", 1, 1.0, false}, {"delaunay-straight", 1, 1.0, true}, {"hxt", 10, 1.0, true},
+// near tight fillets (CalculiX: "nonpositive jacobian"), so the second rung untangles them, keeping the true surface, and
+// the third repeats Delaunay with straight sides, which is the last resort because it turns a small fillet into facets.
+const Rung kLadder[] = {{"delaunay", 1, 1.0, false}, {"delaunay-untangled", 1, 1.0, false, 2}, {"delaunay-straight", 1, 1.0, true}, {"hxt", 10, 1.0, true},
                         {"frontal", 4, 1.0, true}, {"delaunay-straight", 1, 1.5, true}};
 
 // Smallest ratio detJ(point) / detJ(straight corner tet) over the corners and the four Gauss points of a quadratic
@@ -80,7 +82,7 @@ std::string num(double v) {
 }
 
 std::string geo_text(const std::string& step, double size, int algo, const MeshOptions& o,
-                     const std::vector<std::pair<std::string, std::vector<std::vector<double>>>>& groups, bool straight) {
+                     const std::vector<std::pair<std::string, std::vector<std::vector<double>>>>& groups, bool straight, int high_order_optimize) {
   std::ostringstream g;
   g << "SetFactory(\"OpenCASCADE\");\n"
     << "Geometry.OCCImportLabels = 0;\n"
@@ -88,7 +90,7 @@ std::string geo_text(const std::string& step, double size, int algo, const MeshO
     << "Mesh.Algorithm3D = " << algo << ";\n"
     << "Mesh.ElementOrder = " << o.order << ";\n"
     << "Mesh.SecondOrderLinear = " << (straight ? 1 : 0) << ";\n"
-    << "Mesh.HighOrderOptimize = 0;\n"
+    << "Mesh.HighOrderOptimize = " << high_order_optimize << ";\n"
     << "Mesh.MeshSizeMax = " << num(size) << ";\n"
     << "Mesh.MeshSizeMin = " << num(size * o.size_min_factor) << ";\n"
     << "Mesh.MeshSizeFromCurvature = " << o.curvature_points << ";\n"
@@ -177,7 +179,7 @@ Mesh mesh_shape(const TopoDS_Shape& shape, const std::map<std::string, std::vect
     fs::path out = fs::path(workdir) / "mesh.inp";
     std::error_code ec;
     fs::remove(out, ec);
-    std::ofstream(fs::path(workdir) / "mesh.geo") << geo_text(step.generic_string(), size, rung.code, opt, groups, rung.straight);
+    std::ofstream(fs::path(workdir) / "mesh.geo") << geo_text(step.generic_string(), size, rung.code, opt, groups, rung.straight, rung.high_order_optimize);
     ProcessResult pr = run_process({gmsh, "mesh.geo", "-3", "-format", "inp", "-o", "mesh.inp", "-nt", std::to_string(rung.code == 10 ? 1 : opt.threads)},
                                    workdir, opt.timeout_s);
     nlohmann::json att = {{"algorithm", rung.algo}, {"size", size}, {"seconds", std::round(pr.seconds * 100) / 100}};
@@ -212,7 +214,12 @@ Mesh mesh_shape(const TopoDS_Shape& shape, const std::map<std::string, std::vect
       if (upper(b.type) != tri_type) continue;
       SurfStat& st = surf[b.elset];
       for (auto& r : b.rows) {
+        // through the mid-side nodes, which lie on the curved surface: flat corner triangles read a coarse bore's area
+        // about 4.5% short at 6 elements round, and would fail a correct mesh on the area check
         double a = tri_area(m.nodes, r);
+        if (r.size() >= 7)
+          a = tri_area(m.nodes, {0, r[1], r[4], r[6]}) + tri_area(m.nodes, {0, r[4], r[2], r[5]}) + tri_area(m.nodes, {0, r[6], r[5], r[3]}) +
+              tri_area(m.nodes, {0, r[4], r[5], r[6]});
         auto& p = m.nodes.at(r[1]);
         auto& q = m.nodes.at(r[2]);
         auto& s3 = m.nodes.at(r[3]);
@@ -283,6 +290,7 @@ Mesh mesh_shape(const TopoDS_Shape& shape, const std::map<std::string, std::vect
     if (!bad.empty()) {
       std::string names;
       for (auto& b : bad) names += (names.empty() ? "" : ", ") + b;
+      attempts.back()["groups"] = checks;
       throw MeshError("named faces [" + names + "] do not match their meshed surfaces (area check)", attempts);
     }
     return m;

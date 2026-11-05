@@ -239,6 +239,7 @@ nlohmann::json build_trust(const DesignSpec& spec, const Values& free, const Tru
     ao.tolerance = 0.02;
     ao.max_levels = 4;
     ao.min_size = h / 6;
+    ao.curvature_points = spec.mesh_curvature_points;
     AdaptiveResult a1 = solve_adaptive(part.shape, part.named_faces(), spec.effective_material(), lc, (fs::path(work) / "peak_probe1").string(), ao, so);
     ao.min_size = h / 12;
     AdaptiveResult a2 = solve_adaptive(part.shape, part.named_faces(), spec.effective_material(), lc, (fs::path(work) / "peak_probe2").string(), ao, so);

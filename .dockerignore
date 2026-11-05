@@ -1,0 +1,15 @@
+*
+!environment.yml
+!engine
+!families
+!data
+!docs
+!structura
+!scripts
+!tests
+!pyproject.toml
+!README.md
+engine/build
+engine/build-dev
+families/uploads
+**/__pycache__

@@ -97,6 +97,28 @@ bool spec_uses(const DesignSpec& spec, const std::string& q) {
 
 }  // namespace
 
+// A mode shape for the viewer, normalized to 1 mm peak, with its relative amplitude for colour.
+static void write_mode_shape(const Mesh& m, const std::map<int, std::array<double, 3>>& shape, const std::string& path, nlohmann::json out) {
+  Result rm;
+  double peak = 0;
+  for (auto& [n, u] : shape) peak = std::max(peak, std::sqrt(u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
+  for (auto& [n, u] : shape) {
+    std::array<double, 3> v = {u[0] / (peak > 0 ? peak : 1), u[1] / (peak > 0 ? peak : 1), u[2] / (peak > 0 ? peak : 1)};
+    rm.disp[n] = v;
+    rm.von_mises[n] = std::sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+  }
+  rm.max_disp_mm = 1;
+  rm.max_von_mises_MPa = 1;
+  fs::create_directories(fs::path(path).parent_path());
+  write_skin(m, rm, path, 0);
+  std::ifstream in(path);
+  nlohmann::json j = nlohmann::json::parse(in);
+  in.close();
+  out["disp"] = j["disp"];
+  out["amplitude"] = j["von_mises"];
+  std::ofstream(path) << out.dump();
+}
+
 nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params, const EvalOptions& o) {
   auto t0 = clk::now();
   nlohmann::json out;
@@ -141,6 +163,8 @@ nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params
   MeshOptions mo;
   mo.size = o.mesh_size > 0 ? o.mesh_size : spec.mesh_size;
   mo.threads = o.threads;
+  mo.curvature_points = spec.mesh_curvature_points;
+  mo.size_min_factor = spec.mesh_size_min_factor;
   Mesh m;
   try {
     m = mesh_shape(rg.shape, part.named_faces(), (fs::path(work) / "mesh").string(), mo);
@@ -192,30 +216,15 @@ nlohmann::json evaluate_design(const DesignSpec& spec, const Values& free_params
         BuckleResult br = solve_buckle(m, eff, lc, 1, (fs::path(work) / ("buckle_" + lc.name)).string(), so);
         met["buckling_factor"] = br.factors.at(0);
         cases[lc.name]["buckling_factors"] = br.factors;
+        if (o.save_bundle && !br.shapes.empty())  // the buckled shape for the viewer (G2)
+          write_mode_shape(m, br.shapes[0], (fs::path(work) / ("result_" + lc.name) / "buckle1.json").string(), {{"load_factor", br.factors.at(0)}});
       }
       if (spec_uses(spec, "first_frequency_hz")) {
         ModalResult mr = solve_modal(m, eff, lc.supports, 3, (fs::path(work) / ("modal_" + lc.name)).string(), so);
         met["first_frequency_hz"] = mr.frequencies_hz.at(0);
         cases[lc.name]["frequencies_hz"] = mr.frequencies_hz;
-        if (o.save_bundle && !mr.shapes.empty()) {  // mode 1 for the viewer's vibration animation (G2), normalized to 1 mm peak
-          Result rm;
-          double peak = 0;
-          for (auto& [n, u] : mr.shapes[0]) peak = std::max(peak, std::sqrt(u[0] * u[0] + u[1] * u[1] + u[2] * u[2]));
-          for (auto& [n, u] : mr.shapes[0]) {
-            std::array<double, 3> v = {u[0] / (peak > 0 ? peak : 1), u[1] / (peak > 0 ? peak : 1), u[2] / (peak > 0 ? peak : 1)};
-            rm.disp[n] = v;
-            rm.von_mises[n] = std::sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);  // relative amplitude, for colour
-          }
-          rm.max_disp_mm = 1;
-          rm.max_von_mises_MPa = 1;
-          std::string mp = (fs::path(work) / ("result_" + lc.name) / "mode1.json").string();
-          fs::create_directories(fs::path(mp).parent_path());
-          write_skin(m, rm, mp, 0);
-          std::ifstream min(mp);
-          nlohmann::json mj = nlohmann::json::parse(min);
-          min.close();
-          std::ofstream(mp) << nlohmann::json({{"frequency_hz", mr.frequencies_hz.at(0)}, {"disp", mj["disp"]}, {"amplitude", mj["von_mises"]}}).dump();
-        }
+        if (o.save_bundle && !mr.shapes.empty())  // mode 1 for the viewer's vibration animation (G2)
+          write_mode_shape(m, mr.shapes[0], (fs::path(work) / ("result_" + lc.name) / "mode1.json").string(), {{"frequency_hz", mr.frequencies_hz.at(0)}});
       }
       mt.by_case[lc.name] = met;
       if (o.save_bundle) {

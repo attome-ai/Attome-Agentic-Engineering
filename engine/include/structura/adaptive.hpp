@@ -18,6 +18,7 @@ struct AdaptiveOptions {
   double eta_target = 0.15;  // an element is refined when stress varies across it by more than this fraction of the peak
   double tolerance = 0.05;  // stop when the peak stress changes by less than this between levels
   int max_levels = 5;
+  int curvature_points = 12;  // elements per 2*pi of curvature
 };
 
 struct AdaptiveLevel {

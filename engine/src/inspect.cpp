@@ -179,7 +179,7 @@ nlohmann::json inspect_shape(const TopoDS_Shape& shape) {
   nlohmann::json mating = nlohmann::json::array();
   for (auto& f : faces)
     if (f["type"] == "plane" && f["area_mm2"].get<double>() >= 0.05 * total_area) mating.push_back(f);
-  std::sort(mating.begin(), mating.end(), [](auto& a, auto& b) { return a["area_mm2"].get<double>() > b["area_mm2"].get<double>(); });
+  std::sort(mating.begin(), mating.end(), [](const nlohmann::json& a, const nlohmann::json& b) { return a["area_mm2"].get<double>() > b["area_mm2"].get<double>(); });
 
   int not_aligned = 0;
   for (auto& f : faces)

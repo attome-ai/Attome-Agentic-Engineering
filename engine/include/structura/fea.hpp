@@ -120,6 +120,7 @@ ModalResult solve_modal(const Mesh& m, const Material& mat, const std::vector<Su
 
 struct BuckleResult {
   std::vector<double> factors;  // load multipliers at which the structure buckles
+  std::vector<std::map<int, std::array<double, 3>>> shapes;  // buckled shape per factor (node -> displacement, arbitrary scale)
   std::string solver_version;
   double runtime_s = 0;
 };

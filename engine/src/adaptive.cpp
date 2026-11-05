@@ -109,6 +109,7 @@ AdaptiveResult solve_adaptive(const TopoDS_Shape& shape, const std::map<std::str
     mo.size = o.start_size * (level ? 1.25 : 1.0);
     mo.threads = so.threads;
     mo.size_map = size_map;
+    mo.curvature_points = o.curvature_points;
     mo.size_min_factor = o.min_size / mo.size;
     out.mesh = mesh_shape(shape, named, (dir / "mesh").string(), mo);
     SetupReport setup = check_setup(out.mesh, lc);
