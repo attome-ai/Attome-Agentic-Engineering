@@ -37,6 +37,8 @@ nlohmann::json reproduce(const std::string& dir, double tolerance = 1e-3);
 
 // When local refinement finds a settled peak above the uniform mesh's, a stress requirement is judged on it: a coarse mesh
 // that misses a real peak must not pass the design. Returns true if any requirement's value changed.
-bool apply_settled_peak(nlohmann::json& requirements, double settled_peak_MPa, double yield_MPa);
+// refined_before_MPa is the peak one refinement earlier: the value's error then comes from those two levels, since the uniform
+// meshes' error describes a different number. 0 keeps the error already in the record.
+bool apply_settled_peak(nlohmann::json& requirements, double settled_peak_MPa, double yield_MPa, double refined_before_MPa = 0);
 
 }  // namespace structura

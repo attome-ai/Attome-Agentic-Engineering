@@ -72,7 +72,7 @@ Gci grid_convergence(double f1, double f2, double f3, double h1, double h2, doub
   return g;
 }
 
-bool apply_settled_peak(nlohmann::json& requirements, double settled_peak_MPa, double yield_MPa) {
+bool apply_settled_peak(nlohmann::json& requirements, double settled_peak_MPa, double yield_MPa, double refined_before_MPa) {
   bool changed = false;
   for (auto& r : requirements) {
     const std::string q = r["quantity"];
@@ -87,8 +87,16 @@ bool apply_settled_peak(nlohmann::json& requirements, double settled_peak_MPa, d
     const bool at_least = r["op"] == ">=";
     const double margin = (at_least ? settled - limit : limit - settled) / std::fabs(limit);
     r["margin"] = margin;
+    std::string kept = r["result"];
+    if (refined_before_MPa > 0) {
+      // Two-level Grid Convergence Index with the cautious factors (Roache): safety factor 3, first order, refinement ratio 2
+      r["uniform_mesh_error"] = r.value("numerical_error", 0.0);
+      r["numerical_error"] = 3.0 * std::fabs(settled_peak_MPa - refined_before_MPa) / settled_peak_MPa;
+      r["error_from"] = "the last two levels of local refinement";
+      kept = "pass";  // the uniform meshes' verdict was about their own value
+    }
     const double error_abs = r.value("numerical_error", 0.0) * std::fabs(settled);
-    r["result"] = margin < 0 ? "fail" : (std::fabs(settled - limit) > error_abs ? r["result"].get<std::string>() : "not proven");
+    r["result"] = margin < 0 ? "fail" : (std::fabs(settled - limit) > error_abs ? kept : "not proven");
     changed = true;
   }
   return changed;
@@ -270,13 +278,21 @@ nlohmann::json build_trust(const DesignSpec& spec, const Values& free, const Tru
     const double p1 = a1.result.max_von_mises_MPa, p2 = a2.result.max_von_mises_MPa;
     const double growth = p1 > 0 ? p2 / p1 : 1;
     singular = growth > 1.10;
-    if (!singular && apply_settled_peak(t["requirements"], p2, spec.effective_material().yield)) {  // a corner has no settled value to judge by
+    if (!singular && apply_settled_peak(t["requirements"], p2, spec.effective_material().yield, p1)) {  // a corner has no settled value to judge by
       all_pass = true;
       all_proven = true;
+      not_proven_margin = false;
+      not_proven_oscillating = false;
+      worst_gci_gov = 0;
       for (auto& r : t["requirements"]) {
         all_pass = all_pass && r["result"] != "fail";
         all_proven = all_proven && r["result"] == "pass";
-        if (r["result"] == "not proven") not_proven_margin = true;
+        const double e = r.value("numerical_error", 0.0);
+        worst_gci_gov = std::max(worst_gci_gov, e);
+        if (r["result"] == "not proven") {
+          if (std::fabs(r["value"].get<double>() - r["limit"].get<double>()) <= e * std::fabs(r["value"].get<double>())) not_proven_margin = true;
+          else not_proven_oscillating = true;
+        }
       }
     }
     t["peak_probe"] = {{"load_case", slc->lc.name}, {"uniform_mesh_peak_MPa", uniform}, {"refined_peak_MPa", p1}, {"refined_twice_peak_MPa", p2},

@@ -84,4 +84,18 @@ TEST_CASE("F1: a stress requirement is judged on the settled peak when that is w
     CHECK(apply_settled_peak(r, 12.3, 25.0));  // 2.033, room 0.033, error 0.10
     CHECK(r[0]["result"] == "not proven");
   }
+  SUBCASE("the error then comes from the refinement, and the uniform meshes' error is kept in the record") {
+    auto r = req();
+    r[0]["numerical_error"] = 0.24;
+    r[0]["result"] = "not proven";
+    CHECK(apply_settled_peak(r, 12.0, 25.0, 11.96));  // 2.083; 3 x 0.33% = 1%, room 0.083, error 0.021
+    CHECK(r[0]["numerical_error"].get<double>() == doctest::Approx(0.01));
+    CHECK(r[0]["uniform_mesh_error"].get<double>() == doctest::Approx(0.24));
+    CHECK(r[0]["result"] == "pass");
+  }
+  SUBCASE("a peak still moving between the two levels stays not proven") {
+    auto r = req();
+    CHECK(apply_settled_peak(r, 12.0, 25.0, 11.0));  // 2.083; 3 x 8.3% = 25%, larger than the 4% margin
+    CHECK(r[0]["result"] == "not proven");
+  }
 }
