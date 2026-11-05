@@ -3,6 +3,7 @@
 Usage:
   micromamba run -n attome-ae python -m structura.scene.assembly runs/assembly/shelf            # interactive window
   micromamba run -n attome-ae python -m structura.scene.assembly runs/assembly/shelf --mp4 out.mp4
+  micromamba run -n attome-ae python -m structura.scene.assembly runs/assembly/shelf --instructions runs/assembly/shelf/instructions
 
 Reads the planner's output folder (`attome_assembly plan ... --out DIR`): plan.json and one STL per part, in place.
 The paths are the planner's straight insertion moves, which it proved collision-free on the exact geometry; bolts
@@ -34,6 +35,7 @@ class AssemblyScene:
             raise SystemExit(f"no assembly plan: {self.plan.get('message') or self.plan.get('error')} {self.plan.get('locked') or ''}")
         self.steps = self.plan["steps"]
         self.desc = {d["name"]: d for d in self.plan["part_list"]}
+        self.folder = folder
         self.pl = pv.Plotter(off_screen=off_screen, window_size=size, lighting="three lights")
         self.pl.set_background("#f3f1ec", top="#ffffff")
         self.parts = {}
@@ -47,6 +49,9 @@ class AssemblyScene:
             self.parts[name] = {"mesh": mesh, "base": mesh.points.copy(), "actor": actor, "kind": d["kind"]}
         self.step_of = {s["part"]: s for s in self.steps}
         self.label = self.pl.add_text("", position="upper_left", font_size=12, color="#1c1c1a")
+        tp = self.label.GetTextProperty()  # a light backing keeps the caption readable over dark parts
+        tp.SetBackgroundColor(1, 1, 1)
+        tp.SetBackgroundOpacity(0.8)
         self.pl.add_text("assembly order planned on the exact geometry: every move is collision-free",
                          position="lower_left", font_size=9, color="#555555")
         # the insertion path of the part now moving: a line from where it starts to where it ends, and an arrow head
@@ -128,6 +133,55 @@ class AssemblyScene:
             self.pl.write_frame()
         self.pl.close()
 
+    def instructions(self, out: Path):
+        """A printable instruction sheet: one picture per step (the part half-way along its path) and one line each."""
+        out.mkdir(parents=True, exist_ok=True)
+        n = len(self.steps)
+        lines = [f"# Assembly instructions: {self.plan.get('name') or self.folder.name.replace('_', ' ')}", "",
+                 "Order and paths from the planner, checked on the exact geometry: every move is collision-free.", ""]
+        fixed = [d["name"] for d in self.plan["part_list"] if d.get("fixed")]
+        if fixed:
+            lines += [f"Already in place: {', '.join(f.replace('_', ' ') for f in fixed)}.", ""]
+        overview = self.pl.camera_position
+        view = np.array(overview[0]) - np.array(overview[1])
+        view /= np.linalg.norm(view)
+        for s in self.steps:
+            k = s["step"]
+            self.show(k - 0.5)
+            self.label.SetText(2, f"step {k} of {n}: {self.sentence(s)}")
+            # frame this step: the part's whole path plus its own size, so a small plug is as legible as the board
+            b = np.array(self.parts[s["part"]]["mesh"].bounds).reshape(3, 2)
+            end = self.parts[s["part"]]["base"]
+            lo = np.minimum(b[:, 0], end.min(axis=0))
+            hi = np.maximum(b[:, 1], end.max(axis=0))
+            c = (lo + hi) / 2
+            r = max(float(np.linalg.norm(hi - lo)), 60.0)
+            self.pl.camera_position = [tuple(c + view * 2.4 * r), tuple(c), (0, 0, 1)]
+            self.pl.render()
+            png = out / f"step_{k:02d}.png"
+            self.pl.screenshot(str(png))
+            lines += [f"## Step {k}", "", f"![step {k}]({png.name})", "", f"{self.sentence(s)}", ""]
+        self.show(n)
+        self.pl.camera_position = overview
+        self.pl.render()
+        self.pl.screenshot(str(out / "assembled.png"))
+        lines += ["## Done", "", "![assembled](assembled.png)", ""]
+        (out / "instructions.md").write_text("\n".join(lines), encoding="utf-8")
+        return out / "instructions.md"
+
+    def sentence(self, s) -> str:
+        d = np.array(s["insert_direction"], float)
+        axis = {(1, 0, 0): "+x", (-1, 0, 0): "toward the wall (-x)", (0, 1, 0): "+y", (0, -1, 0): "-y", (0, 0, 1): "upward",
+                (0, 0, -1): "straight down"}.get(tuple(int(round(v)) for v in d), f"along {d.round(3).tolist()}")
+        name = s["part"].replace("_", " ")
+        kind = self.desc[s["part"]]["kind"]
+        travel = f"{s['travel_mm']:.0f} mm"
+        if kind == "bolt":
+            return f"Drive in {name}, moving {axis}, until the head seats (path {travel})."
+        if kind in ("tube", "plug"):
+            return f"Push {name} into its hole, moving {axis}, until flush (path {travel})."
+        return f"{'Lower' if axis == 'straight down' else 'Bring'} {name} in, moving {axis}, into place (path {travel})."
+
     def interactive(self):
         from structura.scene.__main__ import blender_navigation
         n = len(self.steps)
@@ -163,10 +217,13 @@ def main():
     ap.add_argument("folder")
     ap.add_argument("--mp4")
     ap.add_argument("--png")
+    ap.add_argument("--instructions", help="folder for a printable instruction sheet (instructions.md + one PNG per step)")
     ap.add_argument("--t", type=float, default=0.0)
     a = ap.parse_args()
-    sc = AssemblyScene(Path(a.folder), off_screen=bool(a.mp4 or a.png))
-    if a.png:
+    sc = AssemblyScene(Path(a.folder), off_screen=bool(a.mp4 or a.png or a.instructions))
+    if a.instructions:
+        print(f"wrote {sc.instructions(Path(a.instructions))}")
+    elif a.png:
         sc.show(a.t)
         sc.pl.screenshot(a.png)
         print(f"wrote {a.png}")
