@@ -144,25 +144,32 @@ typed grammar and the gate, not from a better mesher.
 
 ### 4.3 End to end: the 20 kg bracket brief
 
-> **Corrected (2026-11-04, decision D10):** an earlier result here (234 g, safety factor 2.06, grade A) was wrong: its peak stress sat at a sharp corner where each rib tip met the arm, which three uniform meshes could not see. Bracket family version 3 fillets those corners and the trust record now refines locally to catch this. **The lightest design converges at 162-165 g** (192.5, 179.6, 162.2 and 164.7 g at 200, 400, 800 and 1600 evaluations), but those designs are only grade B or unverified: sharp edges along the rib flanks raise the local stress about 12%. The grade A design below is the lightest one proven so far.
+> **Corrected (2026-11-04, decision D10):** an earlier result here (234 g, safety factor 2.06, grade A) was wrong: its peak stress sat at a sharp corner where each rib tip met the arm, which three uniform meshes could not see. Bracket family version 3 fillets those corners and the trust record now refines locally to catch this. Those lighter numbers did not survive: 162-165 g designs from the search have sharp edges along the rib flanks, and with the 0.5 mm fillets a printed part needs there they fall below the required safety factor (164.9 g: 1.91; 168.6 to 170.2 g: 1.96 to 1.99), and the earlier 179.6 g design no longer passes the geometry gate. **The result below is the delivered geometry, fillets included: 184.4 g, grade A.** A 174.1 g design reaches 2.02, grade B, because its peak still moves 2.4% under refinement. Its error bar comes from local refinement (decision D10, for the owner's review); the uniform meshes alone gave 24%. This front comes from the 1600-evaluation search, and the 2% budget rule has not been re-checked on the delivered geometry.
 
 
-Source: `benchmarks/p2_demo_400.json`, `runs/p2_demo_400/`; command `python benchmarks/p2_demo.py --evals 400 --name p2_demo_400`.
-400 evaluations, NSGA-II, chosen from the measured evaluation cost.
+Source: `benchmarks/delivered_trust_1600.json`, `benchmarks/delivered_front_1600.json`. A 1600-evaluation search (NSGA-II, chosen from the measured evaluation cost, `benchmarks/p2_demo_1600.json`), then the front re-solved on the geometry that is delivered, with 0.5 mm fillets on the rib flanks, then full trust records from the lightest up. `structura reproduce --dir runs/delivered_trust2/t1204` re-solves the fine uniform mesh bit for bit (mass, displacement, uniform-mesh stress); it does not re-run the local refinement behind the 2.05.
 
 | | Mass | Safety factor | Max displacement | Requirements |
 |---|---|---|---|---|
 | Hand baseline (6 mm plate, 1 rib) | 99.1 g | 0.48 | 2.48 mm | fails R1 (SF ≥ 2) |
-| Best verified so far (11.0 mm plate, 3 ribs of 6.9 mm) | 179.6 g | 2.07 ± 0.5% | 0.55 ± 0.1% mm | all pass, **trust grade A** |
+| Delivered design (11.9 mm plate, 3 ribs of 5.4 mm, 38.2 mm wide) | 184.4 g | 2.05 ± 0.1% | 0.53 ± 0.2% mm | all pass, **trust grade A** |
 
-What this shows, stated honestly: the hand design is **unsafe**, not a lighter version of a safe design. The error bars
-come from a three-level grid convergence study, and local refinement confirms the peak stress settles.
+What this shows, stated honestly: the hand design is **unsafe**, not a lighter version of a safe design. The displacement and mass error bars come from a three-level grid convergence study. The safety factor is judged on the settled peak stress under local refinement, 12.19 MPa at 0.25 mm elements, and its error bar comes from the last two levels of that refinement (peak moves 0.03%), because the uniform meshes do not resolve a 0.5 mm fillet.
 
 **Budget (decision D8).** The lightest design feasible on the finer mesh was 192.5, 179.6, 162.2 and 164.7 g at 200, 400, 800
 and 1600 evaluations, so the lightest design converges at 162-165 g (`benchmarks/p2_demo_800.json`, `benchmarks/p2_demo_1600.json`).
-Those lighter designs are not proven at grade A: at the sharp edges along the rib flanks, the peak grows about 14% under local
-refinement. With a 0.5 to 0.8 mm fillet on those edges the peak settles, about 12% above the uniform-mesh value, which would put a
-169.6 g design near safety factor 1.9. The owner must decide how to close this before submission (decision D10, still open).
+Those lighter designs do not hold on the delivered geometry. At the sharp edges along the rib flanks the peak grows about 14% under local refinement, and with the 0.5 mm fillets it settles higher than the uniform mesh shows:
+
+| Design on the delivered geometry | Safety factor at the settled peak | Peak growth on halving | Grade |
+|---|---|---|---|
+| 164.9 g | 1.91 | 1.005 | C, fails R1 |
+| 168.6 g | 1.96 | 1.022 | C, fails R1 |
+| 169.0 g | 1.995 | 1.007 | C, fails R1 |
+| 170.2 g | 1.99 | 1.029 | C, fails R1 |
+| 174.1 g | 2.02 ± 7.2% | 1.024 | B, margin smaller than its error |
+| **184.4 g** | **2.05 ± 0.1%** | **1.0003** | **A** |
+
+The 2% budget rule was met on the plain family; it has not been re-checked on the delivered geometry.
 
 ### 4.4 Second physics on the same pipeline: a fan-cooled 10 W heat sink
 

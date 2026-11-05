@@ -55,12 +55,13 @@ still poor the trust record says so (the uploaded-part redesign is grade B for e
 
 ## Results
 
-> **Corrected (2026-11-04, decision D10):** an earlier result here (234 g, safety factor 2.06, grade A) was wrong: its peak stress sat at a sharp corner where each rib tip met the arm, which three uniform meshes could not see. Bracket family version 3 fillets those corners and the trust record now refines locally to catch this. **The lightest design converges at 162-165 g** (192.5, 179.6, 162.2 and 164.7 g at 200, 400, 800 and 1600 evaluations), but those designs are only grade B or unverified: sharp edges along the rib flanks raise the local stress about 12%. The grade A design below is the lightest one proven so far.
+> **Corrected (2026-11-04, decision D10):** an earlier result here (234 g, safety factor 2.06, grade A) was wrong: its peak stress sat at a sharp corner where each rib tip met the arm, which three uniform meshes could not see. Bracket family version 3 fillets those corners and the trust record now refines locally to catch this. Those lighter numbers did not survive: 162-165 g designs from the search have sharp edges along the rib flanks, and with the 0.5 mm fillets a printed part needs there they fall below the required safety factor (164.9 g: 1.91; 168.6 to 170.2 g: 1.96 to 1.99), and the earlier 179.6 g design no longer passes the geometry gate. **The result below is the delivered geometry, fillets included: 184.4 g, grade A.** A 174.1 g design reaches 2.02, grade B, because its peak still moves 2.4% under refinement. Its error bar comes from local refinement (decision D10, for the owner's review); the uniform meshes alone gave 24%. This front comes from the 1600-evaluation search, and the 2% budget rule has not been re-checked on the delivered geometry.
 
 
 **Q: Show me a result.**
-- 20 kg PETG shelf bracket: the hand design (99 g) is unsafe by a factor of 4 (SF 0.48); the best verified design so far is
-  179.6 g with SF 2.07 ± 0.5%, grade A; lighter designs near 162-165 g exist at grade B. (`benchmarks/p2_demo_400.json`)
+- 20 kg PETG shelf bracket: the hand design (99 g) is unsafe by a factor of 4 (SF 0.48); the lightest verified design that can
+  be delivered is 184.4 g with SF 2.05 ± 0.1%, grade A; a 174.1 g design reaches 2.02 at grade B, and designs near 165-170 g fail once
+  their edges are filleted (SF 1.91-1.99). (`benchmarks/delivered_trust_1600.json`)
 - 10 W fan-cooled heat sink: 103.7 g hand design → 27.2 g (−74%), 66.3 °C against a 75 °C limit, grade A, the same at 300 and 600
   evaluations. It is the lightest corner of the design space, so the bound decides it, not the limit. (`benchmarks/heatsink_fan60_demo_300.json`)
 - An uploaded over-built bracket: 354 g → 328 g (−7.3%) with its bolt holes frozen, grade B. (`benchmarks/a3_redesign_demo.json`)

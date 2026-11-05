@@ -14,12 +14,12 @@ Entry for AIDTC 2027 (Gulf University, Bahrain). Status: working prototype; see 
 
 ## Results (measured, each traceable to a stored run)
 
-> **Corrected (2026-11-04, decision D10):** an earlier result here (234 g, safety factor 2.06, grade A) was wrong: its peak stress sat at a sharp corner where each rib tip met the arm, which three uniform meshes could not see. Bracket family version 3 fillets those corners and the trust record now refines locally to catch this. **The lightest design converges at 162-165 g** (192.5, 179.6, 162.2 and 164.7 g at 200, 400, 800 and 1600 evaluations), but those designs are only grade B or unverified: sharp edges along the rib flanks raise the local stress about 12%. The grade A design below is the lightest one proven so far.
+> **Corrected (2026-11-04, decision D10):** an earlier result here (234 g, safety factor 2.06, grade A) was wrong: its peak stress sat at a sharp corner where each rib tip met the arm, which three uniform meshes could not see. Bracket family version 3 fillets those corners and the trust record now refines locally to catch this. Those lighter numbers did not survive: 162-165 g designs from the search have sharp edges along the rib flanks, and with the 0.5 mm fillets a printed part needs there they fall below the required safety factor (164.9 g: 1.91; 168.6 to 170.2 g: 1.96 to 1.99), and the earlier 179.6 g design no longer passes the geometry gate. **The result below is the delivered geometry, fillets included: 184.4 g, grade A.** A 174.1 g design reaches 2.02, grade B, because its peak still moves 2.4% under refinement. Its error bar comes from local refinement (decision D10, for the owner's review); the uniform meshes alone gave 24%. This front comes from the 1600-evaluation search, and the 2% budget rule has not been re-checked on the delivered geometry.
 
 
 | Brief | Hand design | Result | Trust |
 |---|---|---|---|
-| 20 kg PETG shelf bracket | 99 g, safety factor 0.48 (unsafe) | 179.6 g, safety factor 2.07 ± 0.5% (lightest grade A so far; see above) | grade A |
+| 20 kg PETG shelf bracket | 99 g, safety factor 0.48 (unsafe) | 184.4 g with its fillets, safety factor 2.05 ± 0.1% (see above) | grade A |
 | 10 W heat sink, small fan, below 75 °C | 103.7 g | 27.2 g (−74%), 66.3 °C, same at 300 and 600 evaluations; the lightest corner of the design space, so the limit does not govern | grade A |
 | Uploaded over-built bracket, same bolt holes | 354 g | 328 g (−7.3%), from before the stricter trust check; to be re-run | grade B |
 | 100 kg PETG bracket | – | reported infeasible: the family's strongest design carries about 33 kg | – |

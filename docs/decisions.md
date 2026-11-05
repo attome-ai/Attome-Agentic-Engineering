@@ -134,6 +134,8 @@ deflection, against 251 g, 21 MPa and 0.71 mm with the short rib and small fille
 **Consequence.** Every bracket result from family version 2 is superseded and re-run. The grade rule changes; the owner
 should review this decision, because it changes headline numbers.
 
+**Result, 2026-11-05.** Delivering the 0.5 mm fillets, as recommended above: lightest grade A is 184.4 g, safety factor 2.05 ± 0.1%. The 165-170 g designs fail at 1.91 to 1.995, and 174.1 g reaches 2.02 at grade B.
+
 **Added 2026-11-05, for the owner's review: the error bar on a settled peak.** When the safety factor is judged on the settled peak, its error now comes from the last two levels of local refinement (two-level GCI: safety factor 3, first order, ratio 2), not from the three uniform meshes. The uniform error described a different number: on the 184.4 g design the peak moves 0.03% between refinement levels while the uniform meshes gave 24%, because they do not resolve a 0.5 mm fillet. The written grade rule and its limits are unchanged, and the record keeps the old figure as `uniform_mesh_error`. This makes grade A reachable on the delivered geometry, so read the headline with that in mind. A stricter alternative is a finer uniform mesh, which is much slower and was not run.
 
 ## D11. Planned steps moved past the demo, with reasons (2026-11-05, recommendation for the owner's review)

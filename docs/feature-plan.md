@@ -495,7 +495,7 @@ Why a judge or an engineer should believe the numbers. The method follows establ
 - **Why.** Public verification evidence is weak for almost every physics-AI vendor, and execution-based and field-level success can differ by about 20 points (arXiv 2609.03718).
 
 **Today (score 88):**
-- Trust record refines locally twice and reports a sharp corner with its location, which caps the grade at B (decision D10).
+- Trust record refines locally twice, reports a sharp corner with its location (which caps the grade at B), and judges stress on the settled peak with an error bar from that refinement (decision D10, for the owner's review). Lightest grade A on the delivered bracket: 184.4 g, SF 2.05 ± 0.1%; `reproduce` matches its uniform-mesh values bit for bit, but does not re-run the refinement.
 - Trust record: three-level grid convergence with error bars per requirement, equilibrium, energy and heat balance, validation status, A/B/C grade with the reason, reproduce command (bit-identical).
 
 **How the leaders do it:**

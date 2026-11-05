@@ -132,7 +132,7 @@ D5). The full 120-call run was stopped after the first BoTorch seed; partial res
 
 ## P2 exit demo: 20 kg bracket brief
 
-> **Corrected (2026-11-04, decision D10):** an earlier result here (234 g, safety factor 2.06, grade A) was wrong: its peak stress sat at a sharp corner where each rib tip met the arm, which three uniform meshes could not see. Bracket family version 3 fillets those corners and the trust record now refines locally to catch this. **The lightest design converges at 162-165 g** (192.5, 179.6, 162.2 and 164.7 g at 200, 400, 800 and 1600 evaluations), but those designs are only grade B or unverified: sharp edges along the rib flanks raise the local stress about 12%. The grade A design below is the lightest one proven so far.
+> **Corrected (2026-11-04, decision D10):** an earlier result here (234 g, safety factor 2.06, grade A) was wrong: its peak stress sat at a sharp corner where each rib tip met the arm, which three uniform meshes could not see. Bracket family version 3 fillets those corners and the trust record now refines locally to catch this. Those lighter numbers did not survive: 162-165 g designs from the search have sharp edges along the rib flanks, and with the 0.5 mm fillets a printed part needs there they fall below the required safety factor (164.9 g: 1.91; 168.6 to 170.2 g: 1.96 to 1.99), and the earlier 179.6 g design no longer passes the geometry gate. **The result below is the delivered geometry, fillets included: 184.4 g, grade A.** A 174.1 g design reaches 2.02, grade B, because its peak still moves 2.4% under refinement. Its error bar comes from local refinement (decision D10, for the owner's review); the uniform meshes alone gave 24%. This front comes from the 1600-evaluation search, and the 2% budget rule has not been re-checked on the delivered geometry.
  (`benchmarks/p2_demo.py`, bracket family v2)
 
 200 NSGA-II evaluations at 4 mm (the portfolio chose NSGA-II from the measured evaluation cost), front re-solved at 3 mm,
@@ -481,6 +481,8 @@ search and NSGA-II: still better per solver call, by less than the single-seed 7
 | 95%, 6 mm cut, 3 mm fillet (adopted, plus a fillet at the wall end) | 266.5 g | 9.2 MPa | 9.1, 8.6, 10.4, 10.0, 10.0 MPa | 0.39 mm |
 
 Effective yield is 25 MPa, so the version 2 design's true safety factor was about 1.2 against the reported 2.3.
+
+**Delivered geometry, 20 kg brief (`benchmarks/delivered_trust_1600.json`):** the 1600-evaluation front re-solved with 0.5 mm fillets on the rib flanks (`docs/examples/bracket_20kg_delivered.json`), then full trust records from the lightest up, about 30 minutes each. The settled safety factor is 1.91 at 164.9 g, 1.96 to 1.995 from 168.6 to 170.2 g, 2.02 ± 7.2% at 174.1 g (grade B: peak grows 2.4%) and **2.05 ± 0.1% at 184.4 g (grade A: peak grows 0.03%)**. The earlier 179.6 g grade A design fails the gate with these fillets. The error bar on a settled peak is a two-level GCI from local refinement (D10); the uniform meshes gave 24% on the 184.4 g design and stay in the record as `uniform_mesh_error`. The earlier run in which 174.1 g failed its coarse mesh was under heavier machine load, and it completed when re-run with less; that link is likely, not proven. The 2% budget rule below applies to the plain family and has not been re-checked on this geometry.
 
 **Budget (D8), 20 kg brief:** the lightest design converges at 162-165 g (800 to 1600 evaluations: +1.6%, within the 2% rule). The recommended knee design does not settle: it moves between 170 and 246 g across these runs.
 

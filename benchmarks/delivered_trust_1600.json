@@ -1,0 +1,335 @@
+[
+ {
+  "trial": 803,
+  "params": {
+   "fillet_radius": 5.798136277175289,
+   "plate_width": 30.652658369766833,
+   "rib_count": 3,
+   "rib_thickness": 5.79463112050503,
+   "thickness": 11.917544565117822
+  },
+  "mass_g": 164.949,
+  "grade": "C",
+  "sf": 1.912493900471577,
+  "sf_uniform": 2.2120428567292727,
+  "sf_result": "fail",
+  "peak_uniform": 11.301770182231012,
+  "peak_refined": [
+   13.004302041735226,
+   13.071937115112144
+  ],
+  "growth": 1.0052009768121237,
+  "error": 0.04224230236272946,
+  "reasons": [
+   "a requirement fails"
+  ],
+  "seconds": 1270,
+  "error_bar": "uniform meshes (superseded)"
+ },
+ {
+  "trial": 1221,
+  "params": {
+   "fillet_radius": 3.9398563624106018,
+   "plate_width": 30.514661045356547,
+   "rib_count": 3,
+   "rib_thickness": 6.142982535771596,
+   "thickness": 11.917544565117822
+  },
+  "mass_g": 168.591,
+  "grade": "C",
+  "sf": 1.9627133576239066,
+  "sf_uniform": 2.140402520456167,
+  "sf_result": "fail",
+  "peak_uniform": 11.680046047914367,
+  "peak_refined": [
+   12.459868290519728,
+   12.73746872047858
+  ],
+  "growth": 1.0222795637551056,
+  "error": 0.0943176334286771,
+  "reasons": [
+   "a requirement fails",
+   "a requirement margin is smaller than its numerical error",
+   "numerical error on a governing value is 9.43%"
+  ],
+  "seconds": 1816,
+  "error_bar": "uniform meshes (superseded)"
+ },
+ {
+  "trial": 996,
+  "params": {
+   "fillet_radius": 1.5585493208456958,
+   "plate_width": 30.652658369766833,
+   "rib_count": 3,
+   "rib_thickness": 6.142982535771596,
+   "thickness": 11.917544565117822
+  },
+  "mass_g": 168.982,
+  "grade": "C",
+  "sf": 1.9954016923080267,
+  "sf_uniform": 2.1537810536014685,
+  "sf_result": "fail",
+  "peak_uniform": 11.607493694958443,
+  "peak_refined": [
+   12.440133636459498,
+   12.528805651699725
+  ],
+  "growth": 1.0071278989303096,
+  "error": 0.14147917886385872,
+  "reasons": [
+   "a requirement fails",
+   "a requirement margin is smaller than its numerical error",
+   "numerical error on a governing value is 14.15%"
+  ],
+  "seconds": 1804,
+  "error_bar": "uniform meshes (superseded)"
+ },
+ {
+  "trial": 1219,
+  "params": {
+   "fillet_radius": 5.092352115706051,
+   "plate_width": 30.652658369766833,
+   "rib_count": 3,
+   "rib_thickness": 6.142982535771596,
+   "thickness": 11.917544565117822
+  },
+  "mass_g": 169.062,
+  "grade": "C",
+  "sf": 1.9823399844731735,
+  "sf_uniform": 2.3053369304523903,
+  "sf_result": "fail",
+  "peak_uniform": 10.844401818129942,
+  "peak_refined": [
+   12.396413517017734,
+   12.611358392513077
+  ],
+  "growth": 1.017339279235907,
+  "error": 0.0005764787209730774,
+  "reasons": [
+   "a requirement fails"
+  ],
+  "seconds": 1813,
+  "error_bar": "uniform meshes (superseded)"
+ },
+ {
+  "trial": 1260,
+  "params": {
+   "fillet_radius": 1.5002327446389625,
+   "plate_width": 31.053736055197312,
+   "rib_count": 3,
+   "rib_thickness": 6.142982535771596,
+   "thickness": 11.917544565117822
+  },
+  "mass_g": 170.247,
+  "grade": "C",
+  "sf": 1.988596602378354,
+  "sf_uniform": 2.183817306729831,
+  "sf_result": "fail",
+  "peak_uniform": 11.44784406779722,
+  "peak_refined": [
+   12.219857247787306,
+   12.571679932521304
+  ],
+  "growth": 1.0287910633978727,
+  "error": 0.06574140389952096,
+  "reasons": [
+   "a requirement fails",
+   "a requirement's value does not converge monotonically across the three meshes and its error is 5% or more, so the error estimate is not trusted (refine the mesh or remove the stress raiser)",
+   "numerical error on a governing value is 6.57%"
+  ],
+  "seconds": 1643,
+  "error_bar": "uniform meshes (superseded)"
+ },
+ {
+  "trial": 1488,
+  "params": {
+   "fillet_radius": 5.092352115706051,
+   "plate_width": 32.236987374552164,
+   "rib_count": 3,
+   "rib_thickness": 6.142982535771596,
+   "thickness": 11.917544565117822
+  },
+  "mass_g": 174.063,
+  "fine_size": 3,
+  "grade": "B",
+  "sf": 2.0198574122595025,
+  "sf_uniform": 2.1701804361709884,
+  "sf_result": "not proven",
+  "peak_uniform": 11.519779453965297,
+  "peak_refined": [
+   12.08130899958382,
+   12.377111299175265
+  ],
+  "growth": 1.0244842921906587,
+  "error": 0.07169741608718237,
+  "uniform_mesh_error": 0.2397549269780491,
+  "others": {
+   "max_disp_mm": [
+    0.5408366985487802,
+    0.0028331147253962425,
+    "pass"
+   ],
+   "mass_g": [
+    174.0626823729297,
+    6.490288238813888e-05,
+    "pass"
+   ]
+  },
+  "checks": [
+   [
+    "reaction equilibrium (service)",
+    true
+   ],
+   [
+    "strain energy = half the external work (service)",
+    true
+   ],
+   [
+    "peak stress settles under local refinement",
+    true
+   ]
+  ],
+  "reasons": [
+   "a requirement margin is smaller than its numerical error",
+   "numerical error on a governing value is 7.17%"
+  ],
+  "seconds": 1595,
+  "error_bar": "refinement",
+  "folder": "runs/delivered_trust2/t1488"
+ },
+ {
+  "trial": "p2_400",
+  "params": {
+   "fillet_radius": 0.562377,
+   "plate_width": 32.956,
+   "rib_count": 3.0,
+   "rib_thickness": 6.92081,
+   "thickness": 11.0293
+  },
+  "mass_g": 179.5788469154386,
+  "grade": "C",
+  "sf": null,
+  "sf_uniform": null,
+  "sf_result": null,
+  "peak_uniform": null,
+  "peak_refined": [
+   null,
+   null
+  ],
+  "growth": null,
+  "error": null,
+  "reasons": [
+   "an evaluation level did not complete: fine gate_fail, medium gate_fail, coarse gate_fail"
+  ],
+  "seconds": 2,
+  "error_bar": "uniform meshes (superseded)"
+ },
+ {
+  "trial": 1204,
+  "params": {
+   "fillet_radius": 3.9398563624106018,
+   "plate_width": 38.24843084957202,
+   "rib_count": 3,
+   "rib_thickness": 5.422498570710545,
+   "thickness": 11.917544565117822
+  },
+  "mass_g": 184.405,
+  "fine_size": 3,
+  "grade": "A",
+  "sf": 2.051418292802707,
+  "sf_uniform": 2.066316921358958,
+  "sf_result": "pass",
+  "peak_uniform": 12.0988216965083,
+  "peak_refined": [
+   12.183214261882082,
+   12.186690587537013
+  ],
+  "growth": 1.0002853373157696,
+  "error": 0.0008557677648318998,
+  "uniform_mesh_error": 0.23978265596902296,
+  "others": {
+   "max_disp_mm": [
+    0.5344312340211325,
+    0.0024345703582149803,
+    "pass"
+   ],
+   "mass_g": [
+    184.40471404532224,
+    3.644945464738638e-05,
+    "pass"
+   ]
+  },
+  "checks": [
+   [
+    "reaction equilibrium (service)",
+    true
+   ],
+   [
+    "strain energy = half the external work (service)",
+    true
+   ],
+   [
+    "peak stress settles under local refinement",
+    true
+   ]
+  ],
+  "reasons": [],
+  "seconds": 1703,
+  "error_bar": "refinement",
+  "folder": "runs/delivered_trust2/t1204"
+ },
+ {
+  "trial": 1137,
+  "params": {
+   "fillet_radius": 5.525421061586229,
+   "plate_width": 35.621640196402886,
+   "rib_count": 3,
+   "rib_thickness": 6.142982535771596,
+   "thickness": 11.917544565117822
+  },
+  "mass_g": 184.774,
+  "fine_size": 3,
+  "grade": "A",
+  "sf": 2.0914992617976,
+  "sf_uniform": 2.4513115974397697,
+  "sf_result": "pass",
+  "peak_uniform": 10.19862184232752,
+  "peak_refined": [
+   11.914771924886518,
+   11.953147895693267
+  ],
+  "growth": 1.003220873303214,
+  "error": 0.009631597753569822,
+  "uniform_mesh_error": 0.3655429817515728,
+  "others": {
+   "max_disp_mm": [
+    0.5160144535136723,
+    0.005272730358338953,
+    "pass"
+   ],
+   "mass_g": [
+    184.7735618867683,
+    1.3096883743862764e-05,
+    "pass"
+   ]
+  },
+  "checks": [
+   [
+    "reaction equilibrium (service)",
+    true
+   ],
+   [
+    "strain energy = half the external work (service)",
+    true
+   ],
+   [
+    "peak stress settles under local refinement",
+    true
+   ]
+  ],
+  "reasons": [],
+  "seconds": 1801,
+  "error_bar": "refinement",
+  "folder": "runs/delivered_trust2/t1137"
+ }
+]
