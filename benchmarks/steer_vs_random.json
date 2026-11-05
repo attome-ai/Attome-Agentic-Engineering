@@ -1,0 +1,116 @@
+{
+ "budget": 16,
+ "mesh": 6,
+ "study": "p2_demo_400",
+ "note": "distance: how far short of the target on the worse objective, in front widths; 0 = reached",
+ "rows": [
+  {
+   "target": [
+    176.22,
+    2.19
+   ],
+   "seed": 0,
+   "front_before": 0.05,
+   "steered_best": 0.013096145578795102,
+   "steered_feasible": 16,
+   "random_best": 0.8797477321835507,
+   "random_feasible": 1
+  },
+  {
+   "target": [
+    176.22,
+    2.19
+   ],
+   "seed": 1,
+   "front_before": 0.05,
+   "steered_best": 0.04083825106475612,
+   "steered_feasible": 16,
+   "random_best": 0.5612633556421257,
+   "random_feasible": 1
+  },
+  {
+   "target": [
+    176.22,
+    2.19
+   ],
+   "seed": 2,
+   "front_before": 0.05,
+   "steered_best": 0.0962279750840568,
+   "steered_feasible": 15,
+   "random_best": null,
+   "random_feasible": 0
+  },
+  {
+   "target": [
+    202.7,
+    2.51
+   ],
+   "seed": 0,
+   "front_before": 0.05,
+   "steered_best": 0.09655119691667123,
+   "steered_feasible": 16,
+   "random_best": null,
+   "random_feasible": 0
+  },
+  {
+   "target": [
+    202.7,
+    2.51
+   ],
+   "seed": 1,
+   "front_before": 0.05,
+   "steered_best": 0.11964660760304138,
+   "steered_feasible": 16,
+   "random_best": 0.6767778168627094,
+   "random_feasible": 1
+  },
+  {
+   "target": [
+    202.7,
+    2.51
+   ],
+   "seed": 2,
+   "front_before": 0.05,
+   "steered_best": 0.10879931636393395,
+   "steered_feasible": 16,
+   "random_best": 0.4147881428741573,
+   "random_feasible": 1
+  },
+  {
+   "target": [
+    212.36,
+    2.64
+   ],
+   "seed": 0,
+   "front_before": 0.05,
+   "steered_best": 0.07015148573717017,
+   "steered_feasible": 16,
+   "random_best": 0.3996947146544661,
+   "random_feasible": 3
+  },
+  {
+   "target": [
+    212.36,
+    2.64
+   ],
+   "seed": 1,
+   "front_before": 0.05,
+   "steered_best": 0.05007390231428019,
+   "steered_feasible": 16,
+   "random_best": null,
+   "random_feasible": 0
+  },
+  {
+   "target": [
+    212.36,
+    2.64
+   ],
+   "seed": 2,
+   "front_before": 0.05,
+   "steered_best": 0.05545745761965737,
+   "steered_feasible": 16,
+   "random_best": null,
+   "random_feasible": 0
+  }
+ ]
+}

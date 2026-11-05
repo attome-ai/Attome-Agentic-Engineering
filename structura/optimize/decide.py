@@ -15,6 +15,7 @@ import re
 
 import numpy as np
 import optuna
+from optuna.samplers._base import _CONSTRAINTS_KEY
 
 from . import pareto
 from .evaluate import SpecInfo, evaluate, load_spec
@@ -73,7 +74,18 @@ def steer(spec_path: str, study: optuna.Study, reference: list[float], n_trials:
         return float(np.max(np.maximum(d, 0)) + 1e-3 * np.sum(d))
 
     focus = optuna.create_study(direction="minimize",
-                                sampler=optuna.samplers.TPESampler(seed=seed, constraints_func=lambda t: t.user_attrs["violations"]))
+                                sampler=optuna.samplers.TPESampler(seed=seed, multivariate=True, n_startup_trials=0, constraints_func=lambda t: t.user_attrs["violations"]))
+    # Warm start: every design the study already solved tells the sampler where the target's region and the feasible region
+    # are. Started cold, 16 evaluations were no better than 16 random designs (benchmarks/steer_vs_random.json).
+    dists = {k: (optuna.distributions.IntDistribution(int(lo), int(hi)) if k in spec.integer else optuna.distributions.FloatDistribution(lo, hi))
+             for k, (lo, hi) in spec.free.items()}
+    for t in study.get_trials(deepcopy=False):
+        if t.state != optuna.trial.TrialState.COMPLETE or not t.values or set(t.params) != set(dists):
+            continue
+        viol = t.user_attrs.get("violations") or [0.0]
+        d = signs * (np.array(t.values) - ref) / scale
+        focus.add_trial(optuna.trial.create_trial(params=t.params, distributions=dists, value=float(np.max(np.maximum(d, 0)) + 1e-3 * np.sum(d)),
+                                                  user_attrs={"violations": viol}, system_attrs={_CONSTRAINTS_KEY: tuple(viol)}))
     before = len(study.trials)
     focus.optimize(objective, n_trials=n_trials, n_jobs=n_jobs)
     added = study.trials[before:]
