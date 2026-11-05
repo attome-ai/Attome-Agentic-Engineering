@@ -1,0 +1,166 @@
+{
+  "name": "wall shelf: bracket, plugs, M6 bolts, board, crate",
+  "bracket_params": {
+    "fillet_radius": 3.0,
+    "plate_width": 50.0,
+    "rib_count": 1.0,
+    "rib_thickness": 4.0,
+    "thickness": 6.0
+  },
+  "parts": [
+    {
+      "name": "wall",
+      "kind": "box",
+      "fixed": true,
+      "at": [
+        -60,
+        -260.0,
+        -200.0
+      ],
+      "size": [
+        60,
+        570.0,
+        550.0
+      ],
+      "holes": [
+        {
+          "at": [
+            -36,
+            37.5,
+            12.0
+          ],
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "diameter": 8.0,
+          "depth": 36
+        },
+        {
+          "at": [
+            -36,
+            12.5,
+            12.0
+          ],
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "diameter": 8.0,
+          "depth": 36
+        }
+      ],
+      "color": "#e4dfd6"
+    },
+    {
+      "name": "plug_1",
+      "kind": "tube",
+      "fastener": true,
+      "at": [
+        -32,
+        37.5,
+        12.0
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "diameter": 8.0,
+      "inner_diameter": 6.2,
+      "length": 32,
+      "color": "#d9d9d9"
+    },
+    {
+      "name": "plug_2",
+      "kind": "tube",
+      "fastener": true,
+      "at": [
+        -32,
+        12.5,
+        12.0
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "diameter": 8.0,
+      "inner_diameter": 6.2,
+      "length": 32,
+      "color": "#d9d9d9"
+    },
+    {
+      "name": "bracket",
+      "kind": "step",
+      "file": "bracket_build/part.step",
+      "color": "#4a4f57"
+    },
+    {
+      "name": "bolt_1",
+      "kind": "bolt",
+      "at": [
+        6.000000000000001,
+        37.5,
+        12.0
+      ],
+      "axis": [
+        -1,
+        0,
+        0
+      ],
+      "diameter": 6.0,
+      "length": 32.0,
+      "color": "#9aa0a6"
+    },
+    {
+      "name": "bolt_2",
+      "kind": "bolt",
+      "at": [
+        6.000000000000001,
+        12.5,
+        12.0
+      ],
+      "axis": [
+        -1,
+        0,
+        0
+      ],
+      "diameter": 6.0,
+      "length": 32.0,
+      "color": "#9aa0a6"
+    },
+    {
+      "name": "shelf_board",
+      "kind": "box",
+      "at": [
+        0,
+        -175.0,
+        100.0
+      ],
+      "size": [
+        250,
+        400,
+        18
+      ],
+      "color": "#c08a55"
+    },
+    {
+      "name": "crate",
+      "kind": "box",
+      "at": [
+        70,
+        -45.0,
+        118.0
+      ],
+      "size": [
+        120,
+        140,
+        110
+      ],
+      "color": "#8a6b4a"
+    }
+  ]
+}

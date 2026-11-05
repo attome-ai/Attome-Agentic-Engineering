@@ -38,6 +38,98 @@ def load_bundle(folder: Path):
     return meta, grid, frames
 
 
+def blender_navigation(pl, centre, single=True):
+    """Middle drag orbits (turntable, Z up), Shift+middle pans, wheel or Ctrl+middle zooms; Alt+left orbits (laptops);
+    numpad 1/3/7 front/right/top (Ctrl: opposite), numpad 5 ortho/perspective, Home frames all, period centres the part."""
+    import vtk
+    style = vtk.vtkInteractorStyleTerrain()  # turntable: the horizon stays level, like Blender's default orbit
+    pl.iren.interactor.SetInteractorStyle(style)
+    iren = pl.iren.interactor
+    state = {"mode": None}
+
+    def press_middle(obj, ev):
+        if iren.GetShiftKey():
+            state["mode"] = "pan"; style.StartPan()
+        elif iren.GetControlKey():
+            state["mode"] = "zoom"; style.StartDolly()
+        else:
+            state["mode"] = "rotate"; style.StartRotate()
+        obj.SetAbortFlag(1) if hasattr(obj, "SetAbortFlag") else None
+
+    def release(obj, ev):
+        m = state["mode"]
+        if m == "pan":
+            style.EndPan()
+        elif m == "zoom":
+            style.EndDolly()
+        elif m == "rotate":
+            style.EndRotate()
+        state["mode"] = None
+
+    def press_left(obj, ev):
+        if iren.GetAltKey():
+            state["mode"] = "rotate"; style.StartRotate()
+
+    def move(obj, ev):
+        m = state["mode"]
+        if m == "pan":
+            style.Pan()
+        elif m == "zoom":
+            style.Dolly()
+        elif m == "rotate":
+            style.Rotate()
+
+    style.AddObserver("MiddleButtonPressEvent", press_middle, 1.0)
+    style.AddObserver("MiddleButtonReleaseEvent", release, 1.0)
+    style.AddObserver("LeftButtonPressEvent", press_left, 1.0)
+    style.AddObserver("LeftButtonReleaseEvent", release, 1.0)
+    style.AddObserver("MouseMoveEvent", move, 1.0)
+    # left and right buttons do nothing else (Blender uses them to select); only middle / Alt+left move the view
+    style.AddObserver("RightButtonPressEvent", lambda o, e: None, 1.0)
+
+    centre = np.asarray(centre, float)
+
+    def view(direction, up=(0, 0, 1)):
+        def f():
+            for r in range(len(pl.renderers)):
+                pl.subplot(0, r) if not single else None
+                cam = pl.renderer.camera
+                dist = np.linalg.norm(np.array(cam.position) - np.array(cam.focal_point))
+                cam.focal_point = centre
+                cam.position = centre + np.array(direction, float) * dist
+                cam.up = up
+            pl.render()
+        return f
+
+    def ortho():
+        for r in pl.renderers:
+            cam = r.GetActiveCamera()
+            cam.SetParallelProjection(not cam.GetParallelProjection())
+        pl.render()
+
+    def home():
+        for r in pl.renderers:
+            r.ResetCamera()
+        pl.render()
+
+    def focus():
+        for r in pl.renderers:
+            r.GetActiveCamera().SetFocalPoint(*centre)
+        pl.render()
+
+    for key, fn in [("KP_1", view((0, -1, 0))), ("KP_End", view((0, -1, 0))), ("KP_3", view((1, 0, 0))), ("KP_Next", view((1, 0, 0))),
+                    ("KP_7", view((0, 0, 1), up=(0, 1, 0))), ("KP_Home", view((0, 0, 1), up=(0, 1, 0))),
+                    ("KP_5", ortho), ("KP_Begin", ortho), ("Home", home), ("period", focus), ("KP_Decimal", focus), ("KP_Delete", focus)]:
+        pl.add_key_event(key, fn)
+
+    def opposite():
+        # Ctrl + numpad: back / left / bottom
+        pass
+    pl.add_text("middle drag: orbit · Shift+middle: pan · wheel: zoom · Alt+left: orbit (laptop)\n"
+                "numpad 1/3/7: front/right/top · 5: ortho · Home: all · period: centre · space: play/pause",
+                position="upper_right", font_size=8, color="#555555")
+
+
 class Scene:
     def __init__(self, folder: Path, scale: float | None, off_screen: bool, size=(1800, 820), single=False):
         import pyvista as pv
@@ -284,96 +376,7 @@ class Scene:
 
     # ------------------------------------------------------------------ navigation (Blender-style)
     def blender_controls(self):
-        """Middle drag orbits (turntable, Z up), Shift+middle pans, wheel or Ctrl+middle zooms; Alt+left orbits (laptops);
-        numpad 1/3/7 front/right/top (Ctrl: opposite), numpad 5 ortho/perspective, Home frames all, period centres the part."""
-        import vtk
-        pl = self.pl
-        style = vtk.vtkInteractorStyleTerrain()  # turntable: the horizon stays level, like Blender's default orbit
-        pl.iren.interactor.SetInteractorStyle(style)
-        iren = pl.iren.interactor
-        state = {"mode": None}
-
-        def press_middle(obj, ev):
-            if iren.GetShiftKey():
-                state["mode"] = "pan"; style.StartPan()
-            elif iren.GetControlKey():
-                state["mode"] = "zoom"; style.StartDolly()
-            else:
-                state["mode"] = "rotate"; style.StartRotate()
-            obj.SetAbortFlag(1) if hasattr(obj, "SetAbortFlag") else None
-
-        def release(obj, ev):
-            m = state["mode"]
-            if m == "pan":
-                style.EndPan()
-            elif m == "zoom":
-                style.EndDolly()
-            elif m == "rotate":
-                style.EndRotate()
-            state["mode"] = None
-
-        def press_left(obj, ev):
-            if iren.GetAltKey():
-                state["mode"] = "rotate"; style.StartRotate()
-
-        def move(obj, ev):
-            m = state["mode"]
-            if m == "pan":
-                style.Pan()
-            elif m == "zoom":
-                style.Dolly()
-            elif m == "rotate":
-                style.Rotate()
-
-        style.AddObserver("MiddleButtonPressEvent", press_middle, 1.0)
-        style.AddObserver("MiddleButtonReleaseEvent", release, 1.0)
-        style.AddObserver("LeftButtonPressEvent", press_left, 1.0)
-        style.AddObserver("LeftButtonReleaseEvent", release, 1.0)
-        style.AddObserver("MouseMoveEvent", move, 1.0)
-        # left and right buttons do nothing else (Blender uses them to select); only middle / Alt+left move the view
-        style.AddObserver("RightButtonPressEvent", lambda o, e: None, 1.0)
-
-        centre = self.grid.points.mean(axis=0)
-
-        def view(direction, up=(0, 0, 1)):
-            def f():
-                for r in range(len(pl.renderers)):
-                    pl.subplot(0, r) if not self.single else None
-                    cam = pl.renderer.camera
-                    dist = np.linalg.norm(np.array(cam.position) - np.array(cam.focal_point))
-                    cam.focal_point = centre
-                    cam.position = centre + np.array(direction, float) * dist
-                    cam.up = up
-                pl.render()
-            return f
-
-        def ortho():
-            for r in pl.renderers:
-                cam = r.GetActiveCamera()
-                cam.SetParallelProjection(not cam.GetParallelProjection())
-            pl.render()
-
-        def home():
-            for r in pl.renderers:
-                r.ResetCamera()
-            pl.render()
-
-        def focus():
-            for r in pl.renderers:
-                r.GetActiveCamera().SetFocalPoint(*centre)
-            pl.render()
-
-        for key, fn in [("KP_1", view((0, -1, 0))), ("KP_End", view((0, -1, 0))), ("KP_3", view((1, 0, 0))), ("KP_Next", view((1, 0, 0))),
-                        ("KP_7", view((0, 0, 1), up=(0, 1, 0))), ("KP_Home", view((0, 0, 1), up=(0, 1, 0))),
-                        ("KP_5", ortho), ("KP_Begin", ortho), ("Home", home), ("period", focus), ("KP_Decimal", focus), ("KP_Delete", focus)]:
-            pl.add_key_event(key, fn)
-
-        def opposite():
-            # Ctrl + numpad: back / left / bottom
-            pass
-        pl.add_text("middle drag: orbit · Shift+middle: pan · wheel: zoom · Alt+left: orbit (laptop)\n"
-                    "numpad 1/3/7: front/right/top · 5: ortho · Home: all · period: centre · space: play/pause",
-                    position="upper_right", font_size=8, color="#555555")
+        blender_navigation(self.pl, self.grid.points.mean(axis=0), self.single)
 
     # ------------------------------------------------------------------ outputs
     def check(self, tol_mm: float = 0.01):

@@ -14,3 +14,5 @@ spooles.out
 engine/build-dev/
 engine/build-dev.log
 families/uploads/
+assembly/build/
+assembly/examples/shelf/bracket_build/
