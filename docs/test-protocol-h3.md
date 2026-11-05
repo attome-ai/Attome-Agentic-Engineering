@@ -1,4 +1,4 @@
-> **Do not print from this version.** The designs and predictions below are from bracket family version 2, superseded by decision D10. Re-run `benchmarks/gauge_point.py` on the final design first.
+> **Predictions updated 2026-11-05 for the delivered design (184.4 g).** Before printing, the owner should review decision D10, which sets this design's grade A.
 
 # H3: Physical test protocol, 20 kg PETG bracket
 
@@ -18,12 +18,12 @@ Show that the ranking and the order of magnitude predicted by the engine hold on
 
 | Design | Parameters | Predicted mass | Source |
 |---|---|---|---|
-| Baseline | thickness 6, plate_width 50, rib_count 1, rib_thickness 4, fillet_radius 3 | 96.3 g | `benchmarks/p2_demo.json` |
-| Recommended (trial 183) | thickness 11.77, plate_width 58.81, rib_count 2, rib_thickness 7.67, fillet_radius 2.78 | 234.1 g | `benchmarks/p2_demo.json` |
+| Baseline | thickness 6, plate_width 50, rib_count 1, rib_thickness 4, fillet_radius 3 | 99.2 g | `benchmarks/h3_predictions.json` |
+| Recommended (trial 1204) | thickness 11.92, plate_width 38.25, rib_count 3, rib_thickness 5.42, fillet_radius 3.94 | 184.4 g | `benchmarks/delivered_trust_1600.json` |
 
-STL files (already exported, verified on the fine mesh): `runs/p2_demo/opt/report_bundles/baseline/design/part.stl`
-and `runs/p2_demo/opt/report_bundles/trial_183/design/part.stl`. `runs/` is not in git; regenerate with
-`python benchmarks/p2_demo.py` and `python -m structura.report.build ...` if they are missing.
+Both are on the delivered family, `bracket_delivered`, with 0.5 mm fillets on the rib flanks.
+
+STL files: `baseline/design/part.stl` and `trial_1204/design/part.stl` under `runs/p2_demo_1600/opt/report_bundles_e2f3a47f50e1_3mm/`. `runs/` is not in git; regenerate with `structura export --family bracket_delivered --set ... --out DIR` from the parameters above (give the full-precision values from the JSON files).
 
 **Three prints of each design**, all with identical settings:
 
@@ -76,22 +76,21 @@ Log everything at 10 Hz or faster through the ESP32 (`force_N, disp_mm, t_s` CSV
 
 ## Predictions to compare against
 
-From the stored runs (`benchmarks/p2_demo.json`). The service case is solved at the top of its factor range, 1.5 ×
+From the stored runs. The service case is solved at the top of its factor range, 1.5 ×
 196.2 N = **294.3 N**, with the PETG print knock-down applied (strength × 0.5, modulus × 0.85). The model is linear, so
 stiffness = force / displacement and the load at first local yield = safety factor × 294.3 N.
 
 | Quantity | Baseline | Recommended | Ratio |
 |---|---|---|---|
-| Displacement at the arm end (load line) at 294.3 N | 4.919 mm | 0.755 mm | 6.5× |
-| Stiffness at the arm end | **59.8 N/mm** | **389.9 N/mm** | **6.5×** |
-| Displacement at 196.2 N (proof load, linear) | 3.28 mm | 0.50 mm | |
-| Safety factor at 294.3 N | 0.37 | 2.06 | 5.6× |
-| Load at first local yield (knocked-down strength) | ≈ 108 N (11 kg) | ≈ 607 N (62 kg) | 5.6× |
+| Displacement at the arm end (load line) at 294.3 N | 2.350 mm | 0.512 mm | 4.6× |
+| Stiffness at the arm end | **125.3 N/mm** | **574.8 N/mm** | **4.6×** |
+| Displacement at 196.2 N (proof load, linear) | 1.57 mm | 0.34 mm | |
+| Safety factor at 294.3 N | 0.48 (uniform mesh) | 2.05 (settled peak) | at least 4.3× |
+| Load at first local yield (knocked-down strength) | at most ≈ 142 N (14 kg) | ≈ 604 N (62 kg) | at least 4.3× |
 
-Arm-end values: `benchmarks/h3_predictions.json`, from `python benchmarks/gauge_point.py
-runs/p2_demo/opt/report_bundles/baseline runs/p2_demo/opt/report_bundles/trial_183`. The displacement is the
+Arm-end values: `benchmarks/h3_predictions.json`, from `python benchmarks/gauge_point.py` on those two bundles. The displacement is the
 force-weighted mean of the loaded nodes (the displacement that does the work of the load); half of force times it
-equals the solver's strain energy to 7 digits (723.77 and 111.06 N mm), which checks the extraction.
+equals the solver's strain energy (345.74 and 75.34 N mm), which checks the extraction. The baseline has no local-refinement record, so its stress is a uniform-mesh value and its true peak can only be higher: its yield load is an upper bound.
 
 Notes on these numbers:
 
@@ -105,7 +104,7 @@ Notes on these numbers:
 | Claim | Pass if |
 |---|---|
 | Ranking | Every recommended specimen is stiffer and carries more load than every baseline specimen |
-| Stiffness ratio | Measured mean ratio within ±30% of the predicted 6.5× |
+| Stiffness ratio | Measured mean ratio within ±30% of the predicted 4.6× |
 | Absolute stiffness | Measured within ±30% of prediction for each design (else calibrate, below) |
 | Service load | Recommended design carries 196.2 N for 60 s with no visible damage and deflection below 3 mm (R2) |
 | Mass | Weighed mass within ±10% of prediction |

@@ -73,8 +73,8 @@ Because the hand design fails the brief. "Optimized" means the lightest design t
 requirement, not the lightest shape.
 
 **Q: Has anything been tested physically?**
-Not yet. The protocol, the rig and the predictions are fixed in advance: arm-end stiffness 59.8 N/mm for the hand
-design against 389.9 N/mm for the recommended one (6.5×), with pass criteria. (`docs/test-protocol-h3.md`) [update
+Not yet. The protocol, the rig and the predictions are fixed in advance: arm-end stiffness 125.3 N/mm for the hand
+design against 574.8 N/mm for the recommended one (4.6×), with pass criteria. (`docs/test-protocol-h3.md`) [update
 this answer when the test is done]
 
 **Q: How often does the pipeline fail?**

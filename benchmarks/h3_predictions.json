@@ -1,24 +1,28 @@
 [
   {
-    "bundle": "runs\\p2_demo\\opt\\report_bundles\\baseline",
+    "bundle": "runs\\p2_demo_1600\\opt\\report_bundles_e2f3a47f50e1_3mm\\baseline",
     "load_case": "service",
-    "force_N": 294.300000000117,
+    "force_N": 294.300000000071,
     "load_nodes": 130,
-    "gauge_disp_mm": 4.918555647998841,
-    "stiffness_N_per_mm": 59.83463867484261,
-    "max_disp_mm": 4.962966988446,
-    "mass_g": 96.34706346510676,
-    "safety_factor": 0.36861156741806606
+    "gauge_disp_mm": 2.3495703681685476,
+    "stiffness_N_per_mm": 125.25694228493064,
+    "max_disp_mm": 2.4782587426987845,
+    "mass_g": 99.17425291385135,
+    "safety_factor": 0.4826672554023318,
+    "strain_energy_Nmm": 345.7394,
+    "half_force_times_disp_Nmm": 345.7392796760852
   },
   {
-    "bundle": "runs\\p2_demo\\opt\\report_bundles\\trial_183",
+    "bundle": "runs\\p2_demo_1600\\opt\\report_bundles_e2f3a47f50e1_3mm\\trial_1204",
     "load_case": "service",
-    "force_N": 294.299999999954,
-    "load_nodes": 339,
-    "gauge_disp_mm": 0.7547284451468913,
-    "stiffness_N_per_mm": 389.94157685772,
-    "max_disp_mm": 0.7761600309940779,
-    "mass_g": 234.14283165503397,
-    "safety_factor": 2.0642307046289945
+    "force_N": 294.299999999998,
+    "load_nodes": 218,
+    "gauge_disp_mm": 0.5120117308508884,
+    "stiffness_N_per_mm": 574.791517981267,
+    "max_disp_mm": 0.5344312340211325,
+    "mass_g": 184.40471404532224,
+    "safety_factor": 2.066316921358958,
+    "strain_energy_Nmm": 75.34253,
+    "half_force_times_disp_Nmm": 75.34252619470772
   }
 ]

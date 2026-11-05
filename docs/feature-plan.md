@@ -691,7 +691,7 @@ From the screen to a made and tested part. Manufacturing rules are inputs to the
 - **After 3 Feb: more cases.** Thermal test of the printed heat sink with a heater and thermocouples against C2.
 
 **Today (score 15):**
-- Test protocol, rig bill of materials and predictions written (59.8 vs 389.9 N/mm); no physical test yet.
+- Test protocol, rig bill of materials and predictions written for the delivered design (125.3 vs 574.8 N/mm); no physical test yet.
 
 **How the leaders do it:**
 - No competitor in the matrix ships a physical test or calibration workflow; all are software. Scores of 0 mean absent from the product, not that their users never test.

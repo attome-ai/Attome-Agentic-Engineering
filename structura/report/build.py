@@ -23,6 +23,10 @@ TEMPLATE = Path(__file__).with_name("template.html")
 THREE = ROOT / "data" / "vendor" / "three-0.149.0.min.js"
 
 
+class NotBuilt(Exception):
+    """The design has no result on this spec's geometry, e.g. the gate rejected it."""
+
+
 def _load_study(study_dir: Path) -> optuna.Study:
     url = f"sqlite:///{(study_dir / 'study.db').resolve().as_posix()}"
     return optuna.load_study(study_name=optuna.study.get_all_study_names(url)[0], storage=url)
@@ -33,7 +37,11 @@ def _bundle(spec, params: dict, mesh: float, folder: Path) -> dict:
     ev_path = folder / "evaluation.json"
     if not ev_path.exists():
         evaluate(spec, params, mesh_size=mesh, threads=4, workdir=folder, bundle=True)
+    if not ev_path.exists():
+        raise NotBuilt(str(folder))
     ev = json.loads(ev_path.read_text())
+    if ev.get("status", "ok") != "ok":
+        raise NotBuilt(f"{folder}: {ev.get('status')}")
     case = next(iter(ev["load_cases"]))
     skin = json.loads((folder / f"result_{case}" / "skin.json").read_text())
     mode_file = folder / f"result_{case}" / "mode1.json"
@@ -125,8 +133,9 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
     spec = load_spec(spec_path)
     card = engine.call("spec", spec=str(spec_path))
     study = _load_study(Path(study_dir))
-    # bundles depend on the mesh size: keep one folder per size (the 3 mm folder keeps its old name)
-    cache = Path(study_dir) / "report_bundles" if abs(mesh - 3.0) < 1e-9 else Path(study_dir) / f"report_bundles_{mesh:g}mm"
+    # bundles depend on the spec as well as the mesh size: the same study can be reported on another geometry (D10), and a bundle
+    # from the plain family must never be shown as the filleted part
+    cache = Path(study_dir) / f"report_bundles_{card['hash'][:12]}_{mesh:g}mm"
     front = pareto.front(study)
     rec = decide.recommend(study)
     rec_basis = "knee" if rec else None
@@ -141,14 +150,19 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
             rec = {"trial": match.number, "params": match.params, "values": list(match.values)}
             rec_basis = "trust"
     chosen = sorted(front, key=lambda p: p.values[0])
-    if len(chosen) > max_designs:  # keep the ends and the recommended one, then spread the rest
+    if len(chosen) > max_designs:  # always the ends and the recommended one, then an even spread of the rest
         keep = {chosen[0].number, chosen[-1].number, rec["trial"] if rec else -1}
-        step = max(1, len(chosen) // max_designs)
-        keep |= {p.number for p in chosen[::step]}
-        chosen = [p for p in chosen if p.number in keep][:max_designs]
-    designs = []
+        rest = [p.number for p in chosen if p.number not in keep]
+        room = max(0, max_designs - len(keep & {p.number for p in chosen}))
+        keep |= {rest[round(i * (len(rest) - 1) / max(1, room - 1))] for i in range(room)} if rest and room else set()
+        chosen = [p for p in chosen if p.number in keep]
+    designs, not_built = [], []
     for p in chosen:
-        b = _bundle(spec, {k: float(v) for k, v in p.params.items()}, mesh, cache / f"trial_{p.number}")
+        try:
+            b = _bundle(spec, {k: float(v) for k, v in p.params.items()}, mesh, cache / f"trial_{p.number}")
+        except NotBuilt:  # rejected on this spec's geometry, e.g. by the gate once its fillets are added: left out and said so
+            not_built.append(p.number)
+            continue
         designs.append({"trial": p.number, "params": p.params, "on_front": True, "recommended": bool(rec and rec["trial"] == p.number), **b})
     base = None
     if baseline:
@@ -216,7 +230,7 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
     data = {"title": f"{card['id']}: {spec.objectives[0][0]} vs {spec.objectives[1][0]}" if len(spec.objectives) > 1 else card["id"],
             "brief": card.get("brief") or json.loads(Path(spec_path).read_text()).get("brief", ""),
             "spec": {"id": card["id"], "version": card["version"], "hash": card["hash"], "requirements": card["requirements"]},
-            "required_sf": req_sf, "objectives": objectives, "designs": designs, "manufacturing": manufacturing, "baseline": base, "history": hist, "hypervolume": hv, "sobol": sobol, "trust": trust, "timeline": timeline, "study_id": study_id, "annotations": annotations, "rec_basis": rec_basis, "spec_versions": spec_versions, "step_designs": step_designs, "evolution": evolution,
+            "required_sf": req_sf, "objectives": objectives, "designs": designs, "manufacturing": manufacturing, "baseline": base, "history": hist, "hypervolume": hv, "sobol": sobol, "trust": trust, "timeline": timeline, "study_id": study_id, "not_built": not_built, "annotations": annotations, "rec_basis": rec_basis, "spec_versions": spec_versions, "step_designs": step_designs, "evolution": evolution,
             "generated": datetime.now(timezone.utc).isoformat(timespec="seconds")}
     html = TEMPLATE.read_text(encoding="utf-8")
     html = html.replace("__THREE__", THREE.read_text(encoding="utf-8")).replace("__DATA__", json.dumps(data).replace("</", "<\\/"))

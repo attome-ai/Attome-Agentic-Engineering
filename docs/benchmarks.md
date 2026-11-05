@@ -181,14 +181,14 @@ the brief's load, about 38 kg (linear statics: safety factor scales with 1/load)
 ## Physical-test predictions (H3, `benchmarks/gauge_point.py`)
 
 Arm-end displacement at 294.3 N (service load at factor 1.5), force-weighted over the loaded nodes, from the stored
-fine-mesh bundles of the 20 kg demo (`benchmarks/h3_predictions.json`):
+fine-mesh bundles of the delivered geometry (`benchmarks/h3_predictions.json`):
 
 | Design | Arm-end displacement | Stiffness | Strain energy check (F d / 2 vs CalculiX) |
 |---|---|---|---|
-| Baseline | 4.919 mm | 59.8 N/mm | 723.77 vs 723.77 N mm |
-| Recommended (trial 183) | 0.755 mm | 389.9 N/mm | 111.06 vs 111.06 N mm |
+| Baseline | 2.350 mm | 125.3 N/mm | 345.74 vs 345.74 N mm |
+| Delivered design (trial 1204, 184.4 g) | 0.512 mm | 574.8 N/mm | 75.34 vs 75.34 N mm |
 
-Ratio 6.5×. Protocol and pass criteria: `docs/test-protocol-h3.md`.
+Ratio 4.6×. Protocol and pass criteria: `docs/test-protocol-h3.md`.
 
 ## Fan-cooled heat sink with the fin-channel correlation (C2), and budget convergence (D8)
 

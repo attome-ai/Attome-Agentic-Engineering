@@ -190,9 +190,13 @@ const rec = D.designs.find(d => d.recommended) || D.designs[0];
 const OX = D.objectives[0], OY = D.objectives[1] || D.objectives[0];
 const qn = q => ({mass_g: "Mass", safety_factor: "Safety factor", max_disp_mm: "Max displacement", max_von_mises_MPa: "Peak von Mises", peak_temperature: "Peak temperature"}[q] || q);
 const qv = (m, o) => m && m[o.quantity] != null ? f3(m[o.quantity]) + (o.unit ? " " + o.unit : "") : "–";
+// where the trust record judged a value on the settled peak, that is the recommended design's number, not the mesh's
+const verified = d => {if (!d || !d.recommended || !D.trust) return d ? d.metrics : {}; const m = {...d.metrics};
+  for (const r of D.trust.requirements || []) if (r.from) {m[r.quantity] = r.value; if (r.quantity === "safety_factor" && d.skin && d.skin.yield_MPa) m.max_von_mises_MPa = d.skin.yield_MPa / r.value}
+  return m};
 const headline = [
-  ["Recommended: " + qn(OX.quantity), rec ? qv(rec.metrics, OX) : "–"],
-  [qn(OY.quantity), rec ? qv(rec.metrics, OY) : "–"],
+  ["Recommended: " + qn(OX.quantity), rec ? qv(verified(rec), OX) : "–"],
+  [qn(OY.quantity), rec ? qv(verified(rec), OY) : "–"],
   ["Trust grade", D.trust ? D.trust.grade : "–"],
   ["Evaluations", D.history.length],
   ["Baseline", D.baseline ? qv(D.baseline.metrics, OX) + " · " + qv(D.baseline.metrics, OY) : "–"]];
@@ -584,13 +588,14 @@ function pareto(){
   }
   if (D.baseline) {const b = D.baseline.metrics; s += `<g class="pt" data-t="base"><rect x="${X(b[kx])-6}" y="${Y(b[ky])-6}" width="12" height="12" fill="${cssv('--bad')}"/><title>Baseline: ${qv(b, OX)}, ${qv(b, OY)}</title></g>`}
   svg.innerHTML = s;
+  if (D.not_built && D.not_built.length) $("#paretonote").dataset.extra = ` Left out because they did not pass the gate on this geometry: trials ${D.not_built.join(", ")}.`;
   $("#recnote").textContent = (() => {
     const r = D.designs.find(d => d.recommended); if (!r || front.length < 2) return "";
     const i = front.indexOf(r), diff = o => {if (!o) return ""; const dx = r.metrics[kx] - o.metrics[kx], dy = r.metrics[ky] - o.metrics[ky];
       return `Against trial ${o.trial}: ${dx >= 0 ? "+" : ""}${f3(dx)} ${OX.unit} ${qn(kx).toLowerCase()}, ${dy >= 0 ? "+" : ""}${f3(dy)}${OY.unit ? " " + OY.unit : ""} ${qn(ky).toLowerCase()}. `};
     return (D.rec_basis === "trust" ? "Recommended: the design the trust record verified. " : "Recommended: the knee of the front, where further gain in one objective starts to cost most in the other. ") + diff(front[i-1]) + diff(front[i+1]);
   })();
-  $("#paretonote").textContent = `Green band: meets the requirement on the vertical axis. Short bars: how far each Pareto design's value moved from the search mesh to the fine mesh. Dots: every evaluated design (grey feasible, light infeasible). Large dots: Pareto designs re-solved on the fine mesh; ring: recommended. Square: hand baseline.${D.objectives.length > 1 ? " Drag on empty space to set a target for the search." : ""}`;
+  $("#paretonote").textContent = `Green band: meets the requirement on the vertical axis. Short bars: how far each Pareto design's value moved from the search mesh to the fine mesh. Dots: every evaluated design (grey feasible, light infeasible). Large dots: Pareto designs re-solved on the fine mesh; ring: recommended. Square: hand baseline.${D.objectives.length > 1 ? " Drag on empty space to set a target for the search." : ""}${$("#paretonote").dataset.extra || ""}${D.trust ? " Only the recommended design has a trust record. The others show mesh values, which can miss a stress peak: a design that looks feasible here may fail once its peak is refined." : ""}`;
 }
 // ---------------------------------------------------------------- steer by dragging (G4, D2): the target becomes the reference point of a focused search
 const API = location.protocol.startsWith("http") && D.study_id ? location.origin : null;
@@ -645,7 +650,7 @@ $("#pareto").addEventListener("click", e => {const g = e.target.closest(".pt"); 
   $("#whichseg").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x.dataset.w === which)); pareto(); compare()});
 
 function compare(){
-  const a = D.baseline && D.baseline.metrics, b = selected && selected.metrics;
+  const a = D.baseline && D.baseline.metrics, b = selected && verified(selected);
   const units = {mass_g: "g", safety_factor: "", max_disp_mm: "mm", max_von_mises_MPa: "MPa", peak_temperature: "degC"};
   const rows = Object.keys(units).filter(k => (b && b[k] != null) || (a && a[k] != null)).map(k => [k, qn(k) + (k === "max_von_mises_MPa" ? " (evaluation region)" : ""), units[k]]);
   $("#cmp").innerHTML = `<tr><th></th><th class="n">Baseline</th><th class="n">${esc(selected ? label(selected) : "")}</th><th class="n">Change</th></tr>` + rows.map(([k, n, u]) => {
@@ -883,8 +888,8 @@ $("#overlay").addEventListener("change", setOverlay);
     const unit = OX.quantity === E.quantity ? OX.unit : "";
     return {goto(n){const k = lastKey(n); m.visible = k >= 0;
       if (k >= 0) {want = k; if (!anim) step()} paint();
-      const f = E.frames[k]; $("#evonote").textContent = (f ? `Best feasible design after ${n} evaluations: trial ${f.trial}, ${f3(f.value)}${unit ? " " + unit : ""}.` : `No feasible design after ${n} evaluations.`) +
-        ` ${E.keys} best designs, solved. The shapes in between are rebuilt from interpolated parameters to show the change, and were not solved.` + (E.skipped ? ` ${E.skipped} in-between shapes did not build and are left out.` : "")}};
+      const f = E.frames[k]; $("#evonote").textContent = (f ? `Best on the search mesh after ${n} evaluations: trial ${f.trial}, ${f3(f.value)}${unit ? " " + unit : ""}.` : `No feasible design after ${n} evaluations.`) +
+        ` Search values, not verified. The shapes in between are rebuilt from interpolated parameters to show the change, and were not solved.` + (E.skipped ? ` ${E.skipped} in-between shapes did not build and are left out.` : "")}};
   })();
   const render0 = render; render = function(n){render0(n); if (evo) evo.goto(n)};
   sl.addEventListener("input", () => render(+sl.value)); render(h.length);
