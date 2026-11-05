@@ -135,3 +135,20 @@ deflection, against 251 g, 21 MPa and 0.71 mm with the short rib and small fille
 should review this decision, because it changes headline numbers.
 
 **Added 2026-11-05, for the owner's review: the error bar on a settled peak.** When the safety factor is judged on the settled peak, its error now comes from the last two levels of local refinement (two-level GCI: safety factor 3, first order, ratio 2), not from the three uniform meshes. The uniform error described a different number: on the 184.4 g design the peak moves 0.03% between refinement levels while the uniform meshes gave 24%, because they do not resolve a 0.5 mm fillet. The written grade rule and its limits are unchanged, and the record keeps the old figure as `uniform_mesh_error`. This makes grade A reachable on the delivered geometry, so read the headline with that in mind. A stricter alternative is a finer uniform mesh, which is much slower and was not run.
+
+## D11. Planned steps moved past the demo, with reasons (2026-11-05, recommendation for the owner's review)
+
+The roadmap lets a step move to a later phase with a written reason. These are in the feature plan's "before 3 Feb" list and are recommended to move, because each one risks the working demo or would claim more than is measured:
+
+| Step | Why it moves |
+|---|---|
+| D1 categorical parameters (material, family) | Parameters are floats throughout the optimizer, report and tools. Running one study per material gives the same answer without that change. |
+| H1 print direction as a search variable | The model applies one knock-down whatever the direction, so the search would have nothing real to trade. It needs direction-dependent strength first, ideally calibrated by the physical test. `structura orientations` stays as advice. |
+| C3 compression-only supports | The solver has no contact. Bearing faces stay two-sided, and the trust record says so. Contact is already planned as L2.3. |
+| C4 fTetWild rung | The mesh ladder meshes every gated design, so nothing needs it, and it adds a dependency. |
+| G1 isolines | Contour bands show the same information, and true isolines need a shader rewrite of the colouring. |
+| G4 grade on every Pareto point | Each one is a trust run of about 30 minutes. The recommended design has its grade; the others show how far they moved on the finer mesh. |
+| G4 rotating 3D front | Three objectives already appear as linked 2D projections, which are easier to read. |
+| G6 repairs with the design before and after | Repairs show their typed error. Showing both designs needs the agent to record each attempt, and no demo path depends on it. |
+
+**Not moved, and not doable without the owner or an outside resource:** API-key routing measurements (E4) and cost per study (J1), Hephaestus-CCX (kit not public), Text2CAD-Bench (not run), image briefs for the benchmark (A1: they should be drawn by someone who does not know the answers), and the physical test (H3).
