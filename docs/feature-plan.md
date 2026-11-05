@@ -115,7 +115,7 @@ From a sentence, a photo or an existing part to a checkable spec. Competitor sco
 **Today (score 70):**
 - `fit_part_to_family` finds a family's closest design to an uploaded part by real overlap (test bracket 98%, wrong family under 9%); the agent is told to try it before cutting pockets.
 - STEP upload with interface detection (holes and patterns, faces, envelope), holes frozen as preserve regions; the as-is analysis reproduces the native result exactly.
-- Redesign by a lightening pocket inside the part: 354 g to 328 g (-7.3%), grade B; this number predates today's engine changes and needs a re-run.
+- Redesign by a lightening pocket inside the part: 372 g to 316.9 g (-14.8%), SF 2.38 ± 7%, grade B. The lightest search result, 305.9 g, failed at SF 1.96 once its peak settled.
 
 **How the leaders do it:**
 - Scores carried over from the researched row *Natural-language intent input*; this detail row was not researched on its own, so treat every score as low confidence.

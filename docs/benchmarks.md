@@ -280,14 +280,11 @@ length, width and depth searched by NSGA-II (120 evaluations at 4 mm, front re-s
 
 | | Mass | Safety factor | Max displacement |
 |---|---|---|---|
-| Uploaded part as-is | 354.1 g | 3.20 | 0.46 mm |
-| Lightest redesign feasible on the fine mesh (pocket 108.8 x 33.7 x 5.6 mm) | **328.2 g (-7.3%)** | 2.32 | 0.66 mm |
+| Uploaded part as-is | 372.1 g | 3.73 | 0.29 mm |
+| Lightest on the search and fine mesh (pocket 83.3 x 68.2 x 9.2 mm) | 305.9 g | 1.96 at the settled peak (2.05 on the uniform mesh): **fails** | 0.58 mm |
+| Lightest that passes (pocket 66.6 x 65.4 x 10.0 mm) | **316.9 g (-14.8%)** | 2.38 ± 7.1% | 0.52 mm |
 
-Front: 14 designs, all still feasible on the fine mesh. Trust grade **B**, not A: the safety factor's numerical error
-is 8.2% (the pocket's 1 mm corner radius concentrates stress), and R1 is "not proven": its margin (0.32) is larger
-than the error (0.19), but the safety factor does not converge monotonically over the three meshes and an error of 5%
-or more from oscillating convergence is not trusted. The trust record now gives that reason; it used to say the margin
-was smaller than the error, which was wrong for this case. A larger pocket
+Front: 17 designs, all feasible on the fine mesh, which did not protect the lightest from failing at its settled peak. Trust records therefore walk up the front from the lightest (`trust_walk` in the JSON). Trust grade **B**, not A: the safety factor's numerical error is 7.1%, as its peak still moves 2.4% between refinement levels (the pocket's 1 mm corner radius concentrates stress). A larger pocket
 corner radius, or pockets in the ribs and wall plate, are the next redesign operations.
 
 Two defects found and fixed on the way: the hole detector summed the angular spans of co-axial segments, so a corner

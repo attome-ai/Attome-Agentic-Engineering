@@ -15,7 +15,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from structura import engine  # noqa: E402
 from structura.agent import mcp_server as srv  # noqa: E402
-from structura.optimize import decide, portfolio  # noqa: E402
+import optuna  # noqa: E402
+from structura.optimize import decide, pareto, portfolio  # noqa: E402
 from structura.optimize.evaluate import evaluate, load_spec  # noqa: E402
 from structura.optimize.verify_front import verify_front  # noqa: E402
 
@@ -23,11 +24,36 @@ OVERBUILT = {"thickness": 12, "plate_width": 80, "rib_count": 3, "rib_thickness"
 NAME = "a3_overbuilt_bracket"
 
 
+def walk(spec_path, study, out, limit: int = 8) -> list[dict]:
+    """Trust records up the front, lightest first, until one design passes every requirement. A mesh search can pass a design the settled peak fails."""
+    rows = []
+    for p in sorted(pareto.front(study), key=lambda p: p.values[0])[:limit]:
+        t = engine.call("trust", spec=str(spec_path), set=[f"{k}={float(v)}" for k, v in p.params.items()], out=str(out / "walk" / f"t{p.number}"), **{"fine-size": 3}, timeout=3600)
+        req = {r["quantity"]: r for r in t["requirements"]}
+        probe = t.get("peak_probe") or {}
+        rows.append({"trial": p.number, "params": p.params, "mass_g": req["mass_g"]["value"], "grade": t["grade"], "reasons": t["reasons"],
+                     "safety_factor": req["safety_factor"]["value"], "error": req["safety_factor"]["numerical_error"], "result": req["safety_factor"]["result"],
+                     "uniform_mesh_safety_factor": req["safety_factor"].get("uniform_mesh_value"), "growth": probe.get("growth_on_halving"), "max_disp_mm": req["max_disp_mm"]["value"]})
+        print(json.dumps({k: v for k, v in rows[-1].items() if k != "params"}), flush=True)
+        if t["grade"] in ("A", "B") and all(r["result"] != "fail" for r in t["requirements"]):
+            break
+    return rows
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--evals", type=int, default=120)
+    ap.add_argument("--walk-only", action="store_true", help="keep the stored study; only walk its front with trust records")
     a = ap.parse_args()
     out = ROOT / "runs" / "a3_demo"
+    if a.walk_only:
+        url = f"sqlite:///{(out / 'opt' / 'study.db').as_posix()}"
+        study = optuna.load_study(study_name=optuna.study.get_all_study_names(url)[0], storage=url)
+        path = ROOT / "benchmarks" / "a3_redesign_demo.json"
+        res = json.loads(path.read_text())
+        res["trust_walk"] = walk(out / "spec_redesign.json", study, out)
+        path.write_text(json.dumps(res, indent=2))
+        return
     shutil.rmtree(out, ignore_errors=True)
     out.mkdir(parents=True)
     t0 = time.perf_counter()
@@ -67,7 +93,8 @@ def main():
     lightest = min((r for r in vf["front"] if r.get("feasible_fine")), key=lambda r: r["fine"][0], default=None)
     trust = engine.call("trust", spec=str(spec_path), set=[f"{k}={float(v)}" for k, v in lightest["params"].items()],
                         out=str(out / "trust"), **{"fine-size": 3}, timeout=3600) if lightest else None
-    res = {"evaluations": len(study.trials), "method": study.user_attrs.get("method"), "seconds": round(time.perf_counter() - t0, 1),
+    rows = walk(spec_path, study, out)
+    res = {"trust_walk": rows, "evaluations": len(study.trials), "method": study.user_attrs.get("method"), "seconds": round(time.perf_counter() - t0, 1),
            "uploaded": {"params_used_to_make_it": OVERBUILT, "holes": up["holes"], "frozen_interfaces": pk["frozen_interfaces"]},
            "as_is": {"metrics": base.raw.get("metrics"), "feasible": base.feasible},
            "pocket_parameters": pk["parameters"], "front_size": vf["front_size"], "front_still_feasible_on_fine_mesh": vf["still_feasible"],

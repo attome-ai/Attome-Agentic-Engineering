@@ -212,11 +212,10 @@ also a tighter bound than the search: the optimizer, trading mass against the 25
 
 ### 4.5b Improving an uploaded part
 
-Source: `benchmarks/a3_redesign_demo.json`. An over-built bracket arrives as a STEP file: analysed as-is (354.1 g,
-SF 3.20), its two bolt holes detected and frozen, a lightening pocket sized by the optimizer under the same 20 kg
-brief: **328.2 g (−7.3%)**, SF 2.32, 14 of 14 Pareto designs feasible on the finer mesh, trust grade **B** (the pocket
-corners make the safety factor converge non-monotonically; the record says so). This result predates the stricter trust check and is to be re-run. The STEP route reproduced the native model's
-result exactly at the time, so importing a part lost nothing.
+Source: `benchmarks/a3_redesign_demo.json`. An over-built bracket arrives as a STEP file: analysed as-is (372.1 g,
+SF 3.73), its two bolt holes detected and frozen, a lightening pocket sized by the optimizer under the same 20 kg
+brief: **316.9 g (−14.8%)**, SF 2.38 ± 7%, trust grade **B** (the error is above the 5% that grade A allows). Trust records ran up the front from the lightest: the 305.9 g design passed the mesh search at SF 2.05 but failed at 1.96 once its peak settled under local refinement. The STEP route reproduced the native model's
+result exactly when last compared, so importing a part lost nothing.
 
 ### 4.6 Choosing the optimizer by measured cost
 

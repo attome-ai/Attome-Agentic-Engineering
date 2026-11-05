@@ -1,7 +1,7 @@
 {
   "evaluations": 120,
   "method": "nsga2",
-  "seconds": 718.4,
+  "seconds": 1168.1,
   "uploaded": {
     "params_used_to_make_it": {
       "thickness": 12,
@@ -44,133 +44,176 @@
   },
   "as_is": {
     "metrics": {
-      "mass_g": 354.13792887030564,
-      "max_disp_mm": 0.4634151093262093,
-      "max_von_mises_MPa": 7.814410953142918,
-      "safety_factor": 3.199217465002288
+      "mass_g": 372.1184741988892,
+      "max_disp_mm": 0.29045391827810635,
+      "max_von_mises_MPa": 6.696449534015918,
+      "safety_factor": 3.7333216464945544
     },
     "feasible": false
   },
   "pocket_parameters": {
-    "p27_length": {
+    "p32_length": {
       "unit": "mm",
       "low": 2.0,
       "high": 114.0,
       "default": 57.0,
-      "doc": "pocket length (x) in face 27"
+      "doc": "pocket length (x) in face 32"
     },
-    "p27_width": {
+    "p32_width": {
       "unit": "mm",
       "low": 2.0,
       "high": 74.0,
       "default": 37.0,
-      "doc": "pocket width (y) in face 27"
+      "doc": "pocket width (y) in face 32"
     },
-    "p27_depth": {
+    "p32_depth": {
       "unit": "mm",
       "low": 0.5,
       "high": 10.0,
       "default": 5.0,
-      "doc": "pocket depth below face 27"
+      "doc": "pocket depth below face 32"
     }
   },
-  "front_size": 14,
-  "front_still_feasible_on_fine_mesh": 14,
+  "front_size": 17,
+  "front_still_feasible_on_fine_mesh": 17,
   "lightest_feasible_fine": {
-    "trial": 53,
+    "trial": 48,
     "params": {
-      "p27_depth": 5.5756558202388256,
-      "p27_length": 108.75975808629462,
-      "p27_width": 33.714609308160384
+      "p32_depth": 9.181389483899043,
+      "p32_length": 83.30388532551117,
+      "p32_width": 68.22783921898086
     },
     "coarse": [
-      328.1926388472738,
-      2.37505185170042
+      305.86982225876665,
+      2.2540847848228633
     ],
     "status": "ok",
     "fine": [
-      328.1797444911775,
-      2.3214930612127866
+      305.8567237066269,
+      2.048824565466328
     ],
     "change_pct": [
-      -0.003928898631499755,
-      -2.2550577348148377
+      -0.004282394400017196,
+      -9.106144575332179
     ],
     "feasible_fine": true
   },
   "recommended_knee": {
-    "trial": 72,
+    "trial": 42,
     "params": {
-      "p27_depth": 7.0885678564786385,
-      "p27_length": 16.8808190076641,
-      "p27_width": 18.241541799604168
+      "p32_depth": 7.779036495630941,
+      "p32_length": 85.4874427494904,
+      "p32_width": 47.94986831318596
     },
     "values": [
-      351.3876823187761,
-      3.3514038030469675
+      331.6443728430156,
+      2.829224708030631
     ],
-    "front_size": 14,
+    "front_size": 17,
     "neighbours": [
       {
-        "trial": 85,
+        "trial": 44,
         "values": [
-          347.36531574711574,
-          3.295689395515502
+          347.60131952744763,
+          3.63404016407765
         ]
       },
       {
-        "trial": 89,
+        "trial": 46,
         "values": [
-          341.4542504429803,
-          3.1393174661191905
+          340.07084567416206,
+          3.5423115049357627
         ]
       }
     ]
   },
   "trust_of_lightest": {
-    "grade": "B",
-    "status": "verified",
+    "grade": "C",
+    "status": "not_verified",
     "reasons": [
-      "a requirement margin is smaller than its numerical error",
-      "numerical error on a governing value is 8.22%"
+      "a requirement fails"
     ],
     "requirements": [
       {
+        "error_from": "the last two levels of local refinement",
+        "from": "settled peak under local refinement",
         "governing_case": "service",
         "id": "R1",
         "limit": 2.0,
-        "margin": 0.16074653060639332,
-        "numerical_error": 0.08215352855318814,
+        "margin": -0.018505955572094113,
+        "numerical_error": 0.047649672566760275,
         "op": ">=",
         "quantity": "safety_factor",
-        "result": "not proven",
+        "result": "fail",
+        "uniform_mesh_error": 0.03620374295329704,
+        "uniform_mesh_value": 2.048824565466328,
         "unit": "1",
-        "value": 2.3214930612127866
+        "value": 1.9629880888558118
       },
       {
         "governing_case": "service",
         "id": "R2",
         "limit": 3.0,
-        "margin": 0.7815902670437005,
-        "numerical_error": 0.03235492307297267,
+        "margin": 0.8053851154238805,
+        "numerical_error": 0.0028016822814301637,
         "op": "<=",
         "quantity": "max_disp_mm",
         "result": "pass",
         "unit": "mm",
-        "value": 0.6552291988688987
+        "value": 0.5838446537283585
       },
       {
         "governing_case": "service",
         "id": "R3",
-        "limit": 354.1,
-        "margin": 0.07320038268518088,
-        "numerical_error": 1.9303820027366694e-05,
+        "limit": 372.1,
+        "margin": 0.1780254670609329,
+        "numerical_error": 2.8434781494285967e-05,
         "op": "<=",
         "quantity": "mass_g",
         "result": "pass",
         "unit": "g",
-        "value": 328.1797444911775
+        "value": 305.8567237066269
       }
     ]
-  }
+  },
+  "trust_walk": [
+    {
+      "trial": 48,
+      "params": {
+        "p32_depth": 9.181389483899043,
+        "p32_length": 83.30388532551117,
+        "p32_width": 68.22783921898086
+      },
+      "mass_g": 305.8567237066269,
+      "grade": "C",
+      "reasons": [
+        "a requirement fails"
+      ],
+      "safety_factor": 1.9629880888558118,
+      "error": 0.04786139233617617,
+      "result": "fail",
+      "uniform_mesh_safety_factor": 2.048824565466328,
+      "growth": 1.0162124475496939,
+      "max_disp_mm": 0.5838446537283585
+    },
+    {
+      "trial": 73,
+      "params": {
+        "p32_depth": 9.978673599848063,
+        "p32_length": 66.5946877329974,
+        "p32_width": 65.397010593497
+      },
+      "mass_g": 316.9393437831224,
+      "grade": "B",
+      "reasons": [
+        "numerical error on a governing value is 7.05%"
+      ],
+      "safety_factor": 2.375542963575636,
+      "error": 0.07050522780638735,
+      "result": "pass",
+      "uniform_mesh_safety_factor": 2.472215747197649,
+      "growth": 1.0240673676825143,
+      "max_disp_mm": 0.5157113149080694
+    }
+  ]
 }
