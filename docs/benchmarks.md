@@ -380,7 +380,15 @@ So the first version was no better than chance, and the drag-to-steer page built
 current version passed the existing front in 2 of 9 runs and came close in the others; these targets are on a front already
 well searched, so most of what it finds is near the front, not far beyond it.
 
-## Offline readiness (P7-t1, static check; the network-off test is still to do)
+## Offline readiness (P7-t1)
+
+**Network-off test (2026-11-05, Linux container, `docker run --network none --cpus 4 --memory 8g`):** only the loopback
+interface exists and outside addresses are unreachable. A 60-evaluation study ran end to end in 333 s and delivered a
+grade B design with its report; the report asks for no external resources; the REST door answered on loopback with all
+its tools. Preflight passed except the fallback report, because `runs/` is not in the image. This was a container on the
+development machine, with today's report features not yet in its image. The report was not opened in a browser there and
+the workbench was not started, so do the Wi-Fi-off run below once on the demo laptop.
+
 
 No network access in the engine, the Python layer, the reports or the workbench (search of `engine/src`, `structura/`,
 `scripts/` for HTTP clients and external URLs: none; three.js is embedded in each page, no web fonts or CDNs). What

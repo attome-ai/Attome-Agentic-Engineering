@@ -6,12 +6,14 @@ from pathlib import Path
 import anyio
 import mcp
 
+from structura import engine
 from structura.agent import mcp_server as srv
+from structura.agent import studies as S
 ROOT = Path(__file__).resolve().parents[1]
 
 SPEC = Path(__file__).resolve().parents[1] / "docs" / "examples" / "bracket_20kg.json"
 TOOLS = {"build_report", "derive_load", "rank_questions", "propose_relaxation", "list_families", "describe_grammar", "plan_study", "create_study", "accept_spec", "check_feasibility",
-         "compose_design", "evaluate_design", "run_optimization", "get_job", "get_results", "steer", "explain", "verify", "manufacturing_advice", "upload_part", "add_face", "add_lightening_pocket", "freeform_cad", "compose_candidates", "render_views"}
+         "compose_design", "evaluate_design", "run_optimization", "get_job", "get_results", "steer", "explain", "verify", "manufacturing_advice", "upload_part", "add_face", "add_lightening_pocket", "freeform_cad", "compose_candidates", "render_views", "pick_face", "select_face", "read_brief_image", "annotate"}
 
 
 def test_tools_over_the_protocol():
@@ -249,3 +251,46 @@ def test_results_name_the_conflict_when_nothing_is_feasible(tmp_path, monkeypatc
     assert r["ok"] and r["front"] == []
     c = r["closest_infeasible"]
     assert c and any(f["id"] == "R1" and f["quantity"] == "safety_factor" for f in c["fails"])
+
+
+def _bracket_study():
+    spec = json.loads((ROOT / "docs" / "examples" / "bracket_20kg.json").read_text(encoding="utf-8"))
+    return srv.create_study(spec)["study_id"], spec
+
+
+def test_c3_click_a_face_adds_a_load_that_follows_the_design():
+    sid, spec = _bracket_study()
+    face = engine.call("build", family="bracket")["named_faces"]["load_face"][0]
+    picked = srv.pick_face(sid, face["centre"])
+    assert picked["ok"] and "load_face" in picked["already_named"] and len(picked["triangles"]) >= 9
+    r = srv.select_face(sid, face["centre"], "extra_load", "load", force=[0, 0, -10])
+    assert r["ok"] and r["needs_acceptance"] and r["spec_version"] == "spec.v2.json"
+    assert not S.accepted(sid)  # a new spec version needs a new acceptance
+    new = json.loads(S.latest_spec_path(sid).read_text(encoding="utf-8"))
+    assert new["family"] == f"picked/{sid}" and new["version"] == spec.get("version", 1) + 1
+    assert any(x["group"] == "extra_load" for x in new["load_cases"][0]["loads"])
+    # the signature finds the same face on another design: both names mean one face
+    other = engine.call("build", family=new["family"], set=["thickness=12"])["named_faces"]
+    assert other["extra_load"][0]["centre"] == other["load_face"][0]["centre"]
+    assert any(e["step"] == "select_face" for e in S.timeline(sid))
+
+
+def test_c3_a_bad_click_changes_nothing():
+    sid, _ = _bracket_study()
+    assert srv.pick_face(sid, [1000, 1000, 1000])["ok"] is False
+    face = engine.call("build", family="bracket")["named_faces"]["load_face"][0]
+    assert srv.select_face(sid, face["centre"], "load_face", "support")["ok"] is False  # the name is taken
+    assert srv.select_face(sid, face["centre"], "no_force", "load")["ok"] is False
+    assert S.latest_spec_path(sid).name == "spec.v1.json"
+
+
+def test_a1_a_picture_reaches_the_agent(tmp_path):
+    png = tmp_path / "sketch.png"
+    png.write_bytes(bytes.fromhex("89504e470d0a1a0a0000000d4948445200000001000000010806000000" "1f15c4890000000d49444154789c6360000002000001e5273bb60000000049454e44ae426082"))
+    async def go():
+        async with mcp.Client(srv.mcp) as c:
+            r = await c.call_tool("read_brief_image", {"path": str(png)})
+            assert any(getattr(x, "type", "") == "image" for x in r.content)
+            bad = await c.call_tool("read_brief_image", {"path": str(tmp_path / "brief.txt")})
+            assert "PNG" in "".join(getattr(x, "text", "") for x in bad.content)
+    anyio.run(go)

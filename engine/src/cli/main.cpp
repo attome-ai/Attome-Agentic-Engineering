@@ -16,12 +16,15 @@
 //   structura feasibility --spec FILE [--mesh-size MM]       can any design in the bounds meet the requirements?
 //   structura trust       --spec FILE --set k=v ... [--out DIR] [--fine-size MM]   trust record with error bars and grade
 //   structura reproduce   --dir DIR                           re-run a trust bundle and compare
+//   structura pick   (--family NAME | --graph FILE) [--set k=v ...] --point x,y,z   the face at a clicked point, with its signature
+//   structura tessellate (--family NAME | --graph FILE) [--set k=v ...] [--deflection MM]   display triangles of one design
 //   structura sweep  (--family NAME | --graph FILE) [--n 200] [--seed 1] [--out FILE]   random designs through the gate
 #include <chrono>
 #include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <random>
+#include <sstream>
 #include <iostream>
 #include <map>
 #include <string>
@@ -471,6 +474,24 @@ int run(const Args& a) {
       out["folder"] = fs::absolute(dir).string();
     }
     std::cout << out.dump(2) << "\n";
+    return 0;
+  }
+  if (a.cmd == "tessellate") {  // G3: display triangles of one design; no solving and no files
+    std::cout << tessellate(part.shape, a.opt.count("deflection") ? std::stod(a.opt.at("deflection")) : 0.4).dump() << "\n";
+    return 0;
+  }
+  if (a.cmd == "pick") {  // C3: the face the user clicked in the viewer
+    if (!a.opt.count("point")) throw std::runtime_error("pick needs --point x,y,z");
+    std::array<double, 3> p{};
+    std::stringstream ss(a.opt.at("point"));
+    std::string item;
+    for (int i = 0; i < 3; ++i) {
+      if (!std::getline(ss, item, ',')) throw std::runtime_error("--point needs x,y,z");
+      p[i] = std::stod(item);
+    }
+    json out = pick_face(part, p);
+    out["hash"] = d.hash();
+    std::cout << out.dump() << "\n";
     return 0;
   }
   if (a.cmd == "manufacture") {  // H1: FDM and CNC rules, cost and process advice for one design

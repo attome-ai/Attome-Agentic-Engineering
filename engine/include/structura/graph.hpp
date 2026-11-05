@@ -56,9 +56,10 @@ struct Feature {
 };
 
 struct FaceSelector {
-  std::string kind;  // plane | cylinder
+  std::string kind;  // plane | cylinder | picked
   std::string normal, axis;
   ojson at, radius;
+  ojson signature;  // picked: surface, direction, where (fractions of the bounding box), area_fraction (C3)
   std::optional<std::vector<ojson>> region;
   std::string doc;
 };

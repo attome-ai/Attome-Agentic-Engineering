@@ -175,11 +175,12 @@ DesignGraph DesignGraph::from_json(const ojson& j) {
       for (auto& [k, s] : j.at("faces").items()) {
         FaceSelector fs;
         fs.kind = s.at("kind").get<std::string>();
-        if (fs.kind != "plane" && fs.kind != "cylinder") throw GraphError("face '" + k + "': kind must be plane or cylinder");
+        if (fs.kind != "plane" && fs.kind != "cylinder" && fs.kind != "picked") throw GraphError("face '" + k + "': kind must be plane, cylinder or picked");
         fs.normal = s.value("normal", std::string());
         fs.axis = s.value("axis", std::string());
         fs.at = s.value("at", ojson());
         fs.radius = s.value("radius", ojson());
+        fs.signature = s.value("signature", ojson());
         if (s.contains("region") && !s.at("region").is_null()) fs.region = s.at("region").get<std::vector<ojson>>();
         fs.doc = s.value("doc", std::string());
         g.faces.emplace_back(k, fs);
@@ -225,6 +226,7 @@ ojson DesignGraph::to_json() const {
     if (!s.axis.empty()) x["axis"] = s.axis;
     if (!s.at.is_null()) x["at"] = s.at;
     if (!s.radius.is_null()) x["radius"] = s.radius;
+    if (!s.signature.is_null()) x["signature"] = s.signature;
     if (s.region) x["region"] = *s.region;
     fa[k] = x;
   }
@@ -355,6 +357,9 @@ std::vector<Resolved> DesignGraph::resolve(const Values& overrides) const {
       if (sel.kind == "plane") {
         if (!is_axis(sel.normal)) throw GraphError(w + ": a plane selector needs a normal");
         if (!sel.at.is_null()) eval_value(sel.at, vals);  // no "at": every planar face with this normal
+      } else if (sel.kind == "picked") {
+        for (const char* k : {"surface", "direction", "where", "area_fraction"})
+          if (!sel.signature.is_object() || !sel.signature.contains(k)) throw GraphError(w + ": a picked selector needs signature." + k);
       } else {
         if (!is_axis(sel.axis) || sel.radius.is_null()) throw GraphError(w + ": a cylinder selector needs axis and radius");
         eval_value(sel.radius, vals);

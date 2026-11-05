@@ -57,7 +57,7 @@ size_t CompiledPart::solid_count() const { return solids_of(shape).size(); }
 
 std::map<std::string, std::vector<TopoDS_Face>> CompiledPart::named_faces() const {
   std::map<std::string, std::vector<TopoDS_Face>> out;
-  for (auto& [name, sel] : graph.faces) out[name] = select_faces(shape, sel, values);
+  for (auto& [name, sel] : graph.faces) out[name] = sel.kind == "picked" ? select_picked(shape, name, sel.signature) : select_faces(shape, sel, values);
   return out;
 }
 

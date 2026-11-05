@@ -2,10 +2,13 @@
 #include <doctest/doctest.h>
 
 #include <cmath>
+#include <cstring>
 #include <filesystem>
+#include <fstream>
 
 #include "structura/compile.hpp"
 #include "structura/design.hpp"
+#include "structura/export.hpp"
 #include "structura/fea.hpp"
 
 using namespace structura;
@@ -92,6 +95,52 @@ TEST_CASE("C1-T2: cantilever tip deflection within 2% of beam theory") {
   CHECK(r.equilibrium_error < 0.005);
   CHECK(r.solver_version == "2.23");
   CHECK(r.mass_t * 1e9 == doctest::Approx(10000 * 7.85).epsilon(0.001));  // g: 10 cm^3 * 7.85 g/cm^3 -> stored as tonne
+}
+
+TEST_CASE("C1: largest principal stress on the skin matches beam theory: tension on top, none below") {
+  Mesh m = beam_mesh("cantilever_p1", 2.5);
+  LoadCase lc = LoadCase::from_json(nlohmann::json::parse(R"({"name": "tip", "supports": [{"group": "root"}],
+      "loads": [{"group": "tip", "force": [0, 0, -100]}]})"));
+  Result r = solve_static(m, load_material("S235"), lc, (fs::temp_directory_path() / "structura_cantilever_p1_run").string(), {4, 300});
+  auto path = fs::temp_directory_path() / "structura_cantilever_p1_skin.json";
+  write_skin(m, r, path.string(), 235);
+  auto j = nlohmann::json::parse(std::ifstream(path));
+  auto floats = [](const std::string& s) {
+    const std::string T = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    std::string bytes;
+    unsigned buf = 0;
+    int bits = 0;
+    for (char c : s) {
+      if (c == '=') break;
+      buf = buf << 6 | static_cast<unsigned>(T.find(c));
+      bits += 6;
+      if (bits >= 8) {
+        bits -= 8;
+        bytes += static_cast<char>(buf >> bits & 255);
+      }
+    }
+    std::vector<float> out(bytes.size() / 4);
+    std::memcpy(out.data(), bytes.data(), out.size() * 4);
+    return out;
+  };
+  auto pos = floats(j.at("positions").get<std::string>()), p1 = floats(j.at("max_principal").get<std::string>());
+  double top = 0, bottom = 0;
+  int n_top = 0, n_bottom = 0;
+  for (size_t i = 0; i < p1.size(); ++i) {  // the middle of the span, away from both ends: M = 100 N x 50 mm, I = 833.3 mm^4, c = 5 mm, so 30 MPa
+    if (std::fabs(pos[3 * i] - 50) > 3 || std::fabs(pos[3 * i + 1] - 5) > 3) continue;
+    if (std::fabs(pos[3 * i + 2] - 10) < 1e-6) {
+      top += p1[i];
+      ++n_top;
+    } else if (std::fabs(pos[3 * i + 2]) < 1e-6) {
+      bottom += p1[i];
+      ++n_bottom;
+    }
+  }
+  REQUIRE(n_top > 0);
+  REQUIRE(n_bottom > 0);
+  MESSAGE("largest principal at mid-span: top " << top / n_top << " MPa (beam theory 30), bottom " << bottom / n_bottom << " MPa");
+  CHECK(top / n_top == doctest::Approx(30).epsilon(0.05));
+  CHECK(std::fabs(bottom / n_bottom) < 1.5);
 }
 
 TEST_CASE("C1-T2: bracket under 1000 N balances its reactions") {

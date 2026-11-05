@@ -14,6 +14,48 @@
 using namespace structura;
 namespace fs = std::filesystem;
 
+namespace {
+std::vector<float> decode_floats(const std::string& s) {
+  std::string bytes;
+  unsigned buf = 0;
+  int bits = 0;
+  for (char c : s) {
+    if (c == '=') break;
+    const char* T = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    buf = buf << 6 | static_cast<unsigned>(std::strchr(T, c) - T);
+    bits += 6;
+    if (bits >= 8) {
+      bits -= 8;
+      bytes += static_cast<char>(buf >> bits & 255);
+    }
+  }
+  std::vector<float> out(bytes.size() / 4);
+  std::memcpy(out.data(), bytes.data(), out.size() * 4);
+  return out;
+}
+}  // namespace
+
+TEST_CASE("C1: the skin carries the largest principal stress, signed") {
+  structura::Mesh m;
+  for (int i = 1; i <= 10; ++i) m.nodes[i] = {double(i), 0.0, double(i * i % 7)};
+  m.tets = {{1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}};
+  auto top = [&](std::array<double, 6> s) {
+    structura::Result r;
+    for (int i = 1; i <= 10; ++i) {
+      r.stress[i] = s;
+      r.von_mises[i] = 1;
+      r.disp[i] = {0, 0, 0};
+    }
+    auto p = std::filesystem::temp_directory_path() / "structura_skin_p1.json";
+    structura::write_skin(m, r, p.string(), 10);
+    auto j = nlohmann::json::parse(std::ifstream(p));
+    return decode_floats(j.at("max_principal").get<std::string>()).at(0);
+  };
+  CHECK(top({10, 0, 0, 0, 0, 0}) == doctest::Approx(10));    // pure tension along x
+  CHECK(top({0, 0, 0, 5, 0, 0}) == doctest::Approx(5));      // pure shear: principal equals the shear
+  CHECK(top({-4, -9, -2, 0, 0, 0}) == doctest::Approx(-2));  // all compression: the largest is the least negative
+}
+
 TEST_CASE("H2-T1: STEP and STL export, STEP re-imports as one valid solid") {
   CompiledPart p = compile_graph(load_family("bracket"), {{"thickness", 7}});
   fs::path dir = fs::temp_directory_path() / "structura_export";

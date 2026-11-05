@@ -258,6 +258,77 @@ def add_face(family: str, face_id: int, name: str, doc: str = "") -> dict:
     return _ok(family=family, face=name, selector=f["selector"])
 
 
+def _pick(spec: dict, point: list[float], params: dict | None) -> dict:
+    values = {**spec.get("fixed_params", {}), **(params or {})}
+    return engine.call("pick", family=spec["family"], set=[f"{k}={float(v)}" for k, v in values.items()], point=",".join(str(float(x)) for x in point))
+
+
+@mcp.tool(description="Which face is at a point the user clicked in the viewer (C3)? Give the study, the point in mm and the design's parameters. "
+                      "Returns the face, the names it already has and its triangles so the viewer can light it up. Changes nothing.")
+def pick_face(study_id: str, point: list[float], params: dict | None = None) -> dict:
+    spec = json.loads(S.latest_spec_path(study_id).read_text(encoding="utf-8"))
+    if len(point) != 3:
+        return _err("pick", "point needs x, y and z in mm")
+    try:
+        r = _pick(spec, point, params)
+    except engine.EngineError as e:
+        return _err(e.kind, str(e))
+    if r["distance_mm"] > 2.0:
+        return _err("pick", f"the nearest face is {r['distance_mm']:.1f} mm from that point, so the click did not land on this design")
+    return _ok(**r)
+
+
+@mcp.tool(description="Add the face the user clicked as a support or a load (C3). Writes a new spec version on a copy of the family, recording the "
+                      "face's geometric signature so it is found again when the parameters change; a design where it cannot be found, or where "
+                      "two faces match equally, fails rather than guessing. role: support (dofs optional, default all three) or load (force [fx, fy, fz] in N, "
+                      "required). Applies to every load case. The new version needs the user's acceptance, like any other.")
+def select_face(study_id: str, point: list[float], name: str, role: str, params: dict | None = None, force: list[float] | None = None,
+                dofs: str | None = None, source: str = "picked by the user in the viewer") -> dict:
+    import re
+    if not re.fullmatch(r"[a-z][a-z0-9_]{0,40}", name):
+        return _err("select_face", "name must be lowercase letters, digits and _ (start with a letter)")
+    if role not in ("support", "load"):
+        return _err("select_face", "role must be support or load")
+    if role == "load" and (not force or len(force) != 3):
+        return _err("select_face", "a load needs force [fx, fy, fz] in N")
+    spec = json.loads(S.latest_spec_path(study_id).read_text(encoding="utf-8"))
+    if not spec.get("load_cases"):
+        return _err("select_face", "this spec has no structural load case to add the face to")
+    picked = pick_face(study_id, point, params)
+    if not picked.get("ok"):
+        return picked
+    src = ROOT / "families" / f"{spec['family']}.json"
+    fam = json.loads(src.read_text(encoding="utf-8"))
+    if name in fam.get("faces", {}):
+        return _err("select_face", f"the family already has a face called {name}")
+    fam.setdefault("faces", {})[name] = {**picked["selector"], "doc": source}
+    derived = ROOT / "families" / "picked" / f"{study_id}.json"
+    derived.parent.mkdir(parents=True, exist_ok=True)
+    before = derived.read_text(encoding="utf-8") if derived.exists() else None
+    derived.write_text(json.dumps(fam, indent=2), encoding="utf-8")
+    spec["family"] = f"picked/{study_id}"
+    spec["version"] = int(spec.get("version", 1)) + 1
+    for lc in spec["load_cases"]:
+        if role == "support":
+            lc.setdefault("supports", []).append({"group": name, **({"dofs": dofs} if dofs else {})})
+        else:
+            lc.setdefault("loads", []).append({"group": name, "force": [float(x) for x in force]})
+        lc["source"] = (lc.get("source", "") + f"; {name}: {role} {source}").strip("; ")
+    path = S.save_spec(study_id, spec)
+    try:
+        card = engine.call("spec", spec=str(path))
+    except engine.EngineError as e:
+        path.unlink(missing_ok=True)
+        if before is None:
+            derived.unlink(missing_ok=True)
+        else:
+            derived.write_text(before, encoding="utf-8")
+        return _err(e.kind, str(e))
+    S.log(study_id, "select_face", "drafted", face=name, role=role, area_mm2=picked["area_mm2"], spec_version=path.name, force=force, dofs=dofs)
+    return _ok(study_id=study_id, face=name, role=role, area_mm2=picked["area_mm2"], already_named=picked["already_named"], spec_version=path.name,
+               spec_card=card, needs_acceptance=True, next="show the new spec card; earlier results do not apply to it, so re-run the study after the user accepts it")
+
+
 @mcp.tool(description="Redesign an uploaded part (A3): add a lightening pocket cut down from one of its top (+z) planar faces, with "
                       "length, width and depth as free parameters bounded by that face, leaving `margin_mm` of wall around it. Frozen "
                       "interfaces (material around every detected hole) are enforced by the gate. Then create a study on the family "
@@ -454,6 +525,20 @@ def render_views(family: str | None = None, params: dict | None = None, graph: d
     return [json.dumps({"ok": True, "file": str(png)}), Image(path=str(png))]
 
 
+@mcp.tool(description="Read a design brief from a picture: a photo, a hand sketch or a dimensioned drawing (PNG, JPEG or WebP, up to 10 MB). Returns the picture for you to read. "
+                      "Build the spec from it with create_study, giving each value's source as 'sketch: ...'. Treat every dimension and load you read as a guess until the "
+                      "user accepts the spec card, and ask about anything the picture does not show; never assume a load from a drawing's proportions.")
+def read_brief_image(path: str):
+    p = Path(path)
+    if p.suffix.lower() not in (".png", ".jpg", ".jpeg", ".webp"):
+        return _err("image", "the picture must be PNG, JPEG or WebP")
+    if not p.is_file():
+        return _err("image", f"no such file: {path}")
+    if p.stat().st_size > 10_000_000:
+        return _err("image", "the picture is over 10 MB; give a smaller copy")
+    return [json.dumps({"ok": True, "file": str(p), "next": "read the picture, draft the spec, and show the user every value you read"}), Image(path=str(p))]
+
+
 # ------------------------------------------------------------------ evaluation and optimization
 @mcp.tool(description="Evaluate one candidate against the study's spec: build, gate, mesh, solve every load case at its worst factor, check every "
                       "requirement. Use for a baseline or a user-proposed design; do not use it to search (run_optimization does that).")
@@ -584,6 +669,20 @@ def verify(study_id: str, params: dict, fine_mesh: float = 3.0) -> dict:
     return _ok(folder=str(out), **{k: t.get(k) for k in ("grade", "status", "reasons", "requirements", "independent_checks", "assumptions", "reproduce")})
 
 
+@mcp.tool(description="Pin a short explanation to a point on the design, for the report's 3D view (G1), e.g. annotate(id, [30, 5, 60], 'the lower rib carries most of the load'). "
+                      "It is shown marked as the agent's words, not as a result. Say something the stored results support; trial limits it to one design.")
+def annotate(study_id: str, point: list[float], text: str, trial: int | None = None) -> dict:
+    if len(point) != 3 or not text.strip():
+        return _err("annotate", "give a point [x, y, z] in mm and some text")
+    p = S.folder(study_id) / "annotations.json"
+    rows = json.loads(p.read_text(encoding="utf-8")) if p.exists() else []
+    rows.append({"at": [float(x) for x in point], "text": text.strip()[:200], "trial": trial})
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(rows, indent=2), encoding="utf-8")
+    S.log(study_id, "annotate", "ok", at=point, text=text[:80], trial=trial)
+    return _ok(annotations=len(rows), next="rebuild the report to show it")
+
+
 @mcp.tool(description="Write the interactive study report (one offline HTML file: 3D fields, Pareto explorer, comparison with the baseline, trust "
                       "panel, history, timeline). Give the baseline design's parameters when there is one. Returns the file path to give the user.")
 def build_report(study_id: str, baseline: dict | None = None) -> dict:
@@ -646,6 +745,18 @@ def spec_resource(study_id: str) -> str:
 @mcp.resource("study://{study_id}/timeline", description="Every step taken in the study, in order (JSON lines).", mime_type="application/json")
 def timeline_resource(study_id: str) -> str:
     return json.dumps(S.timeline(study_id))
+
+
+@mcp.resource("study://{study_id}/results", description="The study's Pareto front, recommended design and counts by status (JSON).", mime_type="application/json")
+def results_resource(study_id: str) -> str:
+    return json.dumps(get_results(study_id))
+
+
+@mcp.resource("study://{study_id}/trust", description="The latest trust record of the study (JSON), with error bars, checks and grade.", mime_type="application/json")
+def trust_resource(study_id: str) -> str:
+    d = S.folder(study_id) / "verify"
+    records = sorted(d.glob("*/trust.json"), key=lambda p: p.stat().st_mtime) if d.exists() else []
+    return records[-1].read_text(encoding="utf-8") if records else json.dumps(_err("results", "no trust record yet; call verify"))
 
 
 @mcp.prompt(description="Start a design study from a plain-language brief.")

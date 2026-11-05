@@ -8,6 +8,7 @@
 #include <map>
 
 #include <BRepMesh_IncrementalMesh.hxx>
+#include <Eigen/Eigenvalues>
 #include <StlAPI_Writer.hxx>
 
 #include "structura/design.hpp"
@@ -113,7 +114,7 @@ void write_skin(const Mesh& m, const Result& r, const std::string& path, double 
     }
   }
   std::map<int, uint32_t> index;
-  std::vector<float> pos, disp, vm;
+  std::vector<float> pos, disp, vm, p1;
   std::vector<uint32_t> idx;
   auto vid = [&](int node) {
     auto it = index.find(node);
@@ -127,6 +128,17 @@ void write_skin(const Mesh& m, const Result& r, const std::string& path, double 
     disp.insert(disp.end(), {float(u[0]), float(u[1]), float(u[2])});
     auto s = r.von_mises.find(node);
     vm.push_back(float(s == r.von_mises.end() ? 0.0 : s->second));
+    if (!r.stress.empty()) {  // largest principal stress: tension is what opens a printed part's layers
+      auto t = r.stress.find(node);
+      double top = 0;
+      if (t != r.stress.end()) {
+        auto& v = t->second;  // sxx syy szz sxy syz szx
+        Eigen::Matrix3d S;
+        S << v[0], v[3], v[5], v[3], v[1], v[4], v[5], v[4], v[2];
+        top = Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d>(S, Eigen::EigenvaluesOnly).eigenvalues()(2);
+      }
+      p1.push_back(float(top));
+    }
     return i;
   };
   for (auto& [_, cf] : faces) {
@@ -144,6 +156,7 @@ void write_skin(const Mesh& m, const Result& r, const std::string& path, double 
                       {"yield_MPa", yield_MPa},
                       {"positions", b64(pos.data(), pos.size() * 4)}, {"disp", b64(disp.data(), disp.size() * 4)},
                       {"von_mises", b64(vm.data(), vm.size() * 4)}, {"indices", b64(idx.data(), idx.size() * 4)}};
+  if (!p1.empty()) j["max_principal"] = b64(p1.data(), p1.size() * 4);
   std::ofstream(path) << j.dump();
 }
 

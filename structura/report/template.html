@@ -50,6 +50,7 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 ul.plain{margin:.2rem 0;padding-left:1.1rem}ul.plain li{margin:.15rem 0}
 .tl{list-style:none;margin:0;padding:0;font-size:.85rem}.tl li{display:grid;grid-template-columns:64px 110px 1fr;gap:8px;padding:5px 0;border-bottom:1px solid var(--line)}
 .muted{color:var(--muted)}
+.tl li.go{cursor:pointer}.tl li.go:hover{background:var(--accent-soft)}.tl li[aria-current="step"]{background:var(--warn-soft)}
 footer{color:var(--muted);font-size:.8rem;margin-top:20px}
 @media print{body{background:#fff}.controls,#probe,.seg,#play{display:none!important}.card{break-inside:avoid;box-shadow:none}#viewer{height:420px}}
 body.print .controls,body.print #probe{display:none!important}
@@ -72,7 +73,7 @@ body.print .controls,body.print #probe{display:none!important}
       <h2>Design and simulation</h2>
       <div class="controls">
         <div class="seg" id="fieldseg" role="group" aria-label="Field">
-          <button data-f="vm" aria-pressed="true">Von Mises</button><button data-f="disp" aria-pressed="false">Displacement</button><button data-f="safety" aria-pressed="false">Safety</button>
+          <button data-f="vm" aria-pressed="true">Von Mises</button><button data-f="disp" aria-pressed="false">Displacement</button><button data-f="safety" aria-pressed="false">Safety</button><button data-f="p1" aria-pressed="false" id="p1btn" style="display:none">Max principal</button>
         </div>
         <label>Deformation × <input type="range" id="scale" min="0" max="1" step="0.01" value="0"> <span id="scaleval">0</span></label>
         <button type="button" id="modebtn" style="display:none;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;padding:3px 10px;cursor:pointer;font:inherit"></button>
@@ -80,19 +81,32 @@ body.print .controls,body.print #probe{display:none!important}
         <button type="button" id="play" title="Animate the load being applied" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;padding:3px 10px;cursor:pointer;font:inherit">▶ load</button>
         <label><input type="checkbox" id="ghost" checked> undeformed ghost</label>
         <label><input type="checkbox" id="marks" checked> loads &amp; supports</label>
+        <button type="button" id="pickbtn" aria-pressed="false" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;padding:3px 10px;cursor:pointer;font:inherit">Select a face</button>
         <label>Colour <select id="cmap"><option value="viridis">viridis</option><option value="cividis">cividis</option><option value="turbo">turbo</option></select></label>
         <label><input type="checkbox" id="bands"> contour bands</label>
+        <label id="rangelab">Range <input id="rangelo" type="number" step="any" placeholder="auto" aria-label="Lowest colour value" style="width:5.5em;font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px"> to <input id="rangehi" type="number" step="any" placeholder="auto" aria-label="Highest colour value" style="width:5.5em;font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px"></label>
         <label id="overlaylab"><input type="checkbox" id="overlay"> baseline overlay</label>
         <label id="cliplab">Cut <select id="clipaxis"><option value="">off</option><option value="0">x</option><option value="1">y</option><option value="2">z</option></select> <input type="range" id="clip" min="0" max="1" step="0.005" value="0.5" disabled></label>
         <div class="seg" id="whichseg" role="group" aria-label="Design"><button data-w="sel" aria-pressed="true">Selected</button><button data-w="base" aria-pressed="false">Baseline</button><button data-w="split" aria-pressed="false">Side by side</button></div>
       </div>
       <div id="viewer"><canvas id="cv"></canvas><div id="probe">hover the part to read values</div><div id="peaktag" class="tag3d"></div><div id="pintag" class="tag3d pin"></div><div id="legend"></div><div id="viewname"></div><div id="splitlabels" style="display:none"><span>Baseline</span><span>Selected</span></div></div>
+      <div id="pickpanel" style="display:none;font-size:.85rem;margin-top:.5rem;padding:8px;border:1px solid var(--line);border-radius:8px">
+        <div id="picktext"></div>
+        <div id="pickform" class="controls" style="display:none;margin-bottom:0">
+          <label>Name <input id="pickname" value="picked_face" size="14" style="font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:1px 4px"></label>
+          <label>Use as <select id="pickrole"><option value="support">support</option><option value="load">load</option></select></label>
+          <label id="pickforcelab" style="display:none">Force, N (x, y, z) <input id="pickforce" value="0, 0, -100" size="14" style="font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:1px 4px"></label>
+          <button type="button" id="pickadd" style="border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:3px 10px;cursor:pointer;font:inherit">Add to the spec</button>
+        </div>
+      </div>
       <p id="viewnote" class="muted" style="font-size:.8rem;margin:.4rem 0 0">Drag to rotate, wheel to zoom, shift-drag to pan. Safety view: green above the required safety factor, amber within 10% of it, red below (local yield / von Mises).</p>
     </section>
     <section class="card">
       <h2>Pareto front: click a design</h2>
       <svg id="pareto" viewBox="0 0 420 300" width="100%" role="img" aria-label="Pareto chart" style="touch-action:none;cursor:crosshair"></svg>
       <div id="steerbar" style="display:none;font-size:.85rem;margin-top:.3rem"><span id="steertext"></span> <button id="steergo" type="button" style="display:none">Search here</button></div>
+      <div id="hovercard" style="display:none;position:fixed;z-index:5;width:190px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px;font-size:.78rem;pointer-events:none"></div>
+      <p style="font-size:.85rem;margin:.4rem 0 0" id="recnote"></p>
       <p class="muted" style="font-size:.8rem;margin:.3rem 0 0" id="paretonote"></p>
       <h3>Selected vs baseline</h3>
       <div class="tblw"><table id="cmp"></table></div>
@@ -108,7 +122,8 @@ body.print .controls,body.print #probe{display:none!important}
       <h2>Optimization history</h2>
       <svg id="history" viewBox="0 0 420 220" width="100%" role="img" aria-label="History chart"></svg>
       <p class="muted" style="font-size:.8rem;margin:.3rem 0 0" id="histnote"></p>
-      <h3 style="display:flex;justify-content:space-between;align-items:center">Agent timeline <button type="button" id="tlplay" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;padding:1px 8px;cursor:pointer;font:inherit;font-weight:400">▶ step through</button></h3>
+      <h3 style="display:flex;justify-content:space-between;align-items:center">Agent timeline <span><select id="tlspeed" aria-label="Replay speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select> <button type="button" id="tlplay" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;padding:1px 8px;cursor:pointer;font:inherit;font-weight:400">▶ step through</button></span></h3>
+      <div id="travelnote" style="display:none;font-size:.85rem;margin:.3rem 0;padding:6px 8px;background:var(--warn-soft);border-radius:6px"><span id="traveltext"></span> <button type="button" id="travelback" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;padding:1px 8px;cursor:pointer;font:inherit">Back to now</button></div>
       <ul class="tl" id="timeline"></ul>
     </section>
   </div>
@@ -128,6 +143,8 @@ body.print .controls,body.print #probe{display:none!important}
     <section class="card" id="replaycard">
       <h2>Replay the search</h2>
       <svg id="hv" viewBox="0 0 420 160" width="100%" role="img" aria-label="Search progress"></svg>
+      <div id="evo" style="display:none;position:relative;height:240px;border:1px solid var(--line);border-radius:8px;overflow:hidden"><canvas id="evocv" style="display:block;width:100%;height:100%;touch-action:none"></canvas></div>
+      <p id="evonote" class="muted" style="display:none;font-size:.8rem;margin:.3rem 0 0"></p>
       <div class="controls"><button type="button" id="replay" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;padding:3px 10px;cursor:pointer;font:inherit">▶ replay</button>
         <input type="range" id="replayn" min="1" value="1" style="flex:1"><span id="replaylabel" class="muted"></span></div>
     </section>
@@ -237,10 +254,11 @@ if (D.manufacturing) {
   render();
 })();
 
-$("#spec").innerHTML = "<tr><th>Id</th><th>Requirement</th><th>Source</th></tr>" + D.spec.requirements.map(r =>
-  `<tr><td>${esc(r.id)}</td><td>${esc(r.quantity)} ${esc(r.op)} ${esc(r.value)} ${r.unit === "1" ? "" : esc(r.unit)}</td><td class="muted">${esc(r.source)}</td></tr>`).join("");
+function specTable(sp){$("#spec").innerHTML = "<tr><th>Id</th><th>Requirement</th><th>Source</th></tr>" + sp.requirements.map(r =>
+  `<tr><td>${esc(r.id)}</td><td>${esc(r.quantity)} ${esc(r.op)} ${esc(r.value)} ${r.unit === "1" ? "" : esc(r.unit)}</td><td class="muted">${esc(r.source)}</td></tr>`).join("")}
+specTable(D.spec);
 $("#assump").innerHTML = (D.trust && D.trust.assumptions || []).map(a => `<li>${esc(a)}</li>`).join("");
-$("#foot").textContent = `Spec ${D.spec.id} v${D.spec.version} · hash ${D.spec.hash.slice(0,12)} · generated ${D.generated} · engine results only; every number on this page comes from a stored run.`;
+$("#foot").textContent = `Spec ${D.spec.id} v${D.spec.version} · hash ${D.spec.hash.slice(0,12)} · generated ${D.generated} · engine results only; every number on this page comes from a stored run. Sent to the AI model, when one drives the study: the brief, the spec, tool results and any rendered views it asks for. Meshes and field files stay on this machine.`;
 
 // ---------------------------------------------------------------- 3D viewer (Three.js, own orbit controls)
 const cv = $("#cv"), box = $("#viewer");
@@ -309,9 +327,11 @@ function tagAt(el, p, text){
   const v = new THREE.Vector3(p[0], p[1], p[2]).project(camera);
   el.style.display = "block"; el.style.left = ((v.x + 1)/2*box.clientWidth) + "px"; el.style.top = ((1 - v.y)/2*box.clientHeight) + "px"; el.textContent = text;
 }
+const noteTags = (D.annotations || []).map(a => {const el = document.createElement("div"); el.className = "tag3d pin"; el.title = "The agent's words, not a result"; box.appendChild(el); return {el, a}});
 function drawTags(){
   const k = current && decode(current.skin);
   if (!k) return;
+  for (const {el, a} of noteTags) tagAt(el, a.trial == null || a.trial === current.trial ? a.at : null, "Agent: " + a.text);
   let best = -1, bv = -Infinity;
   for (let i = 0; i < k.vm.length; i++) if (k.vm[i] > bv) {bv = k.vm[i]; best = i}
   const clipped = clipPlane && best >= 0 && clipPlane.distanceToPoint(new THREE.Vector3(k.pos[3*best], k.pos[3*best+1], k.pos[3*best+2])) < 0;
@@ -324,7 +344,7 @@ function drawTags(){
 function draw(){
   placeCamera();
   if (!split) {renderer.setScissorTest(false); const w = box.clientWidth, h = box.clientHeight; renderer.setViewport(0, 0, w, h); renderer.render(scene, camera); camera.updateMatrixWorld(); drawTags(); return}
-  $("#peaktag").style.display = "none"; $("#pintag").style.display = "none";
+  $("#peaktag").style.display = "none"; $("#pintag").style.display = "none"; for (const {el} of noteTags) el.style.display = "none";
   const w = box.clientWidth, h = box.clientHeight;
   renderer.setScissorTest(true);
   renderer.setViewport(0, 0, w / 2, h); renderer.setScissor(0, 0, w / 2, h); renderer.render(sceneB, camera);
@@ -337,7 +357,8 @@ cv.addEventListener("pointerup", e => {
   if (drag && drag.moved < 4 && mesh && !split) {  // a click, not a drag: pin this point, or clear the pin
     const r = cv.getBoundingClientRect(); mouse.set((e.clientX-r.left)/r.width*2-1, -((e.clientY-r.top)/r.height)*2+1);
     ray.setFromCamera(mouse, camera); const hit = ray.intersectObject(mesh)[0];
-    pinned = hit ? [hit.point.x, hit.point.y, hit.point.z] : null; drawTags()}
+    if (picking) {if (hit) pickAt(hit.point)}
+    else {pinned = hit ? [hit.point.x, hit.point.y, hit.point.z] : null; drawTags()}}
   drag = null});
 cv.addEventListener("pointermove", e => {
   if (drag) {const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY; drag.moved += Math.abs(dx) + Math.abs(dy);
@@ -358,7 +379,7 @@ function viridis(t){t = Math.min(1, Math.max(0, t)); if (bandsOn) t = Math.min(0
 function safetyColor(sf, req){if (sf >= req*1.1) return [0.19,0.55,0.33]; if (sf >= req) return [0.85,0.6,0.2]; return [0.75,0.2,0.24]}
 
 function decode(skin){if (skin._d) return skin._d; const sc = skin.scalar ? skin[skin.scalar.name] : skin.von_mises;
-  skin._d = {pos: b64f(skin.positions), disp: b64f(skin.disp), vm: b64f(sc), idx: b64u(skin.indices)}; return skin._d}
+  skin._d = {pos: b64f(skin.positions), disp: b64f(skin.disp), vm: b64f(sc), idx: b64u(skin.indices), p1: skin.max_principal ? b64f(skin.max_principal) : null}; return skin._d}
 function show(design, label){
   current = design; $("#viewname").textContent = label;
   const k = decode(design.skin);
@@ -384,6 +405,7 @@ function show(design, label){
   const thermal = !!design.skin.scalar;
   $("#viewnote").textContent = thermal ? "Drag to rotate, wheel to zoom, shift-drag to pan. Colour: temperature on the surface of the part (hover to read it)." : "Drag to rotate, wheel to zoom, shift-drag to pan. Safety view: green above the required safety factor, amber within 10% of it, red below (local yield / von Mises).";
   if (kinds.length) $("#viewnote").textContent += (thermal ? " Arrow: heat input." : " Orange arrow: applied load. Blue: supports (dark fully held, light held in one direction).");
+  $("#p1btn").style.display = design.skin.max_principal ? "" : "none"; if (field === "p1" && !design.skin.max_principal) {field = "vm"; $("#fieldseg").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x.dataset.f === "vm"))}
   $("#fieldseg").style.display = thermal ? "none" : ""; $("#scale").parentElement.style.display = thermal ? "none" : ""; $("#play").style.display = thermal ? "none" : ""; $("#ghost").parentElement.style.display = thermal ? "none" : "";
   colorize(); deform(); resize();
 }
@@ -395,12 +417,15 @@ function colorize(){
   if (current.skin.scalar) {field = "vm"; lo = Math.min(...both.map(s => s.scalar.min)); hi = Math.max(...both.map(s => s.scalar.max)); unit = current.skin.scalar.unit; name = current.skin.scalar.name === "temperature" ? "Temperature" : current.skin.scalar.name}
   else if (field === "vm") {hi = Math.max(...both.map(s => s.max_von_mises_MPa || 1))}
   else if (field === "disp") {hi = Math.max(...both.map(s => s.max_disp_mm || 1)); unit = "mm"; name = "Displacement"}
+  else if (field === "p1") {const ps = both.map(s => decode(s).p1).filter(Boolean); lo = Math.min(...ps.map(p => p.reduce((a, b) => Math.min(a, b), Infinity))); hi = Math.max(...ps.map(p => p.reduce((a, b) => Math.max(a, b), -Infinity))); name = "Max principal"}
+  if (field !== "safety") {const a = parseFloat($("#rangelo").value), b = parseFloat($("#rangehi").value); if (isFinite(a)) lo = a; if (isFinite(b)) hi = b}
   const paint = (m, skin) => {
     const k = decode(skin), c = m.geometry.attributes.color.array, n = k.vm.length, yld = skin.yield_MPa || 1;
     for (let i = 0; i < n; i++) {
       let rgb;
       if (field === "vm") rgb = viridis((k.vm[i] - lo) / (hi - lo || 1));
-      else if (field === "disp") {const x = k.disp[3*i], y = k.disp[3*i+1], z = k.disp[3*i+2]; rgb = viridis(Math.sqrt(x*x+y*y+z*z) / hi)}
+      else if (field === "disp") {const x = k.disp[3*i], y = k.disp[3*i+1], z = k.disp[3*i+2]; rgb = viridis((Math.sqrt(x*x+y*y+z*z) - lo) / (hi - lo || 1))}
+      else if (field === "p1") rgb = k.p1 ? viridis((k.p1[i] - lo) / (hi - lo || 1)) : [0.6, 0.6, 0.6];
       else rgb = safetyColor(k.vm[i] > 0 ? yld / k.vm[i] : 1e9, req);
       c[3*i] = rgb[0]; c[3*i+1] = rgb[1]; c[3*i+2] = rgb[2];
     }
@@ -435,9 +460,10 @@ function probe(e){
   if (!hit) {$("#probe").textContent = "hover the part to read values"; return}
   const prefix = split ? (des === D.baseline ? "Baseline: " : "Selected: ") : "";
   const k = decode(des.skin), i = hit.face.a, x = k.disp[3*i], y = k.disp[3*i+1], z = k.disp[3*i+2];
+  const p1 = k.p1 ? ` · max principal ${f3(k.p1[i])} MPa` : "";
   if (des.skin.scalar) {$("#probe").textContent = `${prefix}${des.skin.scalar.name} ${f3(k.vm[i])} ${des.skin.scalar.unit} · at (${f3(k.pos[3*i])}, ${f3(k.pos[3*i+1])}, ${f3(k.pos[3*i+2])}) mm`; return}
   const sf = k.vm[i] > 0 ? (des.skin.yield_MPa || 0) / k.vm[i] : Infinity;
-  $("#probe").textContent = `${prefix}von Mises ${f3(k.vm[i])} MPa · displacement ${f3(Math.sqrt(x*x+y*y+z*z))} mm · local SF ${isFinite(sf) ? f3(sf) : "∞"} · at (${f3(k.pos[3*i])}, ${f3(k.pos[3*i+1])}, ${f3(k.pos[3*i+2])}) mm`;
+  $("#probe").textContent = `${prefix}von Mises ${f3(k.vm[i])} MPa · displacement ${f3(Math.sqrt(x*x+y*y+z*z))} mm${p1} · local SF ${isFinite(sf) ? f3(sf) : "∞"} · at (${f3(k.pos[3*i])}, ${f3(k.pos[3*i+1])}, ${f3(k.pos[3*i+2])}) mm`;
 }
 $("#fieldseg").addEventListener("click", e => {const b = e.target.closest("button"); if (!b) return; field = b.dataset.f;
   $("#fieldseg").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); colorize()});
@@ -445,6 +471,7 @@ $("#whichseg").addEventListener("click", e => {const b = e.target.closest("butto
   $("#whichseg").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
   setSplit(which === "split");
   if (which === "base" && D.baseline) show(D.baseline, "Baseline (hand design)"); else show(selected, label(selected))});
+$("#rangelo").addEventListener("change", () => colorize()); $("#rangehi").addEventListener("change", () => colorize());
 $("#scale").addEventListener("input", deform); $("#marks").addEventListener("change", e => {if (marks) {marks.visible = e.target.checked; draw()}});
 $("#ghost").addEventListener("change", deform);
 
@@ -487,6 +514,40 @@ $("#play").addEventListener("click", () => {
   playing = requestAnimationFrame(step);
 });
 
+// ---------------------------------------------------------------- click a face to add a load or support (C3)
+let picking = false, pickMesh = null, pickPoint = null;
+function clearPick(){if (pickMesh) {scene.remove(pickMesh); pickMesh.geometry.dispose(); pickMesh = null} pickPoint = null; $("#pickform").style.display = "none"; draw()}
+async function pickAt(p){
+  pickPoint = [p.x, p.y, p.z];
+  if (!API) {$("#picktext").textContent = `Clicked (${f3(p.x)}, ${f3(p.y)}, ${f3(p.z)}) mm. This file cannot change the study. ` + (D.study_id ? `Run python -m structura.app.rest and open /studies/${D.study_id}/report to do it from here, or ask the agent: select_face(point=[${pickPoint.map(v => +v.toFixed(2))}]).` : "This report has no study behind it."); return}
+  $("#picktext").textContent = "Finding the face…";
+  try {
+    const r = await (await fetch(`${API}/api/tools/pick_face`, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({study_id: D.study_id, point: pickPoint, params: current.params})})).json();
+    if (!r.ok) {$("#picktext").textContent = r.message || r.error; $("#pickform").style.display = "none"; return}
+    if (pickMesh) {scene.remove(pickMesh); pickMesh.geometry.dispose()}
+    const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(r.triangles, 3));
+    pickMesh = new THREE.Mesh(g, new THREE.MeshBasicMaterial({color: 0xff6b00, side: THREE.DoubleSide, transparent: true, opacity: 0.75, depthTest: false})); scene.add(pickMesh);
+    $("#picktext").textContent = `Face ${r.face_id}: ${f3(r.area_mm2)} mm²${r.already_named.length ? `, already named ${r.already_named.join(", ")}` : ""}.`;
+    $("#pickform").style.display = ""; draw();
+  } catch (err) {$("#picktext").textContent = `The face could not be found: ${err.message}`}
+}
+$("#pickbtn").addEventListener("click", () => {
+  picking = !picking; $("#pickbtn").setAttribute("aria-pressed", picking); $("#pickbtn").style.borderColor = picking ? "var(--accent)" : "var(--line)";
+  $("#pickpanel").style.display = picking ? "" : "none";
+  if (picking) {$("#scale").value = 0; deform(); $("#picktext").textContent = "Click a face of the part."} else clearPick();
+});
+$("#pickrole").addEventListener("change", e => {$("#pickforcelab").style.display = e.target.value === "load" ? "" : "none"});
+$("#pickadd").addEventListener("click", async () => {
+  const role = $("#pickrole").value, body = {study_id: D.study_id, point: pickPoint, name: $("#pickname").value.trim(), role, params: current.params};
+  if (role === "load") {body.force = $("#pickforce").value.split(",").map(Number); if (body.force.length !== 3 || body.force.some(x => !isFinite(x))) {$("#picktext").textContent = "Force needs three numbers in N: x, y, z."; return}}
+  const b = $("#pickadd"); b.disabled = true;
+  try {
+    const r = await (await fetch(`${API}/api/tools/select_face`, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)})).json();
+    $("#picktext").textContent = r.ok ? `Added ${r.face} as a ${r.role}: new spec ${r.spec_version}. It needs your acceptance, and the results on this page do not include it until the study is re-run.` : (r.message || r.error);
+    if (r.ok) $("#pickform").style.display = "none";
+  } catch (err) {$("#picktext").textContent = `The face was not added: ${err.message}`}
+  b.disabled = false;
+});
 // ---------------------------------------------------------------- Pareto explorer
 let selected = rec;
 const label = d => d.recommended ? `Recommended · trial ${d.trial}` : `Trial ${d.trial}`;
@@ -508,7 +569,8 @@ function pareto(){
   for (let i = 0; i <= 4; i++) {const v = x0 + (x1-x0)*i/4; s += `<text x="${X(v)}" y="${H-B+14}" text-anchor="middle">${f3(v)}</text>`}
   for (let i = 0; i <= 4; i++) {const v = y0 + (y1-y0)*i/4; s += `<text x="${L-6}" y="${Y(v)+4}" text-anchor="end">${f3(v)}</text>`}
   s += `<text x="${(L+W-R)/2}" y="${H-4}" text-anchor="middle">${esc(qn(kx))}${OX.unit ? " (" + OX.unit + ")" : ""}</text><text transform="rotate(-90)" x="${-(T+H-B)/2}" y="12" text-anchor="middle">${esc(qn(ky))}${OY.unit ? " (" + OY.unit + ")" : ""}</text>`;
-  for (const p of pts) s += `<circle cx="${X(p[kx])}" cy="${Y(p[ky])}" r="${p.steered ? 3.4 : 2.6}" fill="${p.steered && p.feasible ? cssv('--accent') : p.feasible ? cssv('--muted') : cssv('--line')}"${p.steered ? ` opacity="0.75"` : ""}/>`;
+  const fails = p => D.spec.requirements.filter(r => p[r.quantity] != null && (r.op === ">=" ? p[r.quantity] < r.value : p[r.quantity] > r.value)).map(r => `${r.id} (${qn(r.quantity)} ${f3(p[r.quantity])}, needs ${r.op} ${r.value})`);
+  for (const p of pts) s += `<circle cx="${X(p[kx])}" cy="${Y(p[ky])}" r="${p.steered ? 3.4 : 2.6}" fill="${p.steered && p.feasible ? cssv('--accent') : p.feasible ? cssv('--muted') : cssv('--line')}"${p.steered ? ` opacity="0.75"` : ""}><title>Trial ${p.n}: ${qv(p, OX)}, ${qv(p, OY)}${p.feasible ? "" : "\nFails " + (fails(p).join("; ") || "a requirement")}</title></circle>`;
   if (steerTarget) {const tx = X(steerTarget.x), ty = Y(steerTarget.y); s += `<g id="steermark" stroke="${cssv('--ink')}" stroke-width="1.5" fill="none"><circle cx="${tx}" cy="${ty}" r="7" stroke-dasharray="3 2"/><line x1="${tx-11}" x2="${tx+11}" y1="${ty}" y2="${ty}"/><line x1="${tx}" x2="${tx}" y1="${ty-11}" y2="${ty+11}"/></g>`}
   const front = D.designs.filter(d => d.on_front).sort((a, b) => a.metrics[kx] - b.metrics[kx]);
   if (front.length > 1) s += `<polyline fill="none" stroke="${cssv('--accent')}" stroke-width="1.5" points="${front.map(d => X(d.metrics[kx])+','+Y(d.metrics[ky])).join(' ')}"/>`;
@@ -522,6 +584,12 @@ function pareto(){
   }
   if (D.baseline) {const b = D.baseline.metrics; s += `<g class="pt" data-t="base"><rect x="${X(b[kx])-6}" y="${Y(b[ky])-6}" width="12" height="12" fill="${cssv('--bad')}"/><title>Baseline: ${qv(b, OX)}, ${qv(b, OY)}</title></g>`}
   svg.innerHTML = s;
+  $("#recnote").textContent = (() => {
+    const r = D.designs.find(d => d.recommended); if (!r || front.length < 2) return "";
+    const i = front.indexOf(r), diff = o => {if (!o) return ""; const dx = r.metrics[kx] - o.metrics[kx], dy = r.metrics[ky] - o.metrics[ky];
+      return `Against trial ${o.trial}: ${dx >= 0 ? "+" : ""}${f3(dx)} ${OX.unit} ${qn(kx).toLowerCase()}, ${dy >= 0 ? "+" : ""}${f3(dy)}${OY.unit ? " " + OY.unit : ""} ${qn(ky).toLowerCase()}. `};
+    return (D.rec_basis === "trust" ? "Recommended: the design the trust record verified. " : "Recommended: the knee of the front, where further gain in one objective starts to cost most in the other. ") + diff(front[i-1]) + diff(front[i+1]);
+  })();
   $("#paretonote").textContent = `Green band: meets the requirement on the vertical axis. Short bars: how far each Pareto design's value moved from the search mesh to the fine mesh. Dots: every evaluated design (grey feasible, light infeasible). Large dots: Pareto designs re-solved on the fine mesh; ring: recommended. Square: hand baseline.${D.objectives.length > 1 ? " Drag on empty space to set a target for the search." : ""}`;
 }
 // ---------------------------------------------------------------- steer by dragging (G4, D2): the target becomes the reference point of a focused search
@@ -564,6 +632,14 @@ $("#steergo").addEventListener("click", async () => {
   } catch (err) {clearInterval(timer); $("#steertext").textContent = `The search did not run: ${err.message}`}
   steering = false; $("#steergo").disabled = false;
 });
+// hover a Pareto design: its numbers and its picture (G4)
+$("#pareto").addEventListener("mousemove", e => {const g = e.target.closest(".pt"), c = $("#hovercard");
+  if (!g || steerDrag) {c.style.display = "none"; return}
+  const d = g.dataset.t === "base" ? D.baseline : D.designs.find(x => String(x.trial) === g.dataset.t); if (!d) {c.style.display = "none"; return}
+  const pic = document.querySelector(`#gallery button[data-t="${g.dataset.t}"] img`);
+  c.innerHTML = (pic ? `<img alt="" src="${pic.src}" style="width:100%;display:block">` : "") + `<b>${esc(d === D.baseline ? "Baseline" : label(d))}</b><br>${esc(D.objectives.map(o => qv(d.metrics, o)).join(" · "))}`;
+  c.style.display = "block"; c.style.left = Math.min(innerWidth - 200, e.clientX + 14) + "px"; c.style.top = Math.min(innerHeight - 190, e.clientY + 14) + "px"});
+$("#pareto").addEventListener("mouseleave", () => $("#hovercard").style.display = "none");
 $("#pareto").addEventListener("click", e => {const g = e.target.closest(".pt"); if (!g) return;
   if (g.dataset.t === "base") {which = "base"; setSplit(false); show(D.baseline, "Baseline (hand design)")} else {selected = D.designs.find(d => String(d.trial) === g.dataset.t); if (which !== "split") which = "sel"; show(selected, label(selected))}
   $("#whichseg").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x.dataset.w === which)); pareto(); compare()});
@@ -608,12 +684,36 @@ function history(){
   if (path.length) s += `<polyline fill="none" stroke="${cssv('--warn')}" stroke-width="1.6" points="${path.join(" ")}"/>`;
   s += `<text x="${L}" y="${H-6}">evaluation 1</text><text x="${W-R}" y="${H-6}" text-anchor="end">${h.length}</text><text x="${L}" y="${T-4}">${esc(qn(ky))}</text><text x="${W-R}" y="${T-4}" text-anchor="end">${esc(qn(kx))}</text>`;
   svg.innerHTML = s;
-  const fails = h.filter(p => p.status !== "ok").length;
-  $("#histnote").textContent = `Dots: ${qn(ky).toLowerCase()} per evaluation (teal feasible), dashed line: its requirement. Orange: best feasible ${qn(kx).toLowerCase()} so far. Red ticks: ${fails} evaluations that failed the gate or the mesher.`;
+  const why = {}; h.forEach(p => {if (p.status !== "ok") why[p.status] = (why[p.status] || 0) + 1});
+  const list = Object.entries(why).map(([k, v]) => `${v} ${k.replace(/_/g, " ")}`).join(", ");
+  $("#histnote").textContent = `Dots: ${qn(ky).toLowerCase()} per evaluation (teal feasible), dashed line: its requirement. Orange: best feasible ${qn(kx).toLowerCase()} so far. Red ticks: evaluations that did not finish${list ? ": " + list : ": none"}.`;
 }
 function timeline(){
-  $("#timeline").innerHTML = (D.timeline || []).map(e => `<li><span class="muted">${esc((e.time || "").slice(11,19)) || "·"}</span><b>${esc(e.step)}</b><span>${esc(e.outcome)}${e.detail ? ' <span class="muted">' + esc(e.detail) + '</span>' : ""}</span></li>`).join("") || '<li class="muted">No agent steps recorded for this study.</li>';
+  $("#timeline").innerHTML = (D.timeline || []).map((e, i) => `<li data-i="${i}"${e.spec_version ? ' class="go" tabindex="0" title="Click to see the spec and design as they were at this step"' : ""}><span class="muted">${esc((e.time || "").slice(11,19)) || "·"}</span><b>${esc(e.step)}</b><span>${esc(e.outcome)}${e.seconds >= 1 ? ` · +${f3(e.seconds)} s` : ""}${e.detail ? ' <span class="muted">' + esc(e.detail) + '</span>' : ""}</span></li>`).join("") || '<li class="muted">No agent steps recorded for this study.</li>';
 }
+// time travel (G6): the spec and the design as they stood at a step, from the study's own records
+function designAt(key){if (!key) return null; const [kind, id] = key.split(":"); return kind === "step" ? (D.step_designs || {})[id] : D.designs.find(d => String(d.trial) === id)}
+let travelFrom = null;
+function travel(i){
+  const e = D.timeline[i]; if (!e || !e.spec_version) return;
+  if (!travelFrom) travelFrom = {design: current, label: $("#viewname").textContent};
+  document.querySelectorAll("#timeline li").forEach(x => x.toggleAttribute("aria-current", false));
+  const li = document.querySelector(`#timeline li[data-i="${i}"]`); if (li) li.setAttribute("aria-current", "step");
+  const sp = (D.spec_versions || {})[e.spec_version], d = designAt(e.design);
+  if (sp) specTable(sp);
+  if (d) {if (which === "split") {which = "sel"; setSplit(false); $("#whichseg").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x.dataset.w === which))} show(d, `As at step: ${e.step}`)}
+  $("#travelnote").style.display = "";
+  $("#traveltext").textContent = `As at step "${e.step}": spec ${e.spec_version}` + (sp ? `, ${sp.requirements.length} requirements` : "") + (d ? `, showing ${d.recommended ? "the recommended design" : "the design it evaluated"}.` : ", no design solved yet (the view keeps the current one).");
+}
+function travelBack(){
+  document.querySelectorAll("#timeline li").forEach(x => x.toggleAttribute("aria-current", false));
+  $("#travelnote").style.display = "none"; specTable(D.spec);
+  if (travelFrom && travelFrom.design) show(travelFrom.design, travelFrom.label);
+  travelFrom = null;
+}
+$("#timeline").addEventListener("click", e => {const li = e.target.closest("li.go"); if (li) travel(+li.dataset.i)});
+$("#timeline").addEventListener("keydown", e => {if (e.key === "Enter") {const li = e.target.closest("li.go"); if (li) travel(+li.dataset.i)}});
+$("#travelback").addEventListener("click", travelBack);
 
 pareto(); compare(); trust(); history(); timeline();
 if (API) {  // G6: served by the REST door, the timeline follows the study as it runs
@@ -651,7 +751,7 @@ const AR = {
   "Id": "الرمز", "Requirement": "المتطلب", "Source": "المصدر", "Quantity": "الكمية", "Value": "القيمة", "Limit": "الحد",
   "Error": "الخطأ", "Result": "النتيجة", "Change": "التغيير", "Meets every requirement": "يحقق كل المتطلبات",
   "yes": "نعم", "no": "لا", "pass": "ناجح", "fail": "غير ناجح", "fits": "مناسب", "not proven": "غير مُثبت",
-  "Which parameters matter": "المعاملات المؤثرة", "Replay the search": "إعادة عرض البحث", "Pareto designs": "تصاميم باريتو",
+  "Max principal": "الإجهاد الرئيسي الأقصى", "Range": "المدى", "Select a face": "حدّد وجهًا", "Add to the spec": "أضف إلى المواصفات", "Back to now": "العودة إلى الآن", "support": "دعامة", "load": "حمل", "Name": "الاسم", "Use as": "استخدم كـ", "Which parameters matter": "المعاملات المؤثرة", "Replay the search": "إعادة عرض البحث", "Pareto designs": "تصاميم باريتو",
   "Three objectives, two at a time": "ثلاثة أهداف، كل اثنين معًا", "Colour": "اللون", "contour bands": "نطاقات كنتورية", "baseline overlay": "تراكب التصميم الأساسي", "Cut": "قطع", "off": "إيقاف", "Sort by": "ترتيب حسب", "▶ replay": "▶ إعادة العرض", "▶ step through": "▶ خطوة بخطوة",
   "Mass (g)": "الكتلة (غ)", "Max displacement (mm)": "أقصى إزاحة (مم)",
   "Peak von Mises (evaluation region) (MPa)": "أقصى إجهاد فون مايسز (منطقة التقييم) (ميغاباسكال)", "Peak temperature (degC)": "أعلى درجة حرارة (°م)", "Safety factor (1)": "معامل الأمان", "Temperature": "درجة الحرارة",
@@ -761,6 +861,32 @@ $("#overlay").addEventListener("change", setOverlay);
     svg.innerHTML = s;
     $("#replaylabel").textContent = `after ${n}: best feasible ${best[n-1] == null ? "none yet" : f3(best[n-1]) + (OX.unit ? " " + OX.unit : "")}`;
   }
+  const evo = (function(){  // shape evolution (G3): real geometry of the best design so far, moved through in-between frames
+    const E = D.evolution; if (!E || !E.frames.length || location.hash === "#print") return null;
+    $("#evo").style.display = ""; $("#evonote").style.display = "";
+    const c = $("#evocv"), r3 = new THREE.WebGLRenderer({canvas: c, antialias: true, alpha: true}), sc = new THREE.Scene(), cam = new THREE.PerspectiveCamera(35, 1, 0.1, 5000);
+    r3.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); sc.add(new THREE.AmbientLight(0xffffff, 0.75));
+    const sn = new THREE.DirectionalLight(0xffffff, 0.55); sn.position.set(1, -1.5, 2); sc.add(sn);
+    const mat = new THREE.MeshLambertMaterial({color: 0x2f6f5e, side: THREE.DoubleSide});
+    const geos = E.frames.map(() => null), geoOf = i => {if (geos[i]) return geos[i]; const f = E.frames[i], g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.BufferAttribute(b64f(f.positions), 3)); g.setIndex(new THREE.BufferAttribute(b64u(f.indices), 1)); g.computeVertexNormals(); g.computeBoundingSphere(); return geos[i] = g};
+    const m = new THREE.Mesh(geoOf(E.frames.length - 1), mat); sc.add(m);
+    const s0 = geoOf(E.frames.length - 1).boundingSphere; let th = theta, ph = phi, rad = s0.radius*3.2;
+    function paint(){const w = c.clientWidth || 300, h2 = c.clientHeight || 200; r3.setSize(w, h2, false); cam.aspect = w/h2; cam.updateProjectionMatrix();
+      cam.position.set(s0.center.x + rad*Math.sin(ph)*Math.cos(th), s0.center.y + rad*Math.sin(ph)*Math.sin(th), s0.center.z + rad*Math.cos(ph)); cam.up.set(0,0,1); cam.lookAt(s0.center); r3.render(sc, cam)}
+    let d3 = null; c.addEventListener("pointerdown", e => {d3 = [e.clientX, e.clientY]; c.setPointerCapture(e.pointerId)});
+    c.addEventListener("pointermove", e => {if (!d3) return; th -= (e.clientX-d3[0])*0.008; ph = Math.min(3.1, Math.max(0.05, ph-(e.clientY-d3[1])*0.008)); d3 = [e.clientX, e.clientY]; paint()});
+    c.addEventListener("pointerup", () => d3 = null); new ResizeObserver(paint).observe(c);
+    let cur = E.frames.length - 1, want = cur, anim = null;
+    const lastKey = n => {let k = -1; E.frames.forEach((f, i) => {if (f.key && f.after <= n) k = i}); return k};
+    function step(){if (cur === want) {anim = null; return} cur += Math.sign(want - cur); m.geometry = geoOf(cur); paint(); anim = setTimeout(step, 60)}
+    const unit = OX.quantity === E.quantity ? OX.unit : "";
+    return {goto(n){const k = lastKey(n); m.visible = k >= 0;
+      if (k >= 0) {want = k; if (!anim) step()} paint();
+      const f = E.frames[k]; $("#evonote").textContent = (f ? `Best feasible design after ${n} evaluations: trial ${f.trial}, ${f3(f.value)}${unit ? " " + unit : ""}.` : `No feasible design after ${n} evaluations.`) +
+        ` ${E.keys} best designs, solved. The shapes in between are rebuilt from interpolated parameters to show the change, and were not solved.` + (E.skipped ? ` ${E.skipped} in-between shapes did not build and are left out.` : "")}};
+  })();
+  const render0 = render; render = function(n){render0(n); if (evo) evo.goto(n)};
   sl.addEventListener("input", () => render(+sl.value)); render(h.length);
   let timer = null;
   $("#replay").addEventListener("click", e => {
@@ -800,13 +926,14 @@ $("#overlay").addEventListener("change", setOverlay);
 })();
 // ---------------------------------------------------------------- step through the agent timeline (G6)
 (function(){
-  const items = [...document.querySelectorAll("#timeline li")], btn = $("#tlplay");
-  if (items.length < 2) {btn.style.display = "none"; return}
+  const btn = $("#tlplay");
+  if (document.querySelectorAll("#timeline li").length < 2) {btn.style.display = "none"; $("#tlspeed").style.display = "none"; return}
   let timer = null;
   btn.addEventListener("click", () => {
+    const items = [...document.querySelectorAll("#timeline li")];
     if (timer) {clearInterval(timer); timer = null; items.forEach(i => i.style.opacity = ""); btn.textContent = "▶ step through"; return}
     let n = 0; items.forEach(i => i.style.opacity = "0.15"); btn.textContent = "■ stop";
-    timer = setInterval(() => {if (n < items.length) {items[n].style.opacity = ""; items[n].scrollIntoView({block: "nearest"}); n++} else {clearInterval(timer); timer = null; btn.textContent = "▶ step through"}}, 700)});
+    timer = setInterval(() => {if (n < items.length) {items[n].style.opacity = ""; items[n].scrollIntoView({block: "nearest"}); travel(+items[n].dataset.i); n++} else {clearInterval(timer); timer = null; btn.textContent = "▶ step through"}}, 700/parseFloat($("#tlspeed").value))});
 })();
 // performance check (P4-x1): load time to the first rendered frame, then a 3 s orbit with the frame rate measured
 if (location.hash === "#perf") {

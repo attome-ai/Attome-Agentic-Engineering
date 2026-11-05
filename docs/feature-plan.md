@@ -74,7 +74,7 @@ From a sentence, a photo or an existing part to a checkable spec. Competitor sco
 
 **Today (score 45):**
 - 50-brief benchmark scored: 95.0% of fields, 100% of units (`benchmarks/brief_bench_opus55_session.json`); run in a Claude Code session, not through the API, and with no image briefs. The harness's rules and gold disagree on unstated objectives (19 of 25 misses).
-- The agent turns a brief into a spec through MCP tools (create_study, derive_load, rank_questions); no image or sketch input.
+- The agent turns a brief into a spec through MCP tools (create_study, derive_load, rank_questions). `read_brief_image` hands it a photo, sketch or drawing, with every value it reads treated as a guess until the user accepts the card; reading accuracy on pictures is not measured, because no image briefs exist yet.
 
 **How the leaders do it:**
 - SimScale's Engineering AI agent goes from one prompt to a solved FEA/CFD/thermal study with an explanation; free on every plan, inside Onshape since Sept 2026.
@@ -112,10 +112,10 @@ From a sentence, a photo or an existing part to a checkable spec. Competitor sco
 - **Two redesign paths.** If a template (B3) fits the detected dimensions within tolerance, its parameters are optimized; otherwise wall thickness, pocket depth and rib count are optimized as operations on the uploaded solid inside its envelope, with every candidate passing the gate (B4).
 - **Honest scope.** Parts that fit neither path are analysed and reported, and the tool says it cannot redesign them; native CAD parameters come with A4.
 
-**Today (score 62):**
-- `fit_part_to_family` finds a family's closest design to an uploaded part by real overlap (test bracket 98%, wrong family under 9%); the redesign does not use the fit automatically yet.
+**Today (score 70):**
+- `fit_part_to_family` finds a family's closest design to an uploaded part by real overlap (test bracket 98%, wrong family under 9%); the agent is told to try it before cutting pockets.
 - STEP upload with interface detection (holes and patterns, faces, envelope), holes frozen as preserve regions; the as-is analysis reproduces the native result exactly.
-- Redesign by a lightening pocket inside the part: 354 g to 328 g (-7.3%), grade B. Template fitting is not built.
+- Redesign by a lightening pocket inside the part: 354 g to 328 g (-7.3%), grade B; this number predates today's engine changes and needs a re-run.
 
 **How the leaders do it:**
 - Scores carried over from the researched row *Natural-language intent input*; this detail row was not researched on its own, so treat every score as low confidence.
@@ -147,7 +147,7 @@ From a sentence, a photo or an existing part to a checkable spec. Competitor sco
 - **Why.** No competitor or paper was found choosing clarifying questions by their effect on the design.
 
 **Today (score 40):**
-- rank_questions orders open questions by how much each answer could change the result; not yet measured on real briefs.
+- rank_questions orders open questions by how much each answer could change the result. Run on six structural briefs (`benchmarks/question_rank.json`): it asks three of four offered and defaults the sideways load, but every brief gets the same ranking, because they share a default design and a linear analysis scales with load. It ranks on one quantity, so it missed that the sideways load moves displacement 17%. No user has answered these questions.
 
 **How the leaders do it:**
 - Scores carried over from the researched row *Natural-language intent input*; this detail row was not researched on its own, so treat every score as low confidence.
@@ -282,8 +282,10 @@ Real solvers, never surrogates alone. Each feature says what is built **before 3
 - **Before 3 Feb: setup checks.** Before the solve: the structure is not free to move (rigid-body modes), not over-constrained against thermal expansion, loads land on existing faces, and after the solve reactions balance applied loads within 0.5%.
 - **Why.** Wrong boundary conditions are the most common source of plausible but wrong FEA results; a setup that a non-expert can see and that checks itself is the gap the agent tools leave.
 
-**Today (score 75):**
-- Setup checks before any solve: supports must stop all six rigid-body motions, loads must act on real faces that are not fully held. No click-to-select or inferred supports.
+**Today (score 85):**
+- Click a face in the viewer to add a load or support (`pick_face`, `select_face`): the spec records its geometric signature, a parameter change finds the same face, and a design where it is gone or two faces match equally fails rather than guessing. A new spec version needs a new acceptance. Tested on the bracket, in a browser, against a live study.
+- Supports inferred from an uploaded part's bolted bores and bearing face, for the user to confirm; planar compression-only contact is not built (the solver has no contact).
+- Setup checks before any solve: supports must stop all six rigid-body motions, loads must act on real faces that are not fully held.
 - Loads and supports on named faces, factor ranges, load derivation from kg with sources, partial supports; loads and supports drawn in the viewer.
 
 **How the leaders do it:**
@@ -329,8 +331,8 @@ Real solvers, never surrogates alone. Each feature says what is built **before 3
 - **After 3 Feb: cross-study model.** A model on design-graph features and stored results from every past study predicts performance for a new study before the first solve, so the tool gets better with every study run; it is used only to choose starting candidates.
 - **Why not higher.** PhysicsX, Neural Concept, Ansys SimAI and Siemens PhysicsAI predict full fields from millions of meshes; this plan predicts objectives for one design family at a time.
 
-**Today (score 10):**
-- An in-house solver screens designs in process (same answer as CalculiX); no learned surrogate.
+**Today (score 35):**
+- BoTorch fits a Gaussian process inside the search under a limited budget (decision D5: 28% more hypervolume than NSGA-II on the bracket); every reported design is re-solved by CalculiX. An in-house solver screens designs in process. No surrogate replaces a solve, and no active-learning loop is built.
 
 **How the leaders do it:**
 - PhysicsX, Neural Concept, Ansys SimAI and Siemens PhysicsAI lead; SimAI needs 30-100 customer simulations and reports confidence per prediction.
@@ -536,9 +538,10 @@ The owner's focus: design and simulation must be easy to see, compare and decide
 - **Before 3 Feb: fast.** Skin mesh exported once per design (PyVista `extract_surface()`, positions, indices and scalars as binary); target: a 200k-triangle field loads in under one second and orbits at 60 frames per second on the demo laptop, measured.
 - **After 3 Feb: inside views.** Iso-surfaces and principal-stress trajectories (load paths) computed on the volume mesh server-side; AR view on a phone.
 
-**Today (score 80):**
-- Colour maps, contour bands and a pinned peak label. 200k-triangle timing still to be measured with the GPU wait in place.
-- Offline three.js viewer: stress, displacement, safety and temperature fields, probe, load and support markers, Arabic mode; 200k-triangle timing not measured.
+**Today (score 90):**
+- Colour maps, contour bands, adjustable colour range, a pinned peak label and the agent's notes pinned in 3D, marked as its words (`annotate`). No isolines.
+- Offline three.js viewer: stress, largest principal stress, displacement, safety and temperature fields, probe, load and support markers, Arabic mode.
+- 262,280 triangles: 807 ms to the first frame, 121 frames per second with the GPU wait, on the development machine, not a laptop.
 
 **How the leaders do it:**
 - Ansys and Siemens lead with desktop post-processors; SimScale shows fields in the browser.
@@ -554,9 +557,9 @@ The owner's focus: design and simulation must be easy to see, compare and decide
 - **Before 3 Feb: probe.** Hover for the value, unit and location; click to pin a probe and compare designs at the same point.
 - **After 3 Feb: transient playback.** Time scrubber for transient thermal (C2).
 
-**Today (score 82):**
-- Cut plane with the field on the cut face, from the volume mesh; click to pin a probe, which follows to the same point on other designs. Tested on a thermal report; buckling modes are not animated.
-- Deformation slider with ghost, load-up animation, vibration mode animation; no clip plane (surface mesh only).
+**Today (score 90):**
+- Cut plane with the field on the cut face, from the volume mesh; click to pin a probe, which follows to the same point on other designs.
+- Deformation slider with ghost, load-up animation, vibration mode and buckled shape animated with their frequency or load factor.
 
 **How the leaders do it:**
 - Scores carried over from the researched row *3D viewer with result fields*; this detail row was not researched on its own, so treat every score as low confidence.
@@ -571,8 +574,9 @@ The owner's focus: design and simulation must be easy to see, compare and decide
 - **Before 3 Feb: what matters.** Sobol sensitivity (D1) as a bar chart, with frozen parameters marked.
 - **Before 3 Feb: gallery.** Thumbnails of every feasible design, sortable by any objective.
 
-**Today (score 78):**
-- Sobol chart, search replay with a hypervolume curve, design gallery. Geometry morphing between designs is not built.
+**Today (score 88):**
+- Shape evolution: the search replay moves through real rebuilt geometry of the best design so far. In-between shapes come from interpolated parameters and are labelled as not solved.
+- Sobol chart, search replay with a hypervolume curve, design gallery.
 - History chart, brushable parallel coordinates of every evaluation, live streaming of the optimization in the workbench.
 
 **How the leaders do it:**
@@ -588,8 +592,10 @@ The owner's focus: design and simulation must be easy to see, compare and decide
 - **Before 3 Feb: steer by dragging.** Drag a target point on the chart toward "lighter" or "stiffer"; it becomes the reference point for the steering run (D2), and the new designs appear as they finish.
 - **Before 3 Feb: three objectives.** A 3D front for three objectives, with 2D projections side by side.
 
-**Today (score 66):**
-- Projections for three objectives. Drag-to-steer on the chart is not built.
+**Today (score 85):**
+- Hover a design for its picture and numbers; a failed point names the requirement it fails; the recommended design says why, against its neighbours.
+- Drag a target on the chart to steer the search; new designs appear as they finish, marked as search-mesh values. Projections for three objectives; no rotating 3D front.
+- A grade and error bar on the recommended design only: the others would each need a trust run.
 - Clickable Pareto explorer linked to 3D, with search-to-fine mesh bars and the trust grade.
 
 **How the leaders do it:**
@@ -623,9 +629,10 @@ The owner's focus: design and simulation must be easy to see, compare and decide
 - **Before 3 Feb: replay.** A finished study replays at any speed; the replay is the demo's offline fallback (P7).
 - **After 3 Feb: export.** Replay exported as a video or a self-contained HTML page to share.
 
-**Today (score 48):**
-- Timeline step-through in the report; step events available over the REST stream. No live timeline page or time travel.
-- Timeline from the study log with a hash-chained audit trail; no live view or replay.
+**Today (score 72):**
+- Time travel: click a step to see the spec version and design as they stood then; a design from an older spec is solved against that spec, and a new spec version clears the design rather than showing a stale one. Replay at 0.5x to 4x.
+- The report's timeline follows the study live when served by the REST door. Repairs show the typed error but not the design before and after.
+- Timeline from the study log with a hash-chained audit trail and the time each step took.
 
 **How the leaders do it:**
 - Scores carried over from the researched row *Reports, audit trail, collaboration*; this detail row was not researched on its own, so treat every score as low confidence.
@@ -723,7 +730,7 @@ Reports a reviewer can explore, history that proves where every number came from
 
 **Today (score 75):**
 - REST with generated OpenAPI and `docs/api.md`, event stream, `from structura import Study`, `python -m structura.cli run`; all share the MCP tools and the approval gate.
-- CLI for every engine step, MCP server, local workbench with a small HTTP API; no REST service or SDK documentation.
+- CLI for every engine step, MCP server, local workbench.
 
 **How the leaders do it:**
 - Ansys (PyAnsys) and Siemens lead automation; SimScale, Zoo and Adam expose APIs and MCP servers.
@@ -743,8 +750,8 @@ A laptop, an open stack, any model. Each feature says what is built **before 3 F
 - **After 3 Feb: local model option.** An open-weight model served locally for repair and parsing steps, so routine work needs no paid API; used only where the routing benchmark (E4) shows acceptable success.
 - **After 3 Feb: free access for education.** Free use for students and schools, starting with Bahrain.
 
-**Today (score 63):**
-- `scripts\install.cmd` written. No Docker image; the 8 GB, 4-core run is not measured.
+**Today (score 75):**
+- `scripts\install.cmd` and a Dockerfile. A container limited to 4 cores and 8 GB passes every engine test and runs a 120-evaluation study in 364 s with a 3.24 GB peak; that is not a real laptop, and the cost per study needs an API key to measure.
 - No solver licences or training data; runs on one desktop (evaluation 1-4 s, study 4-8 min); demo rehearsed in 7.6 min.
 
 **How the leaders do it:**
@@ -763,7 +770,7 @@ A laptop, an open stack, any model. Each feature says what is built **before 3 F
 
 **Today (score 82):**
 - Automatic licence audit in the tests (`tests/test_licences.py`); it found imageio and ffmpeg missing from the table, now added.
-- Every licence checked against its LICENSE file; GPL tools only as subprocesses; any MCP client can drive the engine.
+- Every licence checked against its LICENSE file; GPL tools only as subprocesses; any MCP client can drive the engine. The report's footer says what goes to the AI model: the brief, the spec, tool results and any rendered views it asks for.
 
 **How the leaders do it:**
 - The papers promise open code; Adam open-sourced CADAM; Synera supports bring-your-own LLM on premises; incumbents are closed.

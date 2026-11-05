@@ -22,6 +22,7 @@ add_library(structura STATIC
   src/features.cpp
   src/compile.cpp
   src/faces.cpp
+  src/pick.cpp
   src/sha256.cpp
   src/design.cpp
   src/gate.cpp
@@ -81,6 +82,7 @@ add_executable(engine_tests
   tests/test_convection.cpp
   tests/test_manufacture.cpp
   tests/test_inspect.cpp
+  tests/test_pick.cpp
 )
 target_link_libraries(engine_tests PRIVATE structura doctest::doctest)
 

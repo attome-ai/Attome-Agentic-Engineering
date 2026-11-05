@@ -45,6 +45,81 @@ def _bundle(spec, params: dict, mesh: float, folder: Path) -> dict:
     return {"metrics": ev["metrics"], "feasible": ev["feasible"], "checks": ev["checks"], "hash": ev["hash"], "skin": skin, "mode": mode, "buckle": buckle, "volume": volume}
 
 
+def _evolution(raw_spec: dict, study: optuna.Study, hist: list[dict], objective: tuple[str, str], cache: Path,
+               max_keys: int = 8, between: int = 3, deflection: float = 0.4) -> dict | None:
+    """Shape evolution (G3): the best feasible design as the search went on, with real geometry for every frame.
+
+    Between two best designs the parameters are interpolated and the design graph rebuilt, so each in-between frame is a real
+    shape of the family. They were never solved; only the key frames were. A whole-number parameter steps at the midpoint.
+    """
+    q, sense = objective
+    keys, best = [], None
+    for i, h in enumerate(hist):
+        if h["status"] == "ok" and h["feasible"] and h.get(q) is not None and (best is None or (h[q] < best if sense == "min" else h[q] > best)):
+            best = h[q]
+            keys.append({"after": i + 1, "trial": h["n"], "value": h[q], "params": h["params"]})
+    if not keys:
+        return None
+    if len(keys) > max_keys:  # the first, the last, and an even spread between
+        keys = [keys[round(i * (len(keys) - 1) / (max_keys - 1))] for i in range(max_keys)]
+    whole = {k for k, d in study.trials[keys[-1]["trial"]].distributions.items() if isinstance(d, optuna.distributions.IntDistribution)}
+    def tess(params: dict) -> dict:
+        return engine.call("tessellate", family=raw_spec["family"], deflection=deflection,
+                           set=[f"{k}={float(v)}" for k, v in {**raw_spec.get("fixed_params", {}), **params}.items()])
+    stored = cache / "evolution.json"
+    stamp = [[k["trial"], between, deflection] for k in keys]
+    if stored.exists():
+        old = json.loads(stored.read_text())
+        if old.get("stamp") == stamp:
+            return old["data"]
+    frames, skipped = [], 0
+    for a, b in zip(keys, keys[1:] + [None]):
+        for s in range(0, (between + 1) if b else 1):
+            t = s / (between + 1)
+            params = a["params"] if s == 0 else {k: (b["params"][k] if (k in whole and t >= 0.5) else a["params"][k] if k in whole else a["params"][k] + t * (b["params"][k] - a["params"][k])) for k in a["params"]}
+            try:
+                g = tess(params)
+            except engine.EngineError:
+                skipped += 1  # a shape in between may not build; the frame is left out, never faked
+                continue
+            frames.append({"key": s == 0, "after": a["after"] if s == 0 else None, "trial": a["trial"] if s == 0 else None, "value": a["value"] if s == 0 else None, **g})
+    data = {"quantity": q, "frames": frames, "keys": len(keys), "skipped": skipped}
+    stored.parent.mkdir(parents=True, exist_ok=True)
+    stored.write_text(json.dumps({"stamp": stamp, "data": data}))
+    return data
+
+
+def _time_travel(study_id: str, spec_path: str, timeline: list[dict], rows: list[dict], designs: list[dict], rec_design: dict | None,
+                 mesh: float, cache: Path, max_solved: int = 4) -> tuple[dict, dict]:
+    """Time travel (G6): tag each timeline step with the spec version and the design as they stood at that step."""
+    from structura.agent import studies as S
+    folder = S.folder(study_id)
+    versions = {}
+    for p in sorted(folder.glob("spec.v*.json")):
+        c = engine.call("spec", spec=str(p))
+        versions[p.name] = {"version": c["version"], "hash": c["hash"], "requirements": c["requirements"]}
+    latest = S.latest_spec_path(study_id).name
+    wanted = [e for e in rows if e.get("step") == "evaluate" and e.get("params") and e.get("outcome") == "ok"][-max_solved:]
+    step_designs, cur_spec, cur_design = {}, None, None
+    for row, e in zip(timeline, rows):
+        new_spec = e.get("version") or e.get("spec_version") or cur_spec
+        if new_spec != cur_spec:
+            cur_design = None  # a design solved under the old spec says nothing about the new one
+        cur_spec = new_spec
+        if e in wanted and cur_spec:
+            key = f"step{len(step_designs)}"
+            # solved against the spec that held at that step: a later spec version may have other loads
+            b = _bundle(load_spec(str(folder / cur_spec)), {k: float(v) for k, v in e["params"].items()}, mesh, cache / "steps" / f"{cur_spec}_{key}")
+            step_designs[key] = {"trial": key, "params": e["params"], **{**b, "volume": None}}
+            cur_design = f"step:{key}"
+        elif e.get("step") in ("verify", "report") and cur_spec == latest and rec_design:
+            cur_design = f"trial:{rec_design['trial']}"
+        elif e.get("step") == "optimize" and e.get("outcome") == "done" and cur_spec == latest and rec_design:
+            cur_design = f"trial:{rec_design['trial']}"
+        row["spec_version"], row["design"] = cur_spec, cur_design
+    return versions, step_designs
+
+
 def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None, trust_dir: str | None = None,
           study_id: str | None = None, mesh: float = 3.0, max_designs: int = 6) -> Path:
     spec = load_spec(spec_path)
@@ -54,6 +129,7 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
     cache = Path(study_dir) / "report_bundles" if abs(mesh - 3.0) < 1e-9 else Path(study_dir) / f"report_bundles_{mesh:g}mm"
     front = pareto.front(study)
     rec = decide.recommend(study)
+    rec_basis = "knee" if rec else None
     trust = None
     if trust_dir and (Path(trust_dir) / "trust.json").exists():
         trust = json.loads((Path(trust_dir) / "trust.json").read_text())
@@ -63,6 +139,7 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
         match = next((p for p in front if same(p)), None)
         if match:
             rec = {"trial": match.number, "params": match.params, "values": list(match.values)}
+            rec_basis = "trust"
     chosen = sorted(front, key=lambda p: p.values[0])
     if len(chosen) > max_designs:  # keep the ends and the recommended one, then spread the rest
         keep = {chosen[0].number, chosen[-1].number, rec["trial"] if rec else -1}
@@ -81,9 +158,12 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
     timeline = []
     if study_id:
         from structura.agent import studies as S
-        for e in S.timeline(study_id):
+        log_rows = S.timeline(study_id)
+        for e in log_rows:
             detail = {k: v for k, v in e.items() if k not in ("time", "t", "step", "outcome", "prev", "hash")}
-            timeline.append({"time": e["time"], "step": e["step"], "outcome": e["outcome"], "detail": json.dumps(detail)[:160]})
+            at = log_rows.index(e)
+            took = round(e["t"] - log_rows[at - 1]["t"], 1) if at else None
+            timeline.append({"time": e["time"], "step": e["step"], "outcome": e["outcome"], "detail": json.dumps(detail)[:160], "seconds": took})
         from structura.agent import routing
         use = routing.study_cost(study_id)
         if use["by_step"]:
@@ -120,13 +200,23 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
                     manufacturing[p] = {k: v for k, v in m[p].items() if k not in ("inputs", "price_per_kg")}
         except engine.EngineError as e:
             manufacturing = {"advice": [{"process": "all", "fits": False, "reason": f"manufacturing check failed: {e}"}]}
+    annotations = []
+    if study_id:
+        from structura.agent import studies as S
+        note_file = S.folder(study_id) / "annotations.json"
+        annotations = json.loads(note_file.read_text(encoding="utf-8")) if note_file.exists() else []
+    spec_versions, step_designs = {}, {}
+    if study_id:
+        spec_versions, step_designs = _time_travel(study_id, spec_path, timeline, log_rows, designs, rec_design, mesh, cache)
+    raw = json.loads(Path(spec_path).read_text(encoding="utf-8"))
+    evolution = _evolution(raw, study, hist, spec.objectives[0], cache)
     req_sf = next((r["value"] for r in card["requirements"] if r["quantity"] == "safety_factor" and r["op"] == ">="), None)
     units = {"mass_g": "g", "safety_factor": "", "max_disp_mm": "mm", "max_von_mises_MPa": "MPa", "peak_temperature": "degC"}
     objectives = [{"quantity": q, "sense": sense, "unit": units.get(q, "")} for q, sense in spec.objectives]
     data = {"title": f"{card['id']}: {spec.objectives[0][0]} vs {spec.objectives[1][0]}" if len(spec.objectives) > 1 else card["id"],
             "brief": card.get("brief") or json.loads(Path(spec_path).read_text()).get("brief", ""),
             "spec": {"id": card["id"], "version": card["version"], "hash": card["hash"], "requirements": card["requirements"]},
-            "required_sf": req_sf, "objectives": objectives, "designs": designs, "manufacturing": manufacturing, "baseline": base, "history": hist, "hypervolume": hv, "sobol": sobol, "trust": trust, "timeline": timeline, "study_id": study_id,
+            "required_sf": req_sf, "objectives": objectives, "designs": designs, "manufacturing": manufacturing, "baseline": base, "history": hist, "hypervolume": hv, "sobol": sobol, "trust": trust, "timeline": timeline, "study_id": study_id, "annotations": annotations, "rec_basis": rec_basis, "spec_versions": spec_versions, "step_designs": step_designs, "evolution": evolution,
             "generated": datetime.now(timezone.utc).isoformat(timespec="seconds")}
     html = TEMPLATE.read_text(encoding="utf-8")
     html = html.replace("__THREE__", THREE.read_text(encoding="utf-8")).replace("__DATA__", json.dumps(data).replace("</", "<\\/"))

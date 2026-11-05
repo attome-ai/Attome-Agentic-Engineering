@@ -69,6 +69,17 @@ Redesign an uploaded part (A3): add a lightening pocket cut down from one of its
 | `margin_mm` | number | no |
 | `floor_mm` | number | no |
 
+### annotate
+
+Pin a short explanation to a point on the design, for the report's 3D view (G1), e.g. annotate(id, [30, 5, 60], 'the lower rib carries most of the load'). It is shown marked as the agent's words, not as a result. Say something the stored results support; trial limits it to one design.
+
+| Argument | Type | Required |
+|---|---|---|
+| `study_id` | string | yes |
+| `point` | array | yes |
+| `text` | string | yes |
+| `trial` | integer or null | no |
+
 ### build_report
 
 Write the interactive study report (one offline HTML file: 3D fields, Pareto explorer, comparison with the baseline, trust panel, history, timeline). Give the baseline design's parameters when there is one. Returns the file path to give the user.
@@ -226,6 +237,16 @@ Which model to use for an agent step (plan, spec_extraction, compose, repair, lo
 | `step` | string | yes |
 | `failures` | integer | no |
 
+### pick_face
+
+Which face is at a point the user clicked in the viewer (C3)? Give the study, the point in mm and the design's parameters. Returns the face, the names it already has and its triangles so the viewer can light it up. Changes nothing.
+
+| Argument | Type | Required |
+|---|---|---|
+| `study_id` | string | yes |
+| `point` | array | yes |
+| `params` | object or null | no |
+
 ### plan_study
 
 Record the study plan before running anything: family, physics, objectives and evaluation budget, in one sentence each. Example: plan_study(study_id, family='bracket', physics='linear static', objectives='min mass, max safety factor', budget=120)
@@ -258,6 +279,14 @@ Rank the brief's unknowns by how much they change the design before asking the u
 | `spec` | object | yes |
 | `unknowns` | array | yes |
 | `quantity` | string | no |
+
+### read_brief_image
+
+Read a design brief from a picture: a photo, a hand sketch or a dimensioned drawing (PNG, JPEG or WebP, up to 10 MB). Returns the picture for you to read. Build the spec from it with create_study, giving each value's source as 'sketch: ...'. Treat every dimension and load you read as a guess until the user accepts the spec card, and ask about anything the picture does not show; never assume a load from a drawing's proportions.
+
+| Argument | Type | Required |
+|---|---|---|
+| `path` | string | yes |
 
 ### record_usage
 
@@ -293,6 +322,21 @@ Start the optimization in the background (method chosen from the budget unless g
 | `budget` | integer | no |
 | `method` | string or null | no |
 | `mesh_size` | number | no |
+
+### select_face
+
+Add the face the user clicked as a support or a load (C3). Writes a new spec version on a copy of the family, recording the face's geometric signature so it is found again when the parameters change; a design where it cannot be found, or where two faces match equally, fails rather than guessing. role: support (dofs optional, default all three) or load (force [fx, fy, fz] in N, required). Applies to every load case. The new version needs the user's acceptance, like any other.
+
+| Argument | Type | Required |
+|---|---|---|
+| `study_id` | string | yes |
+| `point` | array | yes |
+| `name` | string | yes |
+| `role` | string | yes |
+| `params` | object or null | no |
+| `force` | array or null | no |
+| `dofs` | string or null | no |
+| `source` | string | no |
 
 ### steer
 

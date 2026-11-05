@@ -1,6 +1,7 @@
 // Compile a DesignGraph into an OpenCASCADE solid and resolve its named faces.
 // Failures are raised as CompileError naming the feature that caused them, never swallowed.
 #pragma once
+#include <array>
 #include <map>
 #include <optional>
 #include <stdexcept>
@@ -38,6 +39,13 @@ struct CompiledPart {
 
 CompiledPart compile_graph(const DesignGraph& g, const Values& overrides = {});
 std::vector<TopoDS_Face> select_faces(const TopoDS_Shape& s, const FaceSelector& sel, const Values& v, double tol = 1e-4);
+
+// C3: the face nearest a clicked point, with a signature that finds it again after a parameter change (pick.cpp).
+nlohmann::json pick_face(const CompiledPart& part, const std::array<double, 3>& point);
+// Surface triangles for display only (shape evolution, G3): little-endian float32 positions and uint32 indices, base64.
+nlohmann::json tessellate(const TopoDS_Shape& shape, double deflection);
+// One face for a signature; throws CompileError if none matches or two match about equally: a load must not land by chance.
+std::vector<TopoDS_Face> select_picked(const TopoDS_Shape& s, const std::string& name, const ojson& signature);
 
 // Feature builders (features.cpp).
 std::vector<Prim> build_primitives(const Resolved& r, const std::map<std::string, std::vector<Prim>>& earlier);

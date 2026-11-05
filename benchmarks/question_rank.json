@@ -1,0 +1,119 @@
+{
+ "briefs": 6,
+ "threshold": 0.1,
+ "max_questions": 3,
+ "questions_asked": [
+  3,
+  3,
+  3,
+  3,
+  3,
+  3
+ ],
+ "unknowns_offered": 4,
+ "rows": [
+  {
+   "brief": "b01-shelf-10kg-pla",
+   "asked": [
+    "safety factor on the load",
+    "load size",
+    "material"
+   ],
+   "defaulted": [
+    "load direction"
+   ],
+   "effects": {
+    "load direction": 0.022,
+    "load size": 0.231,
+    "safety factor on the load": 0.267,
+    "material": 0.158
+   }
+  },
+  {
+   "brief": "b02-shelf-20kg-petg",
+   "asked": [
+    "safety factor on the load",
+    "load size",
+    "material"
+   ],
+   "defaulted": [
+    "load direction"
+   ],
+   "effects": {
+    "load direction": 0.022,
+    "load size": 0.231,
+    "safety factor on the load": 0.267,
+    "material": 0.158
+   }
+  },
+  {
+   "brief": "b03-shelf-30kg-petg",
+   "asked": [
+    "safety factor on the load",
+    "load size",
+    "material"
+   ],
+   "defaulted": [
+    "load direction"
+   ],
+   "effects": {
+    "load direction": 0.022,
+    "load size": 0.231,
+    "safety factor on the load": 0.267,
+    "material": 0.158
+   }
+  },
+  {
+   "brief": "b04-stiff-15kg-petg",
+   "asked": [
+    "safety factor on the load",
+    "load size",
+    "material"
+   ],
+   "defaulted": [
+    "load direction"
+   ],
+   "effects": {
+    "load direction": 0.022,
+    "load size": 0.231,
+    "safety factor on the load": 0.267,
+    "material": 0.158
+   }
+  },
+  {
+   "brief": "b05-heavy-50kg-al",
+   "asked": [
+    "safety factor on the load",
+    "load size",
+    "material"
+   ],
+   "defaulted": [
+    "load direction"
+   ],
+   "effects": {
+    "load direction": 0.022,
+    "load size": 0.231,
+    "safety factor on the load": 0.267,
+    "material": 0.158
+   }
+  },
+  {
+   "brief": "b06-overload-100kg-petg",
+   "asked": [
+    "safety factor on the load",
+    "load size",
+    "material"
+   ],
+   "defaulted": [
+    "load direction"
+   ],
+   "effects": {
+    "load direction": 0.022,
+    "load size": 0.231,
+    "safety factor on the load": 0.267,
+    "material": 0.158
+   }
+  }
+ ],
+ "note": "Effect = relative change in safety factor between an unknown's two cases on the family's default design, 6 mm mesh. Not the change in mass at the required safety factor that the plan names, and no user has answered these questions. All six briefs give the same ranking: they share a family and its default design, and in a linear analysis the relative effect does not depend on the load. So this shows the tool runs, not that it tells briefs apart. Ranking on safety factor alone also misses stiffness: the sideways load moves it 2% but moves displacement 17%."
+}
