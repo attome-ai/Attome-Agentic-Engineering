@@ -42,7 +42,7 @@ TEST_CASE("C4-T1: an unmeshable input fails after every ladder attempt is logged
     mesh_shape(b, {}, dir.string(), o);
   } catch (const MeshError& e) {
     threw = true;
-    CHECK(e.attempts.size() == 6);  // delaunay, delaunay straight-sided, hxt, frontal, coarser delaunay
+    CHECK(e.attempts.size() == 5);  // delaunay, delaunay straight-sided, hxt, frontal, coarser delaunay
   }
   CHECK(threw);
 }

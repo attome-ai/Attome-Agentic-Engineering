@@ -174,7 +174,9 @@ Mesh mesh_shape(const TopoDS_Shape& shape, const std::map<std::string, std::vect
   nlohmann::json attempts = nlohmann::json::array();
   const std::string vol_type = opt.order == 2 ? "C3D10" : "C3D4";
   const std::string tri_type = opt.order == 2 ? "CPS6" : "CPS3";
+  bool inverted_elements = false;
   for (const auto& rung : kLadder) {
+    if (rung.high_order_optimize && !inverted_elements) continue;  // there is something to untangle only if the mesh itself succeeded
     double size = opt.size * rung.scale;
     fs::path out = fs::path(workdir) / "mesh.inp";
     std::error_code ec;
@@ -182,7 +184,9 @@ Mesh mesh_shape(const TopoDS_Shape& shape, const std::map<std::string, std::vect
     std::ofstream(fs::path(workdir) / "mesh.geo") << geo_text(step.generic_string(), size, rung.code, opt, groups, rung.straight, rung.high_order_optimize);
     // one thread always: with several, the Linux gmsh gives a slightly different mesh each run, which breaks reproduce
     ProcessResult pr = run_process({gmsh, "mesh.geo", "-3", "-format", "inp", "-o", "mesh.inp", "-nt", "1"},
-                                   workdir, opt.timeout_s);
+                                   // untangling takes far longer than meshing (105 s against 13 s on a 0.5 mm fillet part), and a timeout
+                                   // here would drop to straight sides, which turns the fillet into facets
+                                   workdir, rung.high_order_optimize ? std::max(opt.timeout_s, 900.0) : opt.timeout_s);
     nlohmann::json att = {{"algorithm", rung.algo}, {"size", size}, {"seconds", std::round(pr.seconds * 100) / 100}};
     bool ok = !pr.timed_out && pr.exit_code == 0 && fs::exists(out) && fs::file_size(out) > 0 &&
               pr.output.find("Error") == std::string::npos;
@@ -276,7 +280,8 @@ Mesh mesh_shape(const TopoDS_Shape& shape, const std::map<std::string, std::vect
       jmin = std::min(jmin, jr);
       inverted += jr <= 0;
     }
-    if (inverted > 0) {  // the solver would reject these elements; try the next rung (straight-sided quadratics)
+    if (inverted > 0) {  // the solver would reject these elements;
+      inverted_elements = true;   // so the next rung untangles them, then straight sides if that fails too
       att.update({{"ok", false}, {"log", std::to_string(inverted) + " curved elements are inverted (min Jacobian ratio " +
                                              std::to_string(jmin) + ")"}});
       attempts.push_back(att);
@@ -292,7 +297,10 @@ Mesh mesh_shape(const TopoDS_Shape& shape, const std::map<std::string, std::vect
       std::string names;
       for (auto& b : bad) names += (names.empty() ? "" : ", ") + b;
       attempts.back()["groups"] = checks;
-      throw MeshError("named faces [" + names + "] do not match their meshed surfaces (area check)", attempts);
+      std::string earlier;  // the area check is often only the symptom of why an earlier rung was given up
+      for (auto& a : attempts)
+        if (!a.value("ok", true)) earlier += std::string(earlier.empty() ? "; earlier: " : ", ") + a.value("algorithm", "") + ": " + a.value("log", "").substr(0, 80);
+      throw MeshError("named faces [" + names + "] do not match their meshed surfaces (area check)" + earlier, attempts);
     }
     return m;
   }
