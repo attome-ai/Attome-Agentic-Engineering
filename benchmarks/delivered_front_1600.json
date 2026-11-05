@@ -1,0 +1,635 @@
+{
+ "study": "p2_demo_1600",
+ "delivery_spec": "docs/examples/bracket_20kg_delivered.json",
+ "mesh_mm": 3,
+ "note": "Uniform 3 mm mesh: scattered by about +-10%, because 3 mm elements do not resolve a 0.5 mm fillet. Candidates only; the trust record decides. The run stopped at the first design whose fillet would not build (fixed since); the rows are every design up to 210.9 g.",
+ "rows": [
+  {
+   "trial": 803,
+   "search": [
+    164.748,
+    2.075
+   ],
+   "delivered": [
+    164.949,
+    2.212
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1221,
+   "search": [
+    168.388,
+    2.117
+   ],
+   "delivered": [
+    168.591,
+    2.14
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 996,
+   "search": [
+    168.776,
+    2.13
+   ],
+   "delivered": [
+    168.982,
+    2.154
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1140,
+   "search": [
+    168.776,
+    2.13
+   ],
+   "delivered": [
+    168.982,
+    2.154
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1219,
+   "search": [
+    168.861,
+    2.134
+   ],
+   "delivered": [
+    169.062,
+    2.305
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1461,
+   "search": [
+    168.861,
+    2.134
+   ],
+   "delivered": [
+    169.062,
+    2.305
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1477,
+   "search": [
+    168.861,
+    2.134
+   ],
+   "delivered": [
+    169.062,
+    2.305
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 876,
+   "search": [
+    170.031,
+    2.142
+   ],
+   "delivered": null,
+   "result": "gate_fail"
+  },
+  {
+   "trial": 1047,
+   "search": [
+    170.031,
+    2.142
+   ],
+   "delivered": null,
+   "result": "gate_fail"
+  },
+  {
+   "trial": 1061,
+   "search": [
+    170.031,
+    2.142
+   ],
+   "delivered": null,
+   "result": "gate_fail"
+  },
+  {
+   "trial": 1260,
+   "search": [
+    170.038,
+    2.156
+   ],
+   "delivered": [
+    170.247,
+    2.184
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1488,
+   "search": [
+    173.863,
+    2.158
+   ],
+   "delivered": [
+    174.063,
+    2.17
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1570,
+   "search": [
+    173.941,
+    2.161
+   ],
+   "delivered": null,
+   "result": "gate_fail"
+  },
+  {
+   "trial": 1509,
+   "search": [
+    174.298,
+    2.17
+   ],
+   "delivered": null,
+   "result": "gate_fail"
+  },
+  {
+   "trial": 1478,
+   "search": [
+    174.377,
+    2.209
+   ],
+   "delivered": null,
+   "result": "gate_fail"
+  },
+  {
+   "trial": 1344,
+   "search": [
+    176.814,
+    2.241
+   ],
+   "delivered": null,
+   "result": "gate_fail"
+  },
+  {
+   "trial": 1250,
+   "search": [
+    176.87,
+    2.246
+   ],
+   "delivered": null,
+   "result": "gate_fail"
+  },
+  {
+   "trial": 1266,
+   "search": [
+    176.87,
+    2.246
+   ],
+   "delivered": null,
+   "result": "gate_fail"
+  },
+  {
+   "trial": 1204,
+   "search": [
+    184.202,
+    2.289
+   ],
+   "delivered": [
+    184.405,
+    2.066
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1137,
+   "search": [
+    184.573,
+    2.29
+   ],
+   "delivered": [
+    184.774,
+    2.451
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1269,
+   "search": [
+    185.545,
+    2.338
+   ],
+   "delivered": [
+    185.756,
+    2.39
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 961,
+   "search": [
+    186.319,
+    2.36
+   ],
+   "delivered": [
+    186.463,
+    2.316
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1495,
+   "search": [
+    186.319,
+    2.36
+   ],
+   "delivered": [
+    186.463,
+    2.316
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1210,
+   "search": [
+    186.349,
+    2.361
+   ],
+   "delivered": [
+    186.488,
+    2.153
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1290,
+   "search": [
+    186.349,
+    2.361
+   ],
+   "delivered": [
+    186.488,
+    2.153
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1077,
+   "search": [
+    187.748,
+    2.367
+   ],
+   "delivered": [
+    187.888,
+    2.575
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1349,
+   "search": [
+    187.748,
+    2.367
+   ],
+   "delivered": [
+    187.888,
+    2.575
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1252,
+   "search": [
+    187.752,
+    2.371
+   ],
+   "delivered": [
+    187.892,
+    2.44
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1310,
+   "search": [
+    187.752,
+    2.371
+   ],
+   "delivered": [
+    187.892,
+    2.44
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1313,
+   "search": [
+    187.752,
+    2.371
+   ],
+   "delivered": [
+    187.892,
+    2.44
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1577,
+   "search": [
+    187.752,
+    2.371
+   ],
+   "delivered": [
+    187.892,
+    2.44
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1596,
+   "search": [
+    187.752,
+    2.371
+   ],
+   "delivered": [
+    187.892,
+    2.44
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1579,
+   "search": [
+    187.834,
+    2.38
+   ],
+   "delivered": [
+    187.976,
+    2.568
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1599,
+   "search": [
+    188.456,
+    2.393
+   ],
+   "delivered": null,
+   "result": "gate_fail"
+  },
+  {
+   "trial": 1272,
+   "search": [
+    188.905,
+    2.423
+   ],
+   "delivered": [
+    189.044,
+    2.323
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1500,
+   "search": [
+    188.905,
+    2.423
+   ],
+   "delivered": [
+    189.044,
+    2.323
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1434,
+   "search": [
+    190.418,
+    2.435
+   ],
+   "delivered": [
+    190.555,
+    2.559
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1550,
+   "search": [
+    190.418,
+    2.435
+   ],
+   "delivered": [
+    190.555,
+    2.559
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1088,
+   "search": [
+    192.331,
+    2.462
+   ],
+   "delivered": [
+    192.475,
+    2.472
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 925,
+   "search": [
+    193.142,
+    2.478
+   ],
+   "delivered": null,
+   "result": "gate_fail"
+  },
+  {
+   "trial": 1513,
+   "search": [
+    193.142,
+    2.478
+   ],
+   "delivered": null,
+   "result": "gate_fail"
+  },
+  {
+   "trial": 1582,
+   "search": [
+    193.184,
+    2.502
+   ],
+   "delivered": [
+    193.328,
+    2.653
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1419,
+   "search": [
+    193.706,
+    2.544
+   ],
+   "delivered": [
+    193.849,
+    2.433
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1436,
+   "search": [
+    193.706,
+    2.544
+   ],
+   "delivered": [
+    193.849,
+    2.433
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1538,
+   "search": [
+    193.706,
+    2.544
+   ],
+   "delivered": [
+    193.849,
+    2.433
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1187,
+   "search": [
+    195.727,
+    2.551
+   ],
+   "delivered": [
+    195.872,
+    2.75
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1322,
+   "search": [
+    195.727,
+    2.551
+   ],
+   "delivered": [
+    195.872,
+    2.75
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1343,
+   "search": [
+    195.727,
+    2.551
+   ],
+   "delivered": [
+    195.872,
+    2.75
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1551,
+   "search": [
+    195.733,
+    2.579
+   ],
+   "delivered": [
+    195.879,
+    2.581
+   ],
+   "result": "True"
+  },
+  {
+   "trial": 1407,
+   "search": [
+    197.783,
+    2.591
+   ],
+   "delivered": null,
+   "result": "gate_fail"
+  },
+  {
+   "trial": 1511,
+   "search": [
+    197.783,
+    2.591
+   ],
+   "delivered": null,
+   "result": "gate_fail"
+  },
+  {
+   "trial": 704,
+   "search": [
+    207.497,
+    2.6
+   ],
+   "delivered": null,
+   "result": "gate_fail"
+  },
+  {
+   "trial": 791,
+   "search": [
+    207.497,
+    2.6
+   ],
+   "delivered": null,
+   "result": "gate_fail"
+  },
+  {
+   "trial": 842,
+   "search": [
+    207.497,
+    2.6
+   ],
+   "delivered": null,
+   "result": "gate_fail"
+  },
+  {
+   "trial": 1283,
+   "search": [
+    207.497,
+    2.6
+   ],
+   "delivered": null,
+   "result": "gate_fail"
+  },
+  {
+   "trial": 1308,
+   "search": [
+    207.497,
+    2.6
+   ],
+   "delivered": null,
+   "result": "gate_fail"
+  },
+  {
+   "trial": 1455,
+   "search": [
+    210.725,
+    2.606
+   ],
+   "delivered": [
+    210.936,
+    2.682
+   ],
+   "result": "True"
+  }
+ ]
+}

@@ -72,6 +72,28 @@ Gci grid_convergence(double f1, double f2, double f3, double h1, double h2, doub
   return g;
 }
 
+bool apply_settled_peak(nlohmann::json& requirements, double settled_peak_MPa, double yield_MPa) {
+  bool changed = false;
+  for (auto& r : requirements) {
+    const std::string q = r["quantity"];
+    if (q != "safety_factor" && q != "max_von_mises_MPa") continue;
+    const double settled = q == "safety_factor" ? yield_MPa / settled_peak_MPa : settled_peak_MPa;
+    const double uniform = r["value"], limit = r["limit"];
+    const bool worse = q == "safety_factor" ? settled < uniform : settled > uniform;
+    if (!worse) continue;
+    r["uniform_mesh_value"] = uniform;
+    r["value"] = settled;
+    r["from"] = "settled peak under local refinement";
+    const bool at_least = r["op"] == ">=";
+    const double margin = (at_least ? settled - limit : limit - settled) / std::fabs(limit);
+    r["margin"] = margin;
+    const double error_abs = r.value("numerical_error", 0.0) * std::fabs(settled);
+    r["result"] = margin < 0 ? "fail" : (std::fabs(settled - limit) > error_abs ? r["result"].get<std::string>() : "not proven");
+    changed = true;
+  }
+  return changed;
+}
+
 nlohmann::json build_trust(const DesignSpec& spec, const Values& free, const TrustOptions& o) {
   double h = o.fine_size > 0 ? o.fine_size : spec.mesh_size / 2;
   std::string work = o.workdir.empty() ? (fs::temp_directory_path() / "structura_trust").string() : o.workdir;
@@ -98,6 +120,7 @@ nlohmann::json build_trust(const DesignSpec& spec, const Values& free, const Tru
   t["params"] = fine.value("params", nlohmann::json());
   t["design_hash"] = fine.value("hash", "");
   t["mesh_sizes"] = {h, h * o.ratio, h * o.ratio * o.ratio};
+  t["threads"] = o.threads;  // the mesher's result can depend on it, so reproduce uses the same number
   if (fine.value("status", "") != "ok" || medium.value("status", "") != "ok" || coarse.value("status", "") != "ok") {
     t["status"] = "not_verified";
     t["grade"] = "C";
@@ -247,6 +270,15 @@ nlohmann::json build_trust(const DesignSpec& spec, const Values& free, const Tru
     const double p1 = a1.result.max_von_mises_MPa, p2 = a2.result.max_von_mises_MPa;
     const double growth = p1 > 0 ? p2 / p1 : 1;
     singular = growth > 1.10;
+    if (!singular && apply_settled_peak(t["requirements"], p2, spec.effective_material().yield)) {  // a corner has no settled value to judge by
+      all_pass = true;
+      all_proven = true;
+      for (auto& r : t["requirements"]) {
+        all_pass = all_pass && r["result"] != "fail";
+        all_proven = all_proven && r["result"] == "pass";
+        if (r["result"] == "not proven") not_proven_margin = true;
+      }
+    }
     t["peak_probe"] = {{"load_case", slc->lc.name}, {"uniform_mesh_peak_MPa", uniform}, {"refined_peak_MPa", p1}, {"refined_twice_peak_MPa", p2},
                        {"smallest_element_mm", {ao.min_size * 2, ao.min_size}}, {"growth_on_halving", growth}, {"at_mm", a2.result.peak_at}, {"singular", singular},
                        {"meaning", singular ? "the peak keeps growing as the mesh is refined: a sharp re-entrant corner, where the linear-elastic stress has no finite value. "
@@ -317,7 +349,7 @@ nlohmann::json reproduce(const std::string& dir, double tol) {
   for (auto& [k, _] : spec.free_params) free[k] = t["params"].at(k).get<double>();
   EvalOptions eo;
   eo.mesh_size = t["fine_mesh_size"];
-  eo.threads = 4;
+  eo.threads = t.value("threads", 4);
   nlohmann::json ev = evaluate_design(spec, free, eo);
   nlohmann::json rows = nlohmann::json::array();
   bool match = ev.value("status", "") == "ok";

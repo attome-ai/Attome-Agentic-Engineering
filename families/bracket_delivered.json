@@ -1,0 +1,216 @@
+{
+  "name": "bracket_delivered",
+  "version": "3",
+  "doc": "The bracket as delivered: family 'bracket' plus 0.5 mm fillets on the edges where the ribs meet the arm. Without them those edges are sharp re-entrant corners whose stress keeps growing under refinement (decision D10). The search runs on 'bracket', which meshes about 5 times faster; the front is then re-solved on this family, and this is the geometry that is verified and delivered.",
+  "parameters": {
+    "thickness": {
+      "unit": "mm",
+      "low": 3,
+      "high": 12,
+      "default": 6,
+      "doc": "wall plate and arm thickness"
+    },
+    "plate_width": {
+      "unit": "mm",
+      "low": 30,
+      "high": 80,
+      "default": 50,
+      "doc": "width of wall plate and arm (y)"
+    },
+    "rib_count": {
+      "unit": "1",
+      "low": 1,
+      "high": 3,
+      "default": 1,
+      "integer": true,
+      "doc": "number of ribs under the arm"
+    },
+    "rib_thickness": {
+      "unit": "mm",
+      "low": 2,
+      "high": 10,
+      "default": 4,
+      "doc": "thickness of each rib (y)"
+    },
+    "fillet_radius": {
+      "unit": "mm",
+      "low": 0.5,
+      "high": 6,
+      "default": 3,
+      "doc": "inner corner fillet between wall plate and arm"
+    }
+  },
+  "features": [
+    {
+      "id": "wall",
+      "type": "plate",
+      "doc": "vertical plate against the wall",
+      "params": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "length": "thickness",
+        "width": "plate_width",
+        "thickness": 100
+      }
+    },
+    {
+      "id": "arm",
+      "type": "plate",
+      "doc": "horizontal arm carrying the load",
+      "params": {
+        "x": 0,
+        "y": 0,
+        "z": "100 - thickness",
+        "length": 120,
+        "width": "plate_width",
+        "thickness": "thickness"
+      }
+    },
+    {
+      "id": "corner",
+      "type": "fillet",
+      "doc": "inner corner between wall plate and arm",
+      "params": {
+        "radius": "fillet_radius",
+        "edge_axis": "y",
+        "region": [
+          "thickness - 0.01",
+          -1,
+          "100 - thickness - 0.01",
+          "thickness + 0.01",
+          "plate_width + 1",
+          "100 - thickness + 0.01"
+        ]
+      }
+    },
+    {
+      "id": "rib",
+      "type": "rib",
+      "doc": "first rib; leg_a along the arm, leg_b down the wall",
+      "params": {
+        "x": "thickness",
+        "y": "plate_width / (rib_count + 1) - rib_thickness / 2",
+        "z": "100 - thickness",
+        "leg_a": "0.95 * (120 - thickness)",
+        "leg_a_dir": "x",
+        "leg_b": "0.7 * (100 - thickness)",
+        "leg_b_dir": "-z",
+        "thickness": "rib_thickness",
+        "tip_cut": "6"
+      }
+    },
+    {
+      "id": "ribs",
+      "type": "linear_pattern",
+      "doc": "remaining ribs, evenly spaced across the width",
+      "params": {
+        "target": "rib",
+        "count": "rib_count",
+        "dy": "plate_width / (rib_count + 1)"
+      }
+    },
+    {
+      "id": "tip_fillet",
+      "type": "fillet",
+      "doc": "rounds the corner where each rib's blunt tip meets the arm; a sharp corner here has no finite stress (D10)",
+      "params": {
+        "radius": 3,
+        "edge_axis": "y",
+        "region": [
+          "thickness + 0.95 * (120 - thickness) - 6 - 0.2",
+          -1,
+          "100 - thickness - 0.05",
+          "thickness + 0.95 * (120 - thickness) - 6 + 0.2",
+          "plate_width + 1",
+          "100 - thickness + 0.05"
+        ]
+      }
+    },
+    {
+      "id": "wall_tip_fillet",
+      "type": "fillet",
+      "doc": "the same at the rib's lower tip, where it meets the wall plate (D10)",
+      "params": {
+        "radius": 3,
+        "edge_axis": "y",
+        "region": [
+          "thickness - 0.05",
+          -1,
+          "0.3 * (100 - thickness) + 6 - 0.2",
+          "thickness + 0.05",
+          "plate_width + 1",
+          "0.3 * (100 - thickness) + 6 + 0.2"
+        ]
+      }
+    },
+    {
+      "id": "arm_flanks",
+      "type": "fillet",
+      "doc": "0.5 mm fillets on the rib-to-arm edges, so no sharp re-entrant corner remains along the ribs",
+      "params": {
+        "radius": 0.5,
+        "edge_axis": "x",
+        "region": [
+          "thickness + 0.5",
+          0.1,
+          "100 - thickness - 0.05",
+          "120 - 0.5",
+          "plate_width - 0.1",
+          "100 - thickness + 0.05"
+        ]
+      }
+    },
+    {
+      "id": "mount",
+      "type": "hole_pattern",
+      "doc": "two M6 clearance holes in a row below the ribs, so bolts and ribs never collide",
+      "params": {
+        "x": -0.5,
+        "y": "plate_width / 4",
+        "z": 12,
+        "diameter": 6.6,
+        "depth": "thickness + 1",
+        "axis": "x",
+        "n1": 2,
+        "d1": "plate_width / 2",
+        "n2": 1,
+        "d2": 0
+      }
+    }
+  ],
+  "faces": {
+    "mount_holes": {
+      "kind": "cylinder",
+      "axis": "x",
+      "radius": 3.3,
+      "doc": "bolt bores; supports act here"
+    },
+    "load_face": {
+      "kind": "plane",
+      "normal": "x",
+      "at": 120,
+      "doc": "end face of the arm; the load acts here"
+    },
+    "top_face": {
+      "kind": "plane",
+      "normal": "z",
+      "at": 100,
+      "doc": "top of the arm, for distributed loads"
+    },
+    "wall_face": {
+      "kind": "plane",
+      "normal": "-x",
+      "at": 0,
+      "doc": "face against the wall"
+    }
+  },
+  "design_space": [
+    0,
+    0,
+    0,
+    120,
+    80,
+    100
+  ]
+}

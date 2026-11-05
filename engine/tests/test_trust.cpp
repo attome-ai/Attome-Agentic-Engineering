@@ -57,3 +57,31 @@ TEST_CASE("F1-T1: trust record for the demo bracket") {
     CHECK(r["match"] == true);
   }
 }
+
+TEST_CASE("F1: a stress requirement is judged on the settled peak when that is worse") {
+  auto req = [] {
+    return nlohmann::json::array({{{"quantity", "safety_factor"}, {"value", 2.21}, {"limit", 2.0}, {"op", ">="}, {"margin", 0.105}, {"numerical_error", 0.01}, {"result", "pass"}},
+                                  {{"quantity", "mass_g"}, {"value", 165.0}, {"limit", 250.0}, {"op", "<="}, {"margin", 0.34}, {"numerical_error", 0.0}, {"result", "pass"}}});
+  };
+  SUBCASE("a coarse mesh that missed the peak does not pass the design") {
+    auto r = req();
+    CHECK(apply_settled_peak(r, 13.0, 25.0));  // 25 / 13 = 1.92
+    CHECK(r[0]["result"] == "fail");
+    CHECK(r[0]["value"].get<double>() == doctest::Approx(25.0 / 13.0));
+    CHECK(r[0]["uniform_mesh_value"].get<double>() == doctest::Approx(2.21));
+    CHECK(r[0]["margin"].get<double>() < 0);
+    CHECK(r[1]["result"] == "pass");  // mass is not a stress
+  }
+  SUBCASE("a settled peak below the uniform mesh's changes nothing") {
+    auto r = req();
+    CHECK_FALSE(apply_settled_peak(r, 11.0, 25.0));
+    CHECK(r[0]["value"].get<double>() == doctest::Approx(2.21));
+    CHECK_FALSE(r[0].contains("uniform_mesh_value"));
+  }
+  SUBCASE("a margin smaller than the numerical error is not proven") {
+    auto r = req();
+    r[0]["numerical_error"] = 0.05;
+    CHECK(apply_settled_peak(r, 12.3, 25.0));  // 2.033, room 0.033, error 0.10
+    CHECK(r[0]["result"] == "not proven");
+  }
+}

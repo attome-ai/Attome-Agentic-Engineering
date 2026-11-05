@@ -35,4 +35,8 @@ Gci grid_convergence(double f1, double f2, double f3, double h1, double h2, doub
 nlohmann::json build_trust(const DesignSpec& spec, const Values& free_params, const TrustOptions& o);
 nlohmann::json reproduce(const std::string& dir, double tolerance = 1e-3);
 
+// When local refinement finds a settled peak above the uniform mesh's, a stress requirement is judged on it: a coarse mesh
+// that misses a real peak must not pass the design. Returns true if any requirement's value changed.
+bool apply_settled_peak(nlohmann::json& requirements, double settled_peak_MPa, double yield_MPa);
+
 }  // namespace structura
