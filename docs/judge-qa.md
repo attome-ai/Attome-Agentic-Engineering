@@ -64,6 +64,7 @@ still poor the trust record says so (the uploaded-part redesign is grade B for e
   their edges are filleted (SF 1.91-1.99). (`benchmarks/delivered_trust_1600.json`)
 - 10 W fan-cooled heat sink: 103.7 g hand design → 27.2 g (−74%), 66.3 °C against a 75 °C limit, grade A, the same at 300 and 600
   evaluations. It is the lightest corner of the design space, so the bound decides it, not the limit. (`benchmarks/heatsink_fan60_demo_300.json`)
+- 30 W heat sink, same fan and limit, where the temperature decides: 103.7 g → 44.1 g, 74.4 °C, grade A. Not converged by our own 2% rule; a direct check of the bounds shows nothing with 12 or more fins passes under 42.8 g, but fewer, taller fins were not checked exhaustively. (`benchmarks/heatsink_30w_fan60_2400.json`)
 - An uploaded over-built bracket: 372 g → 316.9 g (−14.8%) with its bolt holes frozen, SF 2.38 ± 7%, grade B. The lightest search result, 305.9 g, failed at SF 1.96 once its peak settled. (`benchmarks/a3_redesign_demo.json`)
 - A 100 kg PETG brief: the system says no design in the family can do it (best SF 0.76 at the strongest corner) and
   that the strongest design carries about 38 kg. It never returns a design that fails. (`benchmarks/bracket_100kg_feasibility.json`)

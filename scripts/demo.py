@@ -26,7 +26,7 @@ sys.path.insert(0, str(ROOT))
 
 SPEC = ROOT / "docs" / "examples" / "bracket_20kg.json"
 BASELINE = {"thickness": 6, "plate_width": 50, "rib_count": 1, "rib_thickness": 4, "fillet_radius": 3}
-FALLBACK = ROOT / "runs" / "p2_demo" / "report.html"
+FALLBACK = ROOT / "runs" / "p2_demo_delivered" / "report.html"
 LOG = ROOT / "benchmarks" / "demo_rehearsals.json"
 
 

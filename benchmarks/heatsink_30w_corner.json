@@ -1,0 +1,68 @@
+{
+ "note": "base 2 mm, fins 1.2 x 10 mm: the lower bound of three of the four parameters, 1.5 mm mesh, evaluated directly for each fin count",
+ "rows": [
+  {
+   "fin_count": 8,
+   "status": "ok",
+   "mass_g": 34.992,
+   "peak_temperature": 92.3501,
+   "feasible": false
+  },
+  {
+   "fin_count": 9,
+   "status": "ok",
+   "mass_g": 36.93600000000007,
+   "peak_temperature": 86.9671,
+   "feasible": false
+  },
+  {
+   "fin_count": 10,
+   "status": "ok",
+   "mass_g": 38.880000000000024,
+   "peak_temperature": 82.4404,
+   "feasible": false
+  },
+  {
+   "fin_count": 11,
+   "status": "ok",
+   "mass_g": 40.82400000000004,
+   "peak_temperature": 78.5565,
+   "feasible": false
+  },
+  {
+   "fin_count": 12,
+   "status": "ok",
+   "mass_g": 42.76800000000002,
+   "peak_temperature": 75.0636,
+   "feasible": false
+  },
+  {
+   "fin_count": 13,
+   "status": "ok",
+   "mass_g": 44.71200000000002,
+   "peak_temperature": 72.2705,
+   "feasible": true
+  },
+  {
+   "fin_count": 14,
+   "status": "ok",
+   "mass_g": 46.65600000000007,
+   "peak_temperature": 69.8773,
+   "feasible": true
+  },
+  {
+   "fin_count": 15,
+   "status": "ok",
+   "mass_g": 48.59999999999997,
+   "peak_temperature": 67.8225,
+   "feasible": true
+  },
+  {
+   "fin_count": 16,
+   "status": "ok",
+   "mass_g": 50.54400000000008,
+   "peak_temperature": 66.0866,
+   "feasible": true
+  }
+ ]
+}

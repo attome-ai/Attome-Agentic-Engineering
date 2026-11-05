@@ -1,0 +1,105 @@
+{
+  "evaluations": 600,
+  "method": "nsga2",
+  "method_reason": "evaluations are cheap (4.3 s each against about 43 s of model fitting per trial): NSGA-II runs many evaluations in parallel for the same wall clock",
+  "seconds": 920.4,
+  "baseline": {
+    "params": {
+      "base_thickness": 4,
+      "fin_count": 8,
+      "fin_thickness": 2,
+      "fin_height": 25
+    },
+    "metrics": {
+      "mass_g": 103.68,
+      "peak_temperature": 66.007
+    },
+    "feasible": true
+  },
+  "front_size": 38,
+  "front_still_feasible_on_fine_mesh": 38,
+  "lightest_feasible_fine": {
+    "trial": 577,
+    "params": {
+      "base_thickness": 2.008164488011252,
+      "fin_count": 12,
+      "fin_height": 12.591673942028002,
+      "fin_thickness": 1.2049241835106694
+    },
+    "coarse": [
+      49.01366602281601,
+      69.3455
+    ],
+    "status": "ok",
+    "fine": [
+      49.01366602281601,
+      69.3518
+    ],
+    "change_pct": [
+      0.0,
+      0.009084944228531016
+    ],
+    "feasible_fine": true
+  },
+  "recommended_knee": {
+    "trial": 484,
+    "params": {
+      "base_thickness": 2.008164488011252,
+      "fin_count": 15,
+      "fin_height": 26.08890591963074,
+      "fin_thickness": 1.2049241835106694
+    },
+    "values": [
+      95.90645605283996,
+      52.1982
+    ],
+    "front_size": 38,
+    "neighbours": [
+      {
+        "trial": 482,
+        "values": [
+          55.10200583699998,
+          64.989
+        ]
+      },
+      {
+        "trial": 481,
+        "values": [
+          133.7892239923201,
+          48.4581
+        ]
+      }
+    ]
+  },
+  "trust_of_lightest": {
+    "grade": "A",
+    "status": "verified",
+    "reasons": [],
+    "requirements": [
+      {
+        "governing_case": "steady",
+        "id": "R1",
+        "limit": 75.0,
+        "margin": 0.07530933333333337,
+        "numerical_error": 9.562330671297867e-06,
+        "op": "<=",
+        "quantity": "peak_temperature",
+        "result": "pass",
+        "unit": "degC",
+        "value": 69.3518
+      },
+      {
+        "governing_case": "steady",
+        "id": "R2",
+        "limit": 200.0,
+        "margin": 0.75493166988592,
+        "numerical_error": 0.0,
+        "op": "<=",
+        "quantity": "mass_g",
+        "result": "pass",
+        "unit": "g",
+        "value": 49.01366602281601
+      }
+    ]
+  }
+}

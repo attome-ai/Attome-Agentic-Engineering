@@ -1,0 +1,149 @@
+{
+  "id": "heatsink-30w-fan60",
+  "version": 1,
+  "brief": "A heat sink that keeps a 30 W module below 75 C in 35 C air with a small fan blowing along the fins, as light as possible, machined from aluminium.",
+  "family": "heatsink",
+  "free_params": {
+    "base_thickness": [
+      2,
+      8
+    ],
+    "fin_count": [
+      4,
+      16
+    ],
+    "fin_thickness": [
+      1.2,
+      3
+    ],
+    "fin_height": [
+      10,
+      40
+    ]
+  },
+  "material": "AL6061T6",
+  "apply_print_knockdown": false,
+  "thermal_cases": [
+    {
+      "name": "steady",
+      "source": "brief: 30 W module, 35 C air, a small fan ducted onto the fins; fan assumed to be a typical 60 mm fan (32 Pa maximum pressure, 0.0068 m^3/s free flow; confirm against the fan's datasheet). The air speed in the channels is the fan's operating point against the fins' pressure drop, recomputed per design.",
+      "fluxes": [
+        {
+          "group": "base_bottom",
+          "power": 30.0
+        }
+      ],
+      "films": [
+        {
+          "group": "exposed_top",
+          "sink": 35.0,
+          "correlation": {
+            "model": "plate_fin_channel",
+            "fan": {
+              "max_pressure_Pa": 32.0,
+              "max_flow_m3_s": 0.0068
+            },
+            "spacing_mm": "(60 - fin_thickness) / (fin_count - 1) - fin_thickness",
+            "fin_thickness_mm": "fin_thickness",
+            "length_mm": 60,
+            "fin_height_mm": "fin_height",
+            "channels": "fin_count - 1"
+          }
+        },
+        {
+          "group": "exposed_px",
+          "sink": 35.0,
+          "correlation": {
+            "model": "plate_fin_channel",
+            "fan": {
+              "max_pressure_Pa": 32.0,
+              "max_flow_m3_s": 0.0068
+            },
+            "spacing_mm": "(60 - fin_thickness) / (fin_count - 1) - fin_thickness",
+            "fin_thickness_mm": "fin_thickness",
+            "length_mm": 60,
+            "fin_height_mm": "fin_height",
+            "channels": "fin_count - 1"
+          }
+        },
+        {
+          "group": "exposed_nx",
+          "sink": 35.0,
+          "correlation": {
+            "model": "plate_fin_channel",
+            "fan": {
+              "max_pressure_Pa": 32.0,
+              "max_flow_m3_s": 0.0068
+            },
+            "spacing_mm": "(60 - fin_thickness) / (fin_count - 1) - fin_thickness",
+            "fin_thickness_mm": "fin_thickness",
+            "length_mm": 60,
+            "fin_height_mm": "fin_height",
+            "channels": "fin_count - 1"
+          }
+        },
+        {
+          "group": "exposed_py",
+          "sink": 35.0,
+          "correlation": {
+            "model": "plate_fin_channel",
+            "fan": {
+              "max_pressure_Pa": 32.0,
+              "max_flow_m3_s": 0.0068
+            },
+            "spacing_mm": "(60 - fin_thickness) / (fin_count - 1) - fin_thickness",
+            "fin_thickness_mm": "fin_thickness",
+            "length_mm": 60,
+            "fin_height_mm": "fin_height",
+            "channels": "fin_count - 1"
+          }
+        },
+        {
+          "group": "exposed_ny",
+          "sink": 35.0,
+          "correlation": {
+            "model": "plate_fin_channel",
+            "fan": {
+              "max_pressure_Pa": 32.0,
+              "max_flow_m3_s": 0.0068
+            },
+            "spacing_mm": "(60 - fin_thickness) / (fin_count - 1) - fin_thickness",
+            "fin_thickness_mm": "fin_thickness",
+            "length_mm": 60,
+            "fin_height_mm": "fin_height",
+            "channels": "fin_count - 1"
+          }
+        }
+      ]
+    }
+  ],
+  "objectives": [
+    {
+      "quantity": "mass_g",
+      "sense": "min"
+    },
+    {
+      "quantity": "peak_temperature",
+      "sense": "min"
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R1",
+      "quantity": "peak_temperature",
+      "op": "<=",
+      "value": 75.0,
+      "source": "brief: keep the module below 75 C"
+    },
+    {
+      "id": "R2",
+      "quantity": "mass_g",
+      "op": "<=",
+      "value": 200.0,
+      "source": "default: mass cap; 'as light as possible' is the objective"
+    }
+  ],
+  "mesh": {
+    "size": 2.5
+  }
+}

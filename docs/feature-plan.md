@@ -264,7 +264,7 @@ Real solvers, never surrogates alone. Each feature says what is built **before 3
 - **Honest limit.** Correlations are approximations of real airflow; CFD (C5) is the step beyond, and the trust panel states which one was used.
 
 **Today (score 58):**
-- Fan operating point and turbulent branch in place: 10 W heat sink 103.7 g to 27.2 g, 66.3 C, the same at 300 and 600 evaluations, at the lightest corner of the design space, so the temperature limit does not govern.
+- Fan operating point and turbulent branch in place: 10 W heat sink 103.7 g to 27.2 g, 66.3 C, at the lightest corner of the design space, so the limit does not govern there. At 30 W it does: 44.1 g at 74.4 C, grade A, not converged by the 2% budget rule; with 12 or more fins nothing under 42.8 g passes (bounds checked directly).
 - Steady conduction validated (slab exact, fin -0.002%), heat balance in the trust record, fin-channel convection correlation per design.
 - No transient or thermal stress.
 
@@ -752,7 +752,7 @@ A laptop, an open stack, any model. Each feature says what is built **before 3 F
 
 **Today (score 75):**
 - `scripts\install.cmd` and a Dockerfile. A container limited to 4 cores and 8 GB passes every engine test and runs a 120-evaluation study in 364 s with a 3.24 GB peak; that is not a real laptop, and the cost per study needs an API key to measure.
-- No solver licences or training data; runs on one desktop (evaluation 1-4 s, study 4-8 min); demo rehearsed in 7.6 min.
+- No solver licences or training data; runs on one desktop (evaluation 1-4 s, study 4-8 min); demo rehearsed in 10.9 min (2026-11-05), ending at grade B on the plain family; the delivered grade A design is precomputed.
 
 **How the leaders do it:**
 - SimScale (free agent on every plan) and Zoo lead accessibility; most physics-AI vendors are enterprise and demo-gated, and surrogate vendors need 30-100+ customer simulations.

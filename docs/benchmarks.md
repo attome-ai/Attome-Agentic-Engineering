@@ -211,6 +211,19 @@ a result converged).
 With the correlation the old 44.3 g fixed-h design reaches 78.9 C: the correlation gives 22.5 W/m^2K for its wide
 4-fin channels, below the 25 W/m^2K that had been assumed.
 
+## A heat sink where the temperature limit decides: 30 W, small fan (C2, D8)
+
+`benchmarks/heatsink_demo.py --spec docs/examples/heatsink_30w_fan60.json --name heatsink_30w_fan60[_600|_1200|_2400] --evals N`. The 10 W briefs land at the lightest corner of the design space, so their limit never governs. At 30 W, with the same fan model and the same 75 C limit, it does.
+
+| Budget | Lightest meeting 75 C (1.5 mm mesh) | Peak temperature | Grade | Wall clock |
+|---|---|---|---|---|
+| 300 | 57.8 g (10 fins) | 74.94 C | A | 532 s |
+| 600 | 49.0 g (12 fins) | 69.35 C | A | 920 s |
+| 1200 | 46.2 g (11 fins) | 74.63 C | A | 2117 s |
+| 2400 | **44.1 g** (12 fins, 1.22 x 10.2 mm, 2.04 mm base) | 74.42 C | A | 3736 s |
+
+Baseline (4 mm base, 8 fins 2 x 25 mm): 103.7 g, 66.0 C. Each doubling still moved the result by 5-15%, so by the 2% rule (D8) the search had **not converged**. The design sits near the lower bound of three of its four parameters, so that corner was checked directly for every fin count (`benchmarks/heatsink_30w_corner.json`): 12 fins there weigh 42.8 g but reach 75.06 C, just over the limit; 13 fins weigh 44.7 g at 72.3 C, heavier than the search's 44.1 g. So with 12 or more fins nothing lighter than 42.8 g can pass, and the search is within 3% of that. Designs with 11 fins or fewer and taller fins were not checked exhaustively, so how close 44.1 g is to the best possible is not proven. The 0.6 C margin is numerical error only; the convection correlation's own uncertainty is not in it and is much larger, so a real part needs testing or a larger margin.
+
 ## Manufacturing check and cost (H1, `structura manufacture`)
 
 Recommended 20 kg bracket (trial 183), PETG, inputs from `data/processes.json` (all stated assumptions):
@@ -249,6 +262,8 @@ functions, 200 evaluations (`benchmarks/demo_rehearsals.json`):
 | manufacturing advice | 0.4 |
 | report (fine-mesh bundles of the front) | 79 |
 | **total** | **458 (7.6 min)** |
+
+Re-run 2026-11-05 on today's engine: **654 s (10.9 min)**, outcome ok, recommended 180.0 g at **grade B** (the plain family's sharp rib-flank edges, which the trust record now detects). The delivered grade A design is precomputed (see the demo script).
 
 Recommended: 231.4 g, safety factor 2.22, grade A, FDM. NSGA-II runs in parallel, so a live run is not
 bit-identical to the stored P2 run (234.1 g); both meet the brief with grade A. On a 4-core laptop the optimization

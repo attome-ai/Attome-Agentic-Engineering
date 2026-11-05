@@ -22,6 +22,7 @@ Entry for AIDTC 2027 (Gulf University, Bahrain). Status: working prototype; see 
 | 20 kg PETG shelf bracket | 99 g, safety factor 0.48 (unsafe) | 184.4 g with its fillets, safety factor 2.05 ± 0.1% (see above) | grade A |
 | 10 W heat sink, small fan, below 75 °C | 103.7 g | 27.2 g (−74%), 66.3 °C, same at 300 and 600 evaluations; the lightest corner of the design space, so the limit does not govern | grade A |
 | Uploaded over-built bracket, same bolt holes | 372 g | 316.9 g (−14.8%), safety factor 2.38 ± 7%; the lightest search result, 305.9 g, failed at 1.96 once its peak settled | grade B |
+| 30 W heat sink, same fan, below 75 °C | 103.7 g | 44.1 g (−57%), 74.4 °C: the limit decides it. Not converged by the 2% budget rule; with 12 or more fins nothing under 42.8 g passes | grade A |
 | 100 kg PETG bracket | – | reported infeasible: the family's strongest design carries about 38 kg | – |
 
 Solver validation: 7 of 7 cases pass (NAFEMS LE10 +0.14%, LE1 −0.40%, cantilever −0.80%, buckling +0.06%, modal
