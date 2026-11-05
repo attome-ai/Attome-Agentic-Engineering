@@ -372,6 +372,46 @@ nlohmann::json plan(const std::vector<Part>& parts) {
   return {{"ok", true}, {"steps", steps}};
 }
 
+nlohmann::json replay(const std::vector<Part>& parts, const nlohmann::json& steps, int frames, double tol_mm3) {
+  // an independent check of the plan, by a different method from the planner's ray casting: every part is moved
+  // along its insertion path in `frames` positions, and its exact boolean intersection with each part already in
+  // place is measured. Any volume above tol_mm3 at any position fails the plan.
+  std::vector<const Part*> placed;
+  for (auto& p : parts)
+    if (p.fixed) placed.push_back(&p);
+  nlohmann::json worst = nlohmann::json::array();
+  double max_v = 0;
+  int checks = 0;
+  for (auto& s : steps) {
+    const std::string name = s.at("part");
+    auto it = std::find_if(parts.begin(), parts.end(), [&](const Part& p) { return p.name == name; });
+    if (it == parts.end()) throw std::runtime_error("plan names an unknown part: " + name);
+    gp_Vec d = gp_Vec(dir_of(s.at("insert_direction")));
+    const double travel = s.at("travel_mm").get<double>();
+    double step_max = 0;
+    std::string against;
+    for (int f = 0; f <= frames; ++f) {
+      gp_Trsf t;
+      t.SetTranslation(-d * travel * (1.0 - static_cast<double>(f) / frames));
+      TopoDS_Shape moved = BRepBuilderAPI_Transform(it->shape, t, true).Shape();
+      Bnd_Box bm = box_of(moved);
+      for (auto* q : placed) {
+        if (bm.IsOut(box_of(q->shape))) continue;
+        BRepAlgoAPI_Common c(moved, q->shape);
+        ++checks;
+        double v = c.IsDone() ? volume(c.Shape()) : 0;
+        if (v > step_max) step_max = v, against = q->name;
+      }
+    }
+    max_v = std::max(max_v, step_max);
+    if (step_max > tol_mm3) worst.push_back({{"part", name}, {"against", against}, {"volume_mm3", step_max}});
+    placed.push_back(&*it);
+  }
+  return {{"ok", worst.empty()}, {"frames_per_step", frames + 1}, {"boolean_checks", checks}, {"max_overlap_mm3", max_v},
+          {"tolerance_mm3", tol_mm3}, {"failures", worst},
+          {"method", "each part moved along its insertion path, exact B-rep intersection with every part already in place"}};
+}
+
 void write_parts(const std::vector<Part>& parts, const std::string& dir) {
   fs::create_directories(dir);
   for (auto& p : parts) {

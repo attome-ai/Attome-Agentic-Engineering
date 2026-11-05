@@ -112,3 +112,21 @@ TEST_CASE("a bolt in a drilled hole leaves only along its shank, and the wall ne
   REQUIRE(p["steps"].size() == 1);  // the fixed wall is not a step
   CHECK(p["steps"][0]["insert_direction"] == json::array({-1.0, -0.0, -0.0}));
 }
+
+TEST_CASE("the replay check passes the planned order and catches a path that runs through a part") {
+  auto parts = load(R"J({"parts": [
+    {"name": "wall", "kind": "box", "at": [-40, -50, -50], "size": [40, 100, 100], "fixed": true,
+     "holes": [{"at": [-31, 0, 0], "axis": [1, 0, 0], "diameter": 6.2, "depth": 32}]},
+    {"name": "bolt", "kind": "bolt", "at": [0, 0, 0], "axis": [-1, 0, 0], "diameter": 6, "length": 25}]})J");
+  json p = plan(parts);
+  REQUIRE(p["ok"].get<bool>());
+  json good = replay(parts, p["steps"]);
+  CHECK(good["ok"].get<bool>());
+  CHECK(good["max_overlap_mm3"].get<double>() < 1e-3);
+  // the same bolt brought in sideways (down through the wall face) instead of along its shank
+  json bad_steps = p["steps"];
+  bad_steps[0]["insert_direction"] = json::array({0.0, 0.0, -1.0});
+  json bad = replay(parts, bad_steps);
+  CHECK_FALSE(bad["ok"].get<bool>());
+  CHECK(bad["failures"][0]["against"] == "wall");
+}

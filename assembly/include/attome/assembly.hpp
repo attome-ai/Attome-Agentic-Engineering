@@ -39,6 +39,10 @@ bool can_slide(const Part& p, const std::vector<const Part*>& others, const std:
 // The plan: {"ok", "steps": [{"part", "insert_direction", "travel_mm"}] (assembly order), "locked": [...]}.
 nlohmann::json plan(const std::vector<Part>& parts);
 
+// Replays a plan's steps with exact boolean intersections at frames+1 positions along each insertion path (a check
+// independent of the planner's ray casting): {"ok", "max_overlap_mm3", "failures": [...], ...}.
+nlohmann::json replay(const std::vector<Part>& parts, const nlohmann::json& steps, int frames = 24, double tol_mm3 = 1e-3);
+
 // Writes one STL per part (placed) into dir, for the viewer.
 void write_parts(const std::vector<Part>& parts, const std::string& dir);
 

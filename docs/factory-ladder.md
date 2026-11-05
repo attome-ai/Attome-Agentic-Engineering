@@ -21,6 +21,18 @@ verified simulation of the whole assembly, the order to put it together and an a
 | L2.7 | Instructions | Step list with part and fastener counts and tools, generated from the order (like a furniture manual), English and Arabic | A reader assembles the printed demo unit from the instructions alone |
 | L2.8 | Physical motion (optional) | Rigid-body physics (MuJoCo, Apache-2.0) for parts that move: hinges, drawers, a weight falling onto a shelf, with contact | A dropped weight's rebound against the energy balance |
 
+**Status (2026-11-05).**
+- **L2.5 done.** `assembly/` (`attome_assembly plan`). 8 tests pass, including a locked frame and bar that is reported, not planned. Every plan is then replayed by a second method, exact solid intersection at 25 positions per step. A plan the replay rejects is not shown.
+- **L2.6 done.** `python -m structura.scene.assembly <dir>`: live slider, play, Blender navigation, MP4. The demo shelf passes the replay: 138 checks, largest overlap 0 mm³.
+- **L2.7 done in software.** `--instructions <dir>` writes `instructions.md` and `instructions.ar.md`:
+  - a parts list with counts;
+  - tools derived from the fasteners (drill bit, hammer, ISO 4017 spanner size);
+  - one framed picture per step.
+
+  Its proof, a reader assembling the unit from the sheet alone, needs the printed demo unit.
+- **L2.1 partly done.** Placement is by coordinates and drilled holes, not yet by mates.
+- **Not started:** L2.2 (capacity), L2.3, L2.4, L2.8.
+
 **Order of work.** L2.1 and L2.2, then L2.5 and L2.6 (they need only geometry, and they are the most visible),
 then L2.3 and L2.4 (contact is the hard physics), then L2.7, then L2.8.
 

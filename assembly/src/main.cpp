@@ -34,9 +34,18 @@ int main(int argc, char** argv) {
     } else {
       nlohmann::json p = attome::plan(parts);
       result.update(p);
+      if (result.value("ok", false)) {  // never hand the viewer a plan the replay check rejects
+        result["replay_check"] = attome::replay(parts, result["steps"]);
+        if (!result["replay_check"].value("ok", false)) {
+          result["ok"] = false;
+          result["message"] = "the replay check found parts passing through each other: the plan is not shown";
+        }
+      }
     }
     nlohmann::json desc = nlohmann::json::array();
     for (auto& q : j.at("parts")) desc.push_back({{"name", q.at("name")}, {"kind", q.at("kind")}, {"fastener", q.value("fastener", q.at("kind") == "bolt" || q.at("kind") == "plug")},
+                                                   {"fixed", q.value("fixed", false)}, {"diameter", q.value("diameter", 0.0)},
+                                                   {"length", q.value("length", 0.0)},
                                                    {"color", q.value("color", "")}});
     result["part_list"] = desc;
     attome::write_parts(parts, out);
