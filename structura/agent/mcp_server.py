@@ -216,10 +216,28 @@ def upload_part(step_path: str, name: str) -> dict:
     (up / f"{name}.json").write_text(json.dumps(fam, indent=2), encoding="utf-8")
     return _ok(family=f"uploads/{name}", valid=r["valid"], solids=r["solids"], volume_mm3=r["volume_mm3"], envelope=r["envelope"],
                holes=[{k: h[k] for k in ("diameter_mm", "axis", "centre", "depth_mm")} for h in r["holes"]], hole_patterns=r["hole_patterns"],
-               named_faces={k: v.get("doc") for k, v in fam["faces"].items()},
+               named_faces={k: v.get("doc") for k, v in fam["faces"].items()}, inferred_supports=_inferred_supports(fam),
                faces=[{k: f[k] for k in ("id", "type", "area_mm2", "centre") if k in f} | ({"selector": f["selector"]} if "selector" in f else {})
                       for f in r["faces"]],
                notes=r["notes"])
+
+
+def _inferred_supports(fam: dict) -> list[dict]:
+    """C3: supports read from the part: each set of bolt holes, and the flat face those bolts press against. The user confirms them."""
+    out = []
+    faces = fam["faces"]
+    for name, h in faces.items():
+        if h.get("kind") != "cylinder" or not name.startswith("holes_"):
+            continue
+        out.append({"group": name, "kind": "bolted", "why": f"{h.get('doc', 'holes')}: a bolt holds the mean position of each bore"})
+        axis = h.get("axis")
+        bearing = [(k, f) for k, f in faces.items() if f.get("kind") == "plane" and str(f.get("normal", "")).lstrip("-") == axis]
+        # the outward face at the end of the bolt axis; the area is in the doc only, so the lowest position along the axis wins
+        back = next(((k, f) for k, f in sorted(bearing, key=lambda kf: kf[1].get("at", 0)) if str(f["normal"]).startswith("-")), None)
+        if back and axis in ("x", "y", "z"):
+            out.append({"group": back[0], "dofs": str("xyz".index(axis) + 1),
+                        "why": f"{back[1].get('doc', 'flat face')}: the part bears on this face along the bolts; held both ways, because the solver has no contact"})
+    return out
 
 
 @mcp.tool(description="Name one more face of an uploaded part family (for a load or support the user chose), by its face id from upload_part.")

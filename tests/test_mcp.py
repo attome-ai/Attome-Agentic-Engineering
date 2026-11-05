@@ -144,7 +144,9 @@ def test_upload_and_analyse_a_step_part(tmp_path, monkeypatch):
         hole_face = next(k for k in up["named_faces"] if k.startswith("holes_"))
         spec = json.loads(SPEC.read_text())
         spec.update(id="upload-test", family=up["family"], free_params={})
-        spec["load_cases"][0]["supports"] = [{"group": hole_face}]
+        inferred = up["inferred_supports"]  # C3: read from the part: the two bolt holes, and the wall face they press against
+        assert [s.get("kind") for s in inferred] == ["bolted", None] and inferred[0]["group"] == hole_face and inferred[1]["dofs"] == "1"
+        spec["load_cases"][0]["supports"] = [{k: v for k, v in s.items() if k != "why"} for s in inferred]
         spec["load_cases"][0]["loads"] = [{"group": "arm_end", "force": [0, 0, -196.2]}]
         sid = "upload-test"
         srv.create_study(spec, study_id=sid)
