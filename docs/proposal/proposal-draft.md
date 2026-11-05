@@ -203,12 +203,12 @@ The same bracket brief at 100 kg (PETG, SF ≥ 2) has **no feasible design** in 
 |---|---|
 | Hand baseline | SF 0.07, 24.8 mm deflection |
 | 200 optimizer evaluations | 0 feasible; best SF 0.55 (324 g) |
-| Feasibility check (strongest corner of the design space: 12 mm plate, 80 mm wide, 3 ribs of 10 mm) | SF 0.67, so no design in the bounds can reach 2 |
+| Feasibility check (strongest corner of the design space: 12 mm plate, 80 mm wide, 3 ribs of 10 mm) | SF 0.76, so no design in the bounds can reach 2 |
 
 The engine reports this *before* spending an optimization budget (the corner check takes seconds) and the agent
-proposes what the user can change: the strongest design meets SF 2 at **33% of the load (about 33 kg)**, or the
+proposes what the user can change: the strongest design meets SF 2 at **38% of the load (about 38 kg)**, or the
 material, the bounds or the family can change. It never returns a design that fails the brief. The corner check is
-also a tighter bound than the search: the optimizer, trading mass against the 250 g cap, never reached the 354 g corner.
+also a tighter bound than the search: the optimizer, trading mass against the 250 g cap, never reached the 372 g corner.
 
 ### 4.5b Improving an uploaded part
 

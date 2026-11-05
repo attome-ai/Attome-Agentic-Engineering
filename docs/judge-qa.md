@@ -65,8 +65,8 @@ still poor the trust record says so (the uploaded-part redesign is grade B for e
 - 10 W fan-cooled heat sink: 103.7 g hand design → 27.2 g (−74%), 66.3 °C against a 75 °C limit, grade A, the same at 300 and 600
   evaluations. It is the lightest corner of the design space, so the bound decides it, not the limit. (`benchmarks/heatsink_fan60_demo_300.json`)
 - An uploaded over-built bracket: 372 g → 316.9 g (−14.8%) with its bolt holes frozen, SF 2.38 ± 7%, grade B. The lightest search result, 305.9 g, failed at SF 1.96 once its peak settled. (`benchmarks/a3_redesign_demo.json`)
-- A 100 kg PETG brief: the system says no design in the family can do it (best SF 0.67 at the strongest corner) and
-  that the strongest design carries about 33 kg. It never returns a design that fails. (`benchmarks/bracket_100kg_demo.json`)
+- A 100 kg PETG brief: the system says no design in the family can do it (best SF 0.76 at the strongest corner) and
+  that the strongest design carries about 38 kg. It never returns a design that fails. (`benchmarks/bracket_100kg_feasibility.json`)
 
 **Q: Why is the optimized bracket heavier than the hand design?**
 Because the hand design fails the brief. "Optimized" means the lightest design that is proven to meet every

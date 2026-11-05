@@ -33,7 +33,7 @@ commands are tested. Rehearse with `python scripts/demo.py live` (timings in `be
 - No internet (the agent runs in the cloud): show the workbench and the reports (all offline), and play the video for
   the agent part.
 - A judge asks "what if it can't be done?": run the 100 kg brief; the feasibility check answers in about 10 s and
-  says the strongest design carries about 33 kg.
+  says the strongest design carries about 38 kg.
 - A judge asks about trust: `structura reproduce --dir runs/p2_demo/trust` reproduces the result bit for bit.
 
 Answers to likely questions: `docs/judge-qa.md`.

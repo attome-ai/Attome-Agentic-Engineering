@@ -1,4 +1,5 @@
 {
+  "conclusive": true,
   "direction": {
     "fillet_radius": "more material at high",
     "plate_width": "more material at high",
@@ -7,12 +8,13 @@
     "thickness": "more material at high"
   },
   "feasible": false,
+  "inconclusive": [],
   "least_material": {
     "metrics": {
-      "mass_g": 32.60074093649536,
-      "max_disp_mm": 164.500021371929,
-      "max_von_mises_MPa": 1778.2223102846367,
-      "safety_factor": 0.014058984557447318
+      "mass_g": 34.046040112028685,
+      "max_disp_mm": 44.358794030484006,
+      "max_von_mises_MPa": 1235.637497675556,
+      "safety_factor": 0.02023247113091764
     },
     "params": {
       "fillet_radius": 0.5,
@@ -26,10 +28,10 @@
   "method": "evaluate the most-material and least-material corners of the free parameters",
   "most_material": {
     "metrics": {
-      "mass_g": 354.149565170465,
-      "max_disp_mm": 2.309177769134029,
-      "max_von_mises_MPa": 37.54302377637156,
-      "safety_factor": 0.6659026760581347
+      "mass_g": 372.11847711353727,
+      "max_disp_mm": 1.4521999628701276,
+      "max_von_mises_MPa": 32.93299533661644,
+      "safety_factor": 0.7591171026038992
     },
     "params": {
       "fillet_radius": 6.0,
@@ -42,12 +44,12 @@
   },
   "problems": [
     {
-      "best_achievable": 0.6659026760581347,
+      "best_achievable": 0.7591171026038992,
       "id": "R1",
       "limit": 2.0,
       "op": ">=",
       "quantity": "safety_factor",
-      "reason": "even the strongest design in the spec's bounds gives 0.666 against the requirement safety_factor >= 2"
+      "reason": "even the strongest design in the spec's bounds gives 0.759 against the requirement safety_factor >= 2"
     }
   ]
 }
