@@ -36,7 +36,9 @@ INSTRUCTIONS = """You are driving the Attome AE engineering engine. Workflow:
    design; use steer when the user states a preference; explain to compare two designs.
 6. verify the chosen design and report its trust grade; build_report and give the user the file.
 Geometry, in order of preference: an existing family (list_families); a design graph from the grammar (compose_design,
-describe_grammar); for the user's own part, upload_part then add_face / add_lightening_pocket; only when the grammar
+describe_grammar); for the user's own part, upload_part, confirm its inferred_supports with the user, then
+fit_part_to_family for each family: a fit means a study on that family, starting from the fitted parameters, with the
+frozen interfaces checked; with no fit, add_face / add_lightening_pocket on the solid. Only when the grammar
 cannot express the shape, freeform_cad with CadQuery code (fixed geometry, gated like any other part). For a new
 design, propose several candidates (compose_candidates), look at the best with render_views, then optimize it.
 Never state a number the tools did not return. Never tune parameters yourself inside a loop: that is the optimizer's job."""
