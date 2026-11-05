@@ -8,6 +8,11 @@ GET  /openapi.json                     OpenAPI 3.1, generated from the tool sche
 GET  /api/tools                        tool names and descriptions
 POST /api/tools/<name>                 call a tool; body = its JSON arguments
 GET  /api/studies/<id>/events          server-sent events: every timeline step, then each new one (?once=1 stops at the end)
+GET  /api/studies/<id>/evaluations     every evaluation from trial number ?from=N on (the live Pareto chart polls this)
+GET  /studies/<id>/report              the study's report, from this origin, so its Pareto chart can steer the search
+
+Local only: a request whose Host is not this machine is refused, and so is a POST from another origin, so a web page the
+user happens to have open cannot reach the tools.
 """
 from __future__ import annotations
 
@@ -24,6 +29,7 @@ import mcp as mcp_sdk
 
 from structura.agent import mcp_server as srv
 from structura.agent import studies as S
+from structura.optimize import pareto
 
 ROOT = Path(__file__).resolve().parents[2]
 _tools_cache: list | None = None
@@ -68,6 +74,15 @@ def openapi() -> dict:
         "parameters": [{"name": "study_id", "in": "path", "required": True, "schema": {"type": "string"}},
                        {"name": "once", "in": "query", "schema": {"type": "integer"}, "description": "1 = stop at the end of the current timeline"}],
         "responses": {"200": {"description": "text/event-stream of step events"}}}}
+    paths["/api/studies/{study_id}/evaluations"] = {"get": {
+        "operationId": "study_evaluations", "summary": "Every evaluation of the study from a trial number on, with its metrics and whether it was steered",
+        "parameters": [{"name": "study_id", "in": "path", "required": True, "schema": {"type": "string"}},
+                       {"name": "from", "in": "query", "schema": {"type": "integer"}, "description": "first trial number to return (default 0)"}],
+        "responses": {"200": {"description": "{ok, rows}"}, "404": {"description": "no optimization has run yet"}}}}
+    paths["/studies/{study_id}/report"] = {"get": {
+        "operationId": "study_report", "summary": "The study's report page; served from here, its Pareto chart can steer the search and its timeline follows the study",
+        "parameters": [{"name": "study_id", "in": "path", "required": True, "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "text/html"}, "404": {"description": "no report built yet"}}}}
     return {"openapi": "3.1.0", "info": {"title": "Attome Agentic Engineering", "version": "0.1.0"},
             "servers": [{"url": "http://127.0.0.1:8765"}], "paths": paths}
 
@@ -143,7 +158,41 @@ class Handler(BaseHTTPRequestHandler):
         except (BrokenPipeError, ConnectionError):
             return
 
+    def _local_only(self) -> bool:
+        host = (self.headers.get("Host") or "").rsplit(":", 1)[0]
+        origin = self.headers.get("Origin")
+        if host not in ("127.0.0.1", "localhost") or (self.command == "POST" and origin and urlparse(origin).netloc != self.headers.get("Host")):
+            self.close_connection = True
+            self._json({"ok": False, "error": "forbidden", "message": "this server answers only this machine's own pages"}, 403)
+            return False
+        return True
+
+    def _report(self, study_id: str):
+        try:
+            p = S.folder(study_id) / "report.html"
+        except ValueError as e:
+            return self._json({"ok": False, "error": "study", "message": str(e)}, 400)
+        if not p.exists():
+            return self._json({"ok": False, "error": "results", "message": "this study has no report yet; call build_report"}, 404)
+        body = p.read_bytes()
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _evaluations(self, study_id: str, start: int):
+        try:
+            study = srv._study(study_id)
+        except ValueError as e:
+            return self._json({"ok": False, "error": "study", "message": str(e)}, 400)
+        if study is None:
+            return self._json({"ok": False, "error": "results", "message": "run an optimization first"}, 404)
+        return self._json({"ok": True, "rows": pareto.history_rows(study, start)})
+
     def do_GET(self):
+        if not self._local_only():
+            return
         u = urlparse(self.path)
         if u.path == "/openapi.json":
             return self._json(openapi())
@@ -152,9 +201,17 @@ class Handler(BaseHTTPRequestHandler):
         m = re.fullmatch(r"/api/studies/([^/]+)/events", u.path)
         if m:
             return self._events(m.group(1), parse_qs(u.query).get("once", ["0"])[0] == "1")
+        m = re.fullmatch(r"/api/studies/([^/]+)/evaluations", u.path)
+        if m:
+            return self._evaluations(m.group(1), int(parse_qs(u.query).get("from", ["0"])[0]))
+        m = re.fullmatch(r"/studies/([^/]+)/report", u.path)
+        if m:
+            return self._report(m.group(1))
         self._json({"ok": False, "error": "not_found", "message": f"no such path {u.path}"}, 404)
 
     def do_POST(self):
+        if not self._local_only():
+            return
         u = urlparse(self.path)
         m = re.fullmatch(r"/api/tools/([a-z_]+)", u.path)
         if not m or m.group(1) not in {t.name for t in tools()}:

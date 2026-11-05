@@ -62,6 +62,31 @@ def test_rest_approval_gate_and_events(server):
     assert "event: step" in stream and '"spec"' in stream and "event: end" in stream
 
 
+def test_rest_answers_only_this_machine(server):
+    """The report is served from here and can run tools, so another site's page must not be able to reach them."""
+    req = urllib.request.Request(server + "/api/tools", headers={"Host": "evil.example"})
+    with pytest.raises(urllib.error.HTTPError) as e:
+        urllib.request.urlopen(req, timeout=30)
+    assert e.value.code == 403
+    req = urllib.request.Request(server + "/api/tools/derive_load", data=b'{"mass_kg": 20}', headers={"Origin": "https://evil.example"})
+    with pytest.raises(urllib.error.HTTPError) as e:
+        urllib.request.urlopen(req, timeout=30)
+    assert e.value.code == 403
+    assert post(server + "/api/tools/derive_load", {"mass_kg": 20})["ok"] is not False
+
+
+def test_rest_report_and_evaluations_before_a_run(server):
+    spec = json.loads(SPEC.read_text(encoding="utf-8"))
+    sid = post(server + "/api/tools/create_study", {"spec": spec})["study_id"]
+    for path in (f"/studies/{sid}/report", f"/api/studies/{sid}/evaluations?from=0"):
+        with pytest.raises(urllib.error.HTTPError) as e:
+            urllib.request.urlopen(server + path, timeout=30)
+        assert e.value.code == 404
+    with pytest.raises(urllib.error.HTTPError) as e:
+        urllib.request.urlopen(server + "/studies/BAD..ID/report", timeout=30)
+    assert e.value.code == 400
+
+
 def test_sdk_refuses_without_acceptance_then_runs(tmp_path):
     study = Study.from_spec(SPEC)
     with pytest.raises(sdk.StudyError) as e:

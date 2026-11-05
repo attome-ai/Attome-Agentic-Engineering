@@ -90,7 +90,8 @@ body.print .controls,body.print #probe{display:none!important}
     </section>
     <section class="card">
       <h2>Pareto front: click a design</h2>
-      <svg id="pareto" viewBox="0 0 420 300" width="100%" role="img" aria-label="Pareto chart"></svg>
+      <svg id="pareto" viewBox="0 0 420 300" width="100%" role="img" aria-label="Pareto chart" style="touch-action:none;cursor:crosshair"></svg>
+      <div id="steerbar" style="display:none;font-size:.85rem;margin-top:.3rem"><span id="steertext"></span> <button id="steergo" type="button" style="display:none">Search here</button></div>
       <p class="muted" style="font-size:.8rem;margin:.3rem 0 0" id="paretonote"></p>
       <h3>Selected vs baseline</h3>
       <div class="tblw"><table id="cmp"></table></div>
@@ -481,6 +482,7 @@ $("#play").addEventListener("click", () => {
 // ---------------------------------------------------------------- Pareto explorer
 let selected = rec;
 const label = d => d.recommended ? `Recommended · trial ${d.trial}` : `Trial ${d.trial}`;
+let steerTarget = null, steerDrag = false, steering = false, paretoInverse = null;
 function pareto(){
   const svg = $("#pareto"), W = 420, H = 300, L = 48, R = 12, T = 12, B = 36;
   const kx = OX.quantity, ky = OY.quantity;
@@ -491,13 +493,15 @@ function pareto(){
   if (reqY) ys.push(reqY.value);
   const x0 = Math.min(...xs)*0.95, x1 = Math.max(...xs)*1.05, y0 = ky === "safety_factor" ? 0 : Math.min(...ys)*0.97, y1 = Math.max(...ys)*1.05;
   const X = v => L + (v - x0)/(x1 - x0)*(W - L - R), Y = v => H - B - (v - y0)/(y1 - y0)*(H - T - B);
+  paretoInverse = (px, py) => ({x: x0 + (Math.min(W-R, Math.max(L, px)) - L)/(W - L - R)*(x1 - x0), y: y0 + (H - B - Math.min(H-B, Math.max(T, py)))/(H - T - B)*(y1 - y0)});
   let s = `<line x1="${L}" y1="${H-B}" x2="${W-R}" y2="${H-B}" stroke="${cssv('--line')}"/><line x1="${L}" y1="${T}" x2="${L}" y2="${H-B}" stroke="${cssv('--line')}"/>`;
   if (reqY) {const yr = Y(reqY.value), top = reqY.op === ">=" ? T : yr, hgt = reqY.op === ">=" ? yr - T : H - B - yr;
     s += `<rect x="${L}" y="${top}" width="${W-L-R}" height="${Math.max(0, hgt)}" fill="${cssv('--good-soft')}" opacity="0.6"/><text x="${W-R-4}" y="${yr-4}" text-anchor="end">${esc(reqY.id)}: ${esc(reqY.op)} ${reqY.value}</text>`}
   for (let i = 0; i <= 4; i++) {const v = x0 + (x1-x0)*i/4; s += `<text x="${X(v)}" y="${H-B+14}" text-anchor="middle">${f3(v)}</text>`}
   for (let i = 0; i <= 4; i++) {const v = y0 + (y1-y0)*i/4; s += `<text x="${L-6}" y="${Y(v)+4}" text-anchor="end">${f3(v)}</text>`}
   s += `<text x="${(L+W-R)/2}" y="${H-4}" text-anchor="middle">${esc(qn(kx))}${OX.unit ? " (" + OX.unit + ")" : ""}</text><text transform="rotate(-90)" x="${-(T+H-B)/2}" y="12" text-anchor="middle">${esc(qn(ky))}${OY.unit ? " (" + OY.unit + ")" : ""}</text>`;
-  for (const p of pts) s += `<circle cx="${X(p[kx])}" cy="${Y(p[ky])}" r="2.6" fill="${p.feasible ? cssv('--muted') : cssv('--line')}"/>`;
+  for (const p of pts) s += `<circle cx="${X(p[kx])}" cy="${Y(p[ky])}" r="${p.steered ? 3.4 : 2.6}" fill="${p.steered && p.feasible ? cssv('--accent') : p.feasible ? cssv('--muted') : cssv('--line')}"${p.steered ? ` opacity="0.75"` : ""}/>`;
+  if (steerTarget) {const tx = X(steerTarget.x), ty = Y(steerTarget.y); s += `<g id="steermark" stroke="${cssv('--ink')}" stroke-width="1.5" fill="none"><circle cx="${tx}" cy="${ty}" r="7" stroke-dasharray="3 2"/><line x1="${tx-11}" x2="${tx+11}" y1="${ty}" y2="${ty}"/><line x1="${tx}" x2="${tx}" y1="${ty-11}" y2="${ty+11}"/></g>`}
   const front = D.designs.filter(d => d.on_front).sort((a, b) => a.metrics[kx] - b.metrics[kx]);
   if (front.length > 1) s += `<polyline fill="none" stroke="${cssv('--accent')}" stroke-width="1.5" points="${front.map(d => X(d.metrics[kx])+','+Y(d.metrics[ky])).join(' ')}"/>`;
   for (const d of D.designs) {
@@ -510,8 +514,48 @@ function pareto(){
   }
   if (D.baseline) {const b = D.baseline.metrics; s += `<g class="pt" data-t="base"><rect x="${X(b[kx])-6}" y="${Y(b[ky])-6}" width="12" height="12" fill="${cssv('--bad')}"/><title>Baseline: ${qv(b, OX)}, ${qv(b, OY)}</title></g>`}
   svg.innerHTML = s;
-  $("#paretonote").textContent = `Green band: meets the requirement on the vertical axis. Short bars: how far each Pareto design's value moved from the search mesh to the fine mesh. Dots: every evaluated design (grey feasible, light infeasible). Large dots: Pareto designs re-solved on the fine mesh; ring: recommended. Square: hand baseline.`;
+  $("#paretonote").textContent = `Green band: meets the requirement on the vertical axis. Short bars: how far each Pareto design's value moved from the search mesh to the fine mesh. Dots: every evaluated design (grey feasible, light infeasible). Large dots: Pareto designs re-solved on the fine mesh; ring: recommended. Square: hand baseline.${D.objectives.length > 1 ? " Drag on empty space to set a target for the search." : ""}`;
 }
+// ---------------------------------------------------------------- steer by dragging (G4, D2): the target becomes the reference point of a focused search
+const API = location.protocol.startsWith("http") && D.study_id ? location.origin : null;
+function steerReference(){return D.objectives.map(o => o === OX ? steerTarget.x : o === OY ? steerTarget.y : (selected || rec).metrics[o.quantity])}
+function steerPanel(){
+  const ref = steerReference().map(v => +v.toPrecision(5));
+  $("#steerbar").style.display = "block";
+  const what = `Target: ${qv({[OX.quantity]: steerTarget.x}, OX)}, ${qv({[OY.quantity]: steerTarget.y}, OY)}.`;
+  if (API) {$("#steertext").textContent = what; $("#steergo").style.display = ""; $("#steergo").disabled = false; return}
+  $("#steergo").style.display = "none";
+  $("#steertext").textContent = D.study_id ? `${what} This file cannot run a search. Run python -m structura.app.rest and open /studies/${D.study_id}/report to steer from here, or ask the agent: steer(reference=${JSON.stringify(ref)}).`
+                                           : `${what} This report has no study behind it, so it cannot run a search. Reference point for the steer tool: ${JSON.stringify(ref)}.`;
+}
+function steerMove(e){const m = e.currentTarget.getScreenCTM().inverse(), p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m); steerTarget = paretoInverse(p.x, p.y); pareto()}
+if (D.objectives.length > 1) {
+  const svgp = $("#pareto");
+  svgp.addEventListener("pointerdown", e => {if (e.target.closest(".pt") || steering) return; steerDrag = true; svgp.setPointerCapture(e.pointerId); steerMove(e)});
+  svgp.addEventListener("pointermove", e => {if (steerDrag) steerMove(e)});
+  svgp.addEventListener("pointerup", e => {if (!steerDrag) return; steerDrag = false; steerPanel()});
+}
+async function steerPoll(){
+  const next = D.history.reduce((a, h) => Math.max(a, h.n + 1), 0);
+  const r = await (await fetch(`${API}/api/studies/${encodeURIComponent(D.study_id)}/evaluations?from=${next}`)).json();
+  if (r.ok && r.rows.length) {D.history.push(...r.rows); pareto(); history()}
+  return r.ok ? r.rows.length : 0;
+}
+$("#steergo").addEventListener("click", async () => {
+  const N = 16, start = D.history.length;
+  steering = true; $("#steergo").disabled = true;
+  const say = () => $("#steertext").textContent = `Searching toward the target: ${D.history.length - start} of ${N} evaluations.`;
+  say();
+  const timer = setInterval(() => steerPoll().then(say).catch(() => {}), 1000);
+  try {
+    const r = await (await fetch(`${API}/api/tools/steer`, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({study_id: D.study_id, reference: steerReference(), n_trials: N})})).json();
+    clearInterval(timer);
+    await steerPoll();
+    $("#steertext").textContent = r.ok ? `${r.evaluations} evaluations, ${r.feasible} feasible, shown in colour. These are search-mesh values at ${r.mesh_size} mm: re-solve and verify a design before relying on it. Rebuild the report to do that.`
+                                       : `The search did not run: ${r.message || r.error}`;
+  } catch (err) {clearInterval(timer); $("#steertext").textContent = `The search did not run: ${err.message}`}
+  steering = false; $("#steergo").disabled = false;
+});
 $("#pareto").addEventListener("click", e => {const g = e.target.closest(".pt"); if (!g) return;
   if (g.dataset.t === "base") {which = "base"; setSplit(false); show(D.baseline, "Baseline (hand design)")} else {selected = D.designs.find(d => String(d.trial) === g.dataset.t); if (which !== "split") which = "sel"; show(selected, label(selected))}
   $("#whichseg").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x.dataset.w === which)); pareto(); compare()});
@@ -564,6 +608,14 @@ function timeline(){
 }
 
 pareto(); compare(); trust(); history(); timeline();
+if (API) {  // G6: served by the REST door, the timeline follows the study as it runs
+  const seen = new Set((D.timeline || []).map(e => e.time + "|" + e.step + "|" + e.outcome));
+  const es = new EventSource(`${API}/api/studies/${encodeURIComponent(D.study_id)}/events`);
+  es.addEventListener("step", ev => {const e = JSON.parse(ev.data), key = e.time + "|" + e.step + "|" + e.outcome; if (seen.has(key)) return; seen.add(key);
+    const detail = Object.fromEntries(Object.entries(e).filter(([k]) => !["time","t","step","outcome","prev","hash"].includes(k)));
+    const i = D.timeline.reduce((a, x, j) => x.time ? j + 1 : a, 0);
+    D.timeline.splice(i, 0, {time: e.time, step: e.step, outcome: e.outcome, detail: JSON.stringify(detail).slice(0, 160)}); timeline()});
+}
 if (rec) show(rec, label(rec)); else if (D.baseline) show(D.baseline, "Baseline (hand design)");
 // print / PDF mode (I1): freeze the 3D view into an image (WebGL canvases often print blank) and drop the controls
 if (location.hash === "#print") {
@@ -575,7 +627,7 @@ if (location.hash === "#print") {
 // ---------------------------------------------------------------- Arabic (I1): right-to-left with translated labels; numbers and units unchanged
 const AR = {
   "Attome Agentic Engineering · study report · generated by the engine": "أتوم للهندسة الوكيلة · تقرير الدراسة · من إنتاج المحرك",
-  "Design and simulation": "التصميم والمحاكاة", "Pareto front: click a design": "جبهة باريتو: انقر على تصميم",
+  "Design and simulation": "التصميم والمحاكاة", "Search here": "ابحث هنا", "Pareto front: click a design": "جبهة باريتو: انقر على تصميم",
   "Trust record of the recommended design": "سجل الثقة للتصميم الموصى به", "Optimization history": "سجل التحسين",
   "Agent timeline": "الخط الزمني للوكيل", "Spec card": "بطاقة المواصفات", "Assumptions": "الافتراضات",
   "Making the recommended design": "تصنيع التصميم الموصى به", "Every evaluated design: parameters and results": "كل التصاميم المقيَّمة: المعاملات والنتائج",

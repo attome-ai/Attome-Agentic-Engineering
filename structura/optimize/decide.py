@@ -82,7 +82,8 @@ def steer(spec_path: str, study: optuna.Study, reference: list[float], n_trials:
         best = focus.best_value
     except ValueError:  # no feasible steered design yet
         best = None
-    return {"reference": ref.tolist(), "evaluations": len(added), "best_distance": best}
+    return {"reference": ref.tolist(), "evaluations": len(added), "feasible": sum(1 for t in added if t.user_attrs.get("feasible")),
+            "mesh_size": mesh_size, "best_distance": best}
 
 
 def explain(study: optuna.Study, a: int, b: int, sobol: dict | None = None) -> dict:

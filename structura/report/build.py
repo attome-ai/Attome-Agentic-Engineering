@@ -75,10 +75,7 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
     if baseline:
         base = {"trial": "baseline", "params": baseline, **_bundle(spec, baseline, mesh, cache / "baseline")}
         base["volume"] = None  # large, and the cut view is for the recommended design
-    hist = []
-    for t in sorted(study.get_trials(deepcopy=False), key=lambda t: t.number):
-        m = t.user_attrs.get("metrics") or {}
-        hist.append({"n": t.number, "status": t.user_attrs.get("status", t.state.name), "feasible": bool(t.user_attrs.get("feasible")), "params": {k: float(v) for k, v in t.params.items()}, **m})
+    hist = pareto.history_rows(study)
     timeline = []
     if study_id:
         from structura.agent import studies as S
@@ -127,7 +124,7 @@ def build(spec_path: str, study_dir: str, out: str, baseline: dict | None = None
     data = {"title": f"{card['id']}: {spec.objectives[0][0]} vs {spec.objectives[1][0]}" if len(spec.objectives) > 1 else card["id"],
             "brief": card.get("brief") or json.loads(Path(spec_path).read_text()).get("brief", ""),
             "spec": {"id": card["id"], "version": card["version"], "hash": card["hash"], "requirements": card["requirements"]},
-            "required_sf": req_sf, "objectives": objectives, "designs": designs, "manufacturing": manufacturing, "baseline": base, "history": hist, "hypervolume": hv, "sobol": sobol, "trust": trust, "timeline": timeline,
+            "required_sf": req_sf, "objectives": objectives, "designs": designs, "manufacturing": manufacturing, "baseline": base, "history": hist, "hypervolume": hv, "sobol": sobol, "trust": trust, "timeline": timeline, "study_id": study_id,
             "generated": datetime.now(timezone.utc).isoformat(timespec="seconds")}
     html = TEMPLATE.read_text(encoding="utf-8")
     html = html.replace("__THREE__", THREE.read_text(encoding="utf-8")).replace("__DATA__", json.dumps(data).replace("</", "<\\/"))

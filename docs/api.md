@@ -87,6 +87,15 @@ Check whether any design within the spec's bounds can meet the requirements (eva
 | `study_id` | string | yes |
 | `mesh_size` | number | no |
 
+### choose_print_direction
+
+Choose the print direction for a design: each of the six axis directions with its tension across the layers (printed parts are weakest there) and support volume, the recommended one and why. Set the spec's print_direction to it before a final verify. Example: choose_print_direction('s1', {'thickness': 8, ...}).
+
+| Argument | Type | Required |
+|---|---|---|
+| `study_id` | string | yes |
+| `params` | object | yes |
+
 ### compose_candidates
 
 Best of N (B1): propose several candidate design graphs for the study's brief at once (3-5 is typical). Each is built, gated and solved once at its default parameters against the study's spec; they come back ranked (gate pass, then meets every requirement, then the first objective) with the reason each loser lost. Every graph needs the face names the spec's load cases use and parameters with bounds; the winner's family name can go into a new spec version (family + its parameters as free_params) for the optimizer.
@@ -155,6 +164,15 @@ Explain two designs (trial numbers): which parameters differ and how each object
 | `trial_a` | integer | yes |
 | `trial_b` | integer | yes |
 
+### fit_part_to_family
+
+Check whether an uploaded STEP part matches a part family: the family's closest design and its overlap with the part (intersection over union; 0.95 or more counts as a fit). A fit means the family's parameters can be optimized instead of cutting pockets into the solid. Example: fit_part_to_family('part.step', 'bracket').
+
+| Argument | Type | Required |
+|---|---|---|
+| `step_path` | string | yes |
+| `family` | string | yes |
+
 ### freeform_cad
 
 LAST RESORT for shapes the design grammar cannot express (B1): write CadQuery code that assigns the final solid to `result` (cq is imported; units mm). It runs in its own process with a time limit, is exported to STEP, inspected like an uploaded part (holes frozen, faces named) and checked by the geometry gate. Returns the gate verdict, the detected faces and holes, or a structured error to repair. The shape is fixed: optimize it afterwards with the uploaded-part operations (add_lightening_pocket) or by revising the code. Prefer compose_design whenever the grammar can express the part.
@@ -199,6 +217,15 @@ Manufacturing check and cost for one design of the study's family: FDM printing 
 | `params` | object | yes |
 | `material` | string or null | no |
 
+### model_route
+
+Which model to use for an agent step (plan, spec_extraction, compose, repair, log_parsing, report_drafting, explanation), given how many provider calls for this step have failed. Two failures move the step to the next model on its route; returns exhausted when none is left.
+
+| Argument | Type | Required |
+|---|---|---|
+| `step` | string | yes |
+| `failures` | integer | no |
+
 ### plan_study
 
 Record the study plan before running anything: family, physics, objectives and evaluation budget, in one sentence each. Example: plan_study(study_id, family='bracket', physics='linear static', objectives='min mass, max safety factor', budget=120)
@@ -231,6 +258,19 @@ Rank the brief's unknowns by how much they change the design before asking the u
 | `spec` | object | yes |
 | `unknowns` | array | yes |
 | `quantity` | string | no |
+
+### record_usage
+
+Record the tokens one model call used, so the study reports them per step (and cost, only when prices are stated in data/model_routes.json). Example: record_usage('s1', 'compose', 'claude-opus-5-5', 3200, 900). Returns the study's totals and whether it is over its token cap.
+
+| Argument | Type | Required |
+|---|---|---|
+| `study_id` | string | yes |
+| `step` | string | yes |
+| `model` | string | yes |
+| `input_tokens` | integer | yes |
+| `output_tokens` | integer | yes |
+| `seconds` | number or null | no |
 
 ### render_views
 
