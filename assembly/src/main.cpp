@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "attome/assembly.hpp"
+#include "attome/fasteners.hpp"
 
 namespace fs = std::filesystem;
 
@@ -45,9 +46,11 @@ int main(int argc, char** argv) {
     nlohmann::json desc = nlohmann::json::array();
     for (auto& q : j.at("parts")) desc.push_back({{"name", q.at("name")}, {"kind", q.at("kind")}, {"fastener", q.value("fastener", q.at("kind") == "bolt" || q.at("kind") == "plug")},
                                                    {"fixed", q.value("fixed", false)}, {"diameter", q.value("diameter", 0.0)},
-                                                   {"length", q.value("length", 0.0)},
+                                                   {"length", q.value("length", 0.0)}, {"grade", q.value("grade", "")},
                                                    {"color", q.value("color", "")}});
     result["part_list"] = desc;
+    // L2.2: the bolts holding a part to the wall, checked for the stated masses (EN 1993-1-8; plug pull-out from the datasheet)
+    if (ov.empty()) result["fasteners"] = attome::wall_bolt_check(parts, j);
     attome::write_parts(parts, out);
     std::ofstream(fs::path(out) / "plan.json") << result.dump(2);
     std::cout << result.dump(2) << "\n";

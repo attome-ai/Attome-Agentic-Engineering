@@ -31,7 +31,13 @@ verified simulation of the whole assembly, the order to put it together and an a
 
   Its proof, a reader assembling the unit from the sheet alone, needs the printed demo unit.
 - **L2.1 partly done.** Placement is by coordinates and drilled holes, not yet by mates.
-- **Not started:** L2.2 (capacity), L2.3, L2.4, L2.8.
+- **L2.2 done for wall bolts.** `assembly/src/fasteners.cpp` checks the bolt steel with EN 1993-1-8 Table 3.4 resistances. This replaces VDI 2230, because Eurocode has published tables to check against: M12 8.8 = 48.6 kN tension, 32.4 kN shear. Bolt loads come from wall-plate statics, pivoting about the lowest edge. 5 tests pass (published values, ISO stress areas, hand statics).
+  - An unstated grade is checked as 4.6 (D9).
+  - Plug pull-out is checked only against a datasheet value. Without one, the verdict is "incomplete", never "pass".
+  - Shelf result: 1.11 kN tension per plug, because the holes sit only 12 mm above the pivot edge. The bolt steel uses 16% of its capacity.
+  - The finding for the bracket family: holes placed higher on the plate would cut plug tension in proportion.
+  - The instruction sheet tells the installer the plug load to look for.
+- **Not started:** L2.3, L2.4, L2.8.
 
 **Order of work.** L2.1 and L2.2, then L2.5 and L2.6 (they need only geometry, and they are the most visible),
 then L2.3 and L2.4 (contact is the hard physics), then L2.7, then L2.8.

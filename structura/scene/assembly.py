@@ -30,10 +30,28 @@ AR_NAMES = {"wall": "الجدار", "plug": "خابور الجدار", "bracket"
 TEXT = {
     "en": {"title": "Assembly instructions", "parts": "Parts", "tools": "Tools", "step": "Step", "done": "Done",
            "in_place": "Already in place: {}.",
+           "fixing": "Wall fixing",
+           "fix_load": "The shelf's stated load is {m:.1f} kg, {e:.0f} mm out from the wall, held by {n} bolts.",
+           "fix_plug": "Each wall plug must hold at least {t:.2f} kN in tension in your wall: check the plug's datasheet for "
+                       "your wall material before drilling.",
+           "fix_bolt": "Bolt steel (EN 1993-1-8, grade {g}): uses {r:.0%} of its capacity.",
+           "fix_assumed": "Grade not stated, so the weakest common grade (4.6) was checked; any stronger bolt is fine.",
+           "fix_pass": "Fixing checked: bolts and plugs within their capacity.",
+           "fix_fail": "Fixing NOT adequate: do not install as designed.",
+           "fix_incomplete": "The bolts are adequate; the plugs are not checked until their datasheet tension load is given.",
            "checked": "Order and paths from the planner. Replay check: every move tested at {f} positions per step with exact "
                       "solid intersection ({n} checks), largest overlap {v:.3g} mm³."},
     "ar": {"title": "تعليمات التجميع", "parts": "القطع", "tools": "الأدوات", "step": "الخطوة", "done": "اكتمل التجميع",
            "in_place": "مثبّت مسبقاً: {}.",
+           "fixing": "التثبيت في الجدار",
+           "fix_load": "الحمل المحدد للرف {m:.1f} كغ، على بعد {e:.0f} مم من الجدار؛ عدد البراغي الحاملة: {n}.",
+           "fix_plug": "يجب أن يتحمّل كل خابور شدّاً لا يقل عن {t:.2f} كيلونيوتن في جدارك: راجع النشرة الفنية للخابور "
+                       "بحسب مادة الجدار قبل الثقب.",
+           "fix_bolt": "فولاذ البراغي (EN 1993-1-8، الدرجة {g}): يستخدم {r:.0%} من قدرته.",
+           "fix_assumed": "لم تُحدَّد الدرجة، ففُحصت أضعف درجة شائعة (4.6)؛ وأي برغي أقوى منها مناسب.",
+           "fix_pass": "فُحص التثبيت: البراغي والخوابير ضمن قدرتها.",
+           "fix_fail": "التثبيت غير كافٍ: لا تركّب الرف بهذا التصميم.",
+           "fix_incomplete": "البراغي كافية؛ ولا تُفحص الخوابير حتى تُعطى قيمة الشدّ من نشرتها الفنية.",
            "checked": "الترتيب والمسارات من المخطِّط. فحص الإعادة: اختُبرت كل حركة في {f} موضعاً لكل خطوة بتقاطع المجسّمات "
                       "الدقيق ({n} فحصاً)، وأكبر تداخل {v:.3g} مم³."},
 }
@@ -205,6 +223,7 @@ class AssemblyScene:
             for count, label in self.parts_list(lang):
                 lines.append(f"- {count} × {label}")
             lines += ["", f"## {T['tools']}", ""] + [f"- {t}" for t in self.tools(lang)] + [""]
+            lines += self.fixing(lang)
             fixed = [d["name"] for d in self.plan["part_list"] if d.get("fixed")]
             if fixed:
                 lines += [T["in_place"].format(", ".join(self.pname(f, lang) for f in fixed)), ""]
@@ -218,6 +237,26 @@ class AssemblyScene:
             path.write_text(body, encoding="utf-8")
             written.append(path)
         return written[0]
+
+    def fixing(self, lang: str):
+        """What the installer must know about the wall fixing, from the planner's fastener check (L2.2)."""
+        f = self.plan.get("fasteners") or {}
+        if not f.get("evaluated"):
+            return []
+        T = TEXT[lang]
+        bolts = f["bolts"]
+        t_max = max(b["tension_N"] for b in bolts) / 1000
+        out = [f"## {T['fixing']}", ""]
+        out.append(T["fix_load"].format(m=f["load_N"] / 9.81, e=f["lever_mm"], n=len(bolts)))
+        out.append("")
+        out.append("- " + T["fix_plug"].format(t=t_max))
+        grades = sorted({b["grade"] for b in bolts})
+        stated = all(b["grade_stated"] for b in bolts)
+        out.append("- " + T["fix_bolt"].format(g=", ".join(grades), r=f["worst_interaction"]) +
+                   ("" if stated else " " + T["fix_assumed"]))
+        verdict = f.get("verdict")
+        out += ["", T["fix_" + verdict] if ("fix_" + verdict) in T else verdict, ""]
+        return out
 
     def pname(self, name: str, lang: str) -> str:
         """A part's name for the reader: bolt_2 -> 'bolt 2' / 'البرغي 2'."""

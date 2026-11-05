@@ -39,8 +39,10 @@ def main():
         _, cy, cz = h["centre"]
         parts.append({"name": f"bolt_{i}", "kind": "bolt", "at": [t, cy, cz], "axis": [-1, 0, 0], "diameter": 6.0,
                       "length": t + 26, "color": "#9aa0a6"})
-    parts.append({"name": "shelf_board", "kind": "box", "at": [0, y0 + w / 2 - 200, z1], "size": [250, 400, 18], "color": "#c08a55"})
-    parts.append({"name": "crate", "kind": "box", "at": [70, y0 + w / 2 - 70, z1 + 18], "size": [120, 140, 110], "color": "#8a6b4a"})
+    parts.append({"name": "shelf_board", "kind": "box", "at": [0, y0 + w / 2 - 200, z1], "size": [250, 400, 18], "color": "#c08a55",
+                  "mass_kg": 0.9})  # pine, 250 x 400 x 18 mm at about 500 kg/m3
+    parts.append({"name": "crate", "kind": "box", "at": [70, y0 + w / 2 - 70, z1 + 18], "size": [120, 140, 110], "color": "#8a6b4a",
+                  "mass_kg": 20.0})  # the 20 kg load of brief b02
     j = {"name": "wall shelf: bracket, plugs, M6 bolts, board, crate", "bracket_params": b["params"], "parts": parts}
     (OUT / "shelf.json").write_text(json.dumps(j, indent=2))
     print(f"wrote {OUT / 'shelf.json'}: {len(parts)} parts, {len(holes)} bolt holes, wall plate {t:.1f} mm")
