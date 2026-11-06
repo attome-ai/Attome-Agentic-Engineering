@@ -174,6 +174,10 @@ optimization.
 | Best of 200 NSGA-II evaluations | 324 g | 0.55 | fails; 0 of 200 feasible |
 | Strongest corner of the bounds (`benchmarks/bracket_100kg_feasibility.json`) | 372 g | 0.76 (3 mm uniform mesh) | fails: no design in the family can meet the brief |
 
+The first two rows were measured on the earlier version of the bracket family (2026-11-04; today's family puts the
+hand baseline at 99 g); the corner row is on the current family. The search was not re-run, since the corner check
+already shows no design in the family can meet the brief.
+
 The corner check bounds what the search can reach (the search, trading mass against the 250 g cap, did not reach that
 corner). `propose_relaxation` now also reports the load at which the strongest design meets the requirement: 38% of
 the brief's load, about 38 kg (linear statics: safety factor scales with 1/load).
