@@ -499,7 +499,7 @@ interface exists and outside addresses are unreachable. A 60-evaluation study ra
 grade B design with its report; the report asks for no external resources; the REST door answered on loopback with all
 its tools. Preflight passed except the fallback report, because `runs/` is not in the image. This was a container on the
 development machine, with today's report features not yet in its image. The report was not opened in a browser there and
-the workbench was not started, so do the Wi-Fi-off run below once on the demo laptop.
+the workbench was not started, so do the Wi-Fi-off run below once on the demo machine (this PC).
 
 
 No network access in the engine, the Python layer, the reports or the workbench (search of `engine/src`, `structura/`,
@@ -622,7 +622,7 @@ model did not distort this result. Adaptive refinement against Peterson's Kt for
 **In-house solver against CalculiX on stress:** 49.9568 against 49.9564 MPa on the same mesh, once it recovers stress as CalculiX does.
 
 **Viewer (`runs/perf/report_200k.html#perf`, headless Chrome, RTX 5090, idle machine):** 262,280 triangles, 807 ms to the first frame, 121 frames per
-second with the GPU wait, worst frame 465 ms. Measured on the development machine, not a laptop. The file is 72.6 MB at this mesh.
+second with the GPU wait, worst frame 465 ms. Measured on the development machine, which is the demo machine: P4-x1 (under 1 s, 60 fps) is met there. The file is 72.6 MB at this mesh.
 
 **Brief benchmark (`benchmarks/brief_bench_opus55_session.json`):** 475 of 500 fields (95.0%), 70 of 70 numeric values with correct units, with Opus 5.5 in
 a Claude Code session given only the brief and the harness's rules, not through the API. 19 of the 25 misses are the objective: the rules say not to

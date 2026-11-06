@@ -395,7 +395,7 @@ The optimizer searches, the solver decides; the LLM sets up the problem and expl
 - **Before 3 Feb: parallel solves.** Single-threaded ccx processes on all physical cores minus one; fine re-solves run one at a time to bound memory.
 - **Before 3 Feb: coarse-to-fine.** Optimize on coarse meshes, re-solve the front on fine meshes, record how far each objective moved; if the ranking changes the front is re-run finer.
 - **Before 3 Feb: fast screening solver.** scikit-fem in process with a reused factorization for small linear screening runs, cross-checked against CalculiX (F2).
-- **Measured.** Evaluations per minute on the demo laptop, cache hit rate and coarse-to-fine drift written to docs/benchmarks.md.
+- **Measured.** Evaluations per minute on the demo machine, cache hit rate and coarse-to-fine drift written to docs/benchmarks.md.
 
 **Today (score 60):**
 - Content-hash cache, parallel evaluations, coarse search with fine verification (D7), in-process screening solver.
@@ -546,7 +546,7 @@ The owner's focus: design and simulation must be easy to see, compare and decide
 **Today (score 90):**
 - Colour maps, contour bands, adjustable colour range, a pinned peak label and the agent's notes pinned in 3D, marked as its words (`annotate`). No isolines.
 - Offline three.js viewer: stress, largest principal stress, displacement, safety and temperature fields, probe, load and support markers, Arabic mode.
-- 262,280 triangles: 807 ms to the first frame, 121 frames per second with the GPU wait, on the development machine, not a laptop.
+- 262,280 triangles: 807 ms to the first frame, 121 frames per second with the GPU wait, on the demo machine (the development PC).
 
 **How the leaders do it:**
 - Ansys and Siemens lead with desktop post-processors; SimScale shows fields in the browser.
