@@ -416,6 +416,28 @@ This shows each answer builds what it was meant to, but it cannot catch a misrea
 numbers too). **Not comparable yet:** 60 prompts is under a third of L1, the published runs allowed three retries, and
 L2 to L4 were not run. L1 is mostly primitives, where invalid rates are lowest for every model.
 
+### L3 (sweeps, lofts, shells, free-form): the 30 public prompts (`answers_l3.py`, `benchmarks/text2cad_l3.json`)
+
+Measured 2026-11-06, same protocol: gears, scroll compressors, Laval nozzles, Bezier lofts, twisted blades, swept cam
+grooves, a wave spring. The grammar expressed 1 of 30 (the L-shaped bearing housing); 29 went through the CadQuery fallback.
+
+| | First attempt | After one repair round from the error |
+|---|---|---|
+| Invalid (paper's definition) | **3 of 30 (10.0%)** | 0 of 30 |
+| Rejected by the engine's gate (more than one solid) as well | 6 of 30 (20.0%) | 0 (one answer is two cams, as its prompt describes) |
+| Published L3 | about 70-90% invalid for most models; Claude-4.5-Sonnet about 70% | |
+
+The three invalid solids came from a closed sweep cut (fixed by two open half-sweeps), round wall ends drawn across the
+wall, and a pipe bored before it was fused. Three answers were valid but in pieces (a nozzle floating 1 mm above its dome,
+ribs placed where the cube's R20 rounding had already curved away); the engine's gate reports that as an error, so in
+this system they are failures that the error repairs. **One valid answer was wrong and no error showed it:** the wave
+spring (L3_29) came out at 383 mm3 against about 11,000, because CadQuery's `parametricCurve` returned a one-turn path for
+the five-turn curve and the fixed-normal sweep gave a near-empty solid. A size check found it; with an explicit spline and
+the standard sweep it is 11,184 mm3 (hand value 11,364 for a flat strip; the strip tilts with the wave). The invalid rate
+cannot see this kind of error, which is the paper's own warning about survivorship. Several prompts contradict themselves
+(the 2:1 head with "depth 100", an involute scroll larger than its plate); the choice made is written next to each answer.
+Not comparable as a lead, for the same reasons as L1.
+
 ## Reproducibility (P3-x2, `structura reproduce --dir TRUST_DIR`)
 
 Each trust record stores the spec path and hash, the parameters and the fine-mesh metrics; `reproduce` refuses a

@@ -1,0 +1,557 @@
+{
+ "benchmark": "Text2CAD-Bench L3, geometric prompts, public preview (30 of 100)",
+ "source": "https://huggingface.co/datasets/AICAD/Text2CAD-Bench (release.csv, CC BY 4.0)",
+ "model": "claude-opus-5-5 in a Claude Code session, one pass, not through the API",
+ "invalid_rate": "0 of 30 (0.0%)",
+ "by_path": {
+  "grammar": {
+   "answers": 1,
+   "invalid": 0
+  },
+  "cadquery": {
+   "answers": 29,
+   "invalid": 0
+  }
+ },
+ "multi_solid": [
+  "L3_26"
+ ],
+ "volume_check": {
+  "checked": 0,
+  "off": [],
+  "note": "closed-form volume from the prompt's dimensions (volumes_l1.py); checks the build, not the reading"
+ },
+ "published_geo_invalid_rate": "about 70-90% for most models; Claude-4.5-Sonnet about 70% (paper, L3)",
+ "repairs": {
+  "L3_12": {
+   "error": "the solid is not valid (OCCT check failed)",
+   "fix": "the closed groove sweep split into two open halves"
+  },
+  "L3_19": {
+   "error": "the solid is not valid (OCCT check failed)",
+   "fix": "round wall ends built from the wall's normal and tangent"
+  },
+  "L3_25": {
+   "error": "the solid is not valid (OCCT check failed)",
+   "fix": "port pipes fused solid, then bored through the wall"
+  },
+  "L3_5": {
+   "error": "2 solids (the engine's gate needs one)",
+   "fix": "the nozzle reaches into the dome wall"
+  },
+  "L3_15": {
+   "error": "2 solids (the engine's gate needs one)",
+   "fix": "the nozzle reaches into the dome wall"
+  },
+  "L3_27": {
+   "error": "11 solids (the engine's gate needs one)",
+   "fix": "ribs and pipes overlap the rounded cube"
+  },
+  "L3_29": {
+   "error": "none: valid, but a size check found 383 mm3 against about 11,000 (outside the benchmark's protocol)",
+   "fix": "explicit spline path and the corrected-Frenet sweep"
+  }
+ },
+ "first_attempt": {
+  "invalid_paper_definition": [
+   "L3_12",
+   "L3_19",
+   "L3_25"
+  ],
+  "invalid_rate": "3 of 30 (10.0%)",
+  "valid_but_rejected_by_the_engine_gate": [
+   "L3_5",
+   "L3_15",
+   "L3_27"
+  ],
+  "failing_our_gate": "6 of 30 (20.0%)",
+  "valid_but_wrong_found_by_a_size_check": [
+   "L3_29"
+  ],
+  "after_one_repair_round": "0 of 30 invalid; one answer (L3_26) is two solids because the prompt describes two separate cams",
+  "note": "L3_28 first crashed with a missing DLL because the harness ran outside the environment; not counted against the answer"
+ },
+ "not_measured": "Chamfer distance and IoU: the reference shapes are not public; see metrics.py",
+ "rows": [
+  {
+   "id": "L3_1",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 59552.602,
+   "bbox_mm": [
+    100.0,
+    -67.421,
+    -142.421,
+    200.0,
+    217.421,
+    142.421
+   ],
+   "seconds": 2.25
+  },
+  {
+   "id": "L3_2",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 19768.848,
+   "bbox_mm": [
+    0.0,
+    -3.0,
+    0.0,
+    100.0,
+    10.5,
+    50.0
+   ],
+   "seconds": 2.27
+  },
+  {
+   "id": "L3_3",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 36370.694,
+   "bbox_mm": [
+    -32.984,
+    -32.984,
+    0.0,
+    32.984,
+    32.984,
+    15.0
+   ],
+   "seconds": 2.76
+  },
+  {
+   "id": "L3_4",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 13513.312,
+   "bbox_mm": [
+    -0.0,
+    -7.5,
+    -10.01,
+    150.0,
+    30.078,
+    10.01
+   ],
+   "seconds": 1.29
+  },
+  {
+   "id": "L3_5",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 676926.193,
+   "bbox_mm": [
+    -100.0,
+    -100.0,
+    0.0,
+    100.0,
+    100.0,
+    130.0
+   ],
+   "seconds": 1.41
+  },
+  {
+   "id": "L3_6",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 122261.708,
+   "bbox_mm": [
+    -20.0,
+    -20.0,
+    -0.0,
+    20.0,
+    20.0,
+    100.0
+   ],
+   "seconds": 1.61
+  },
+  {
+   "id": "L3_7",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 78122.311,
+   "bbox_mm": [
+    -53.83,
+    -58.549,
+    0.0,
+    44.407,
+    49.103,
+    30.0
+   ],
+   "seconds": 2.26
+  },
+  {
+   "id": "L3_8",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 27867.89,
+   "bbox_mm": [
+    0.0,
+    -33.0,
+    -33.0,
+    80.0,
+    33.0,
+    33.0
+   ],
+   "seconds": 1.35
+  },
+  {
+   "id": "L3_9",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 589928.056,
+   "bbox_mm": [
+    -41.25,
+    -40.0,
+    -0.0,
+    41.25,
+    40.0,
+    150.0
+   ],
+   "seconds": 1.37
+  },
+  {
+   "id": "L3_10",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 211953.552,
+   "bbox_mm": [
+    -95.0,
+    -95.0,
+    -4.717,
+    95.0,
+    95.0,
+    80.0
+   ],
+   "seconds": 1.38
+  },
+  {
+   "id": "L3_11",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 97373.518,
+   "bbox_mm": [
+    -60.0,
+    -40.0,
+    -0.0,
+    84.749,
+    40.0,
+    144.749
+   ],
+   "seconds": 1.8
+  },
+  {
+   "id": "L3_12",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 152668.892,
+   "bbox_mm": [
+    -40.0,
+    -40.0,
+    -0.0,
+    40.0,
+    40.0,
+    60.0
+   ],
+   "seconds": 2.88
+  },
+  {
+   "id": "L3_13",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 64879.553,
+   "bbox_mm": [
+    -32.984,
+    -32.984,
+    0.0,
+    32.984,
+    32.984,
+    30.0
+   ],
+   "seconds": 2.67
+  },
+  {
+   "id": "L3_14",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 40000.0,
+   "bbox_mm": [
+    -0.0,
+    0.0,
+    0.0,
+    100.0,
+    50.0,
+    35.0
+   ],
+   "seconds": 4.94
+  },
+  {
+   "id": "L3_15",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 513958.693,
+   "bbox_mm": [
+    -108.0,
+    -108.0,
+    0.0,
+    108.0,
+    108.0,
+    113.0
+   ],
+   "seconds": 1.48
+  },
+  {
+   "id": "L3_16",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 77460.396,
+   "bbox_mm": [
+    3.0,
+    -29.888,
+    -0.0,
+    106.0,
+    30.0,
+    26.245
+   ],
+   "seconds": 2.61
+  },
+  {
+   "id": "L3_17",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 191154.807,
+   "bbox_mm": [
+    -25.0,
+    -25.0,
+    -0.0,
+    25.0,
+    25.0,
+    100.0
+   ],
+   "seconds": 1.41
+  },
+  {
+   "id": "L3_18",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 24383.388,
+   "bbox_mm": [
+    -40.0,
+    -40.0,
+    -50.0,
+    40.0,
+    40.0,
+    59.529
+   ],
+   "seconds": 5.62
+  },
+  {
+   "id": "L3_19",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 147459.147,
+   "bbox_mm": [
+    -60.0,
+    -60.0,
+    0.0,
+    60.0,
+    60.0,
+    35.0
+   ],
+   "seconds": 2.51
+  },
+  {
+   "id": "L3_20",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 15018.173,
+   "bbox_mm": [
+    -15.0,
+    -15.0,
+    -0.0,
+    75.0,
+    15.0,
+    20.626
+   ],
+   "seconds": 1.34
+  },
+  {
+   "id": "L3_21",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 218104.714,
+   "bbox_mm": [
+    0.0,
+    -30.0,
+    -30.0,
+    100.0,
+    30.0,
+    30.0
+   ],
+   "seconds": 1.38
+  },
+  {
+   "id": "L3_22",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 15859.993,
+   "bbox_mm": [
+    -41.0,
+    -41.0,
+    -0.0,
+    41.0,
+    41.0,
+    44.0
+   ],
+   "seconds": 1.65
+  },
+  {
+   "id": "L3_23",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 1390220.987,
+   "bbox_mm": [
+    0.0,
+    -0.0,
+    0.0,
+    200.0,
+    100.0,
+    80.0
+   ],
+   "seconds": 1.62
+  },
+  {
+   "id": "L3_24",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 147280.232,
+   "bbox_mm": [
+    -60.0,
+    -60.0,
+    -0.0,
+    60.0,
+    60.0,
+    40.0
+   ],
+   "seconds": 4.89
+  },
+  {
+   "id": "L3_25",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 918716.551,
+   "bbox_mm": [
+    -80.0,
+    -80.0,
+    0.0,
+    80.0,
+    80.0,
+    180.607
+   ],
+   "seconds": 1.6
+  },
+  {
+   "id": "L3_26",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 2,
+   "volume_mm3": 473770.027,
+   "bbox_mm": [
+    -90.0,
+    -51.139,
+    -0.0,
+    90.0,
+    90.0,
+    50.0
+   ],
+   "seconds": 1.66
+  },
+  {
+   "id": "L3_27",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 240548.204,
+   "bbox_mm": [
+    -58.0,
+    -58.0,
+    -60.0,
+    58.0,
+    58.0,
+    60.0
+   ],
+   "seconds": 2.03
+  },
+  {
+   "id": "L3_28",
+   "path": "grammar",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 393879.092,
+   "bbox_mm": [
+    -0.0,
+    0.0,
+    0.0,
+    100.0,
+    100.0,
+    130.0
+   ],
+   "seconds": 0.12
+  },
+  {
+   "id": "L3_29",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 11183.976,
+   "bbox_mm": [
+    -43.292,
+    -42.917,
+    -3.767,
+    44.041,
+    43.665,
+    43.833
+   ],
+   "seconds": 3.41
+  },
+  {
+   "id": "L3_30",
+   "path": "cadquery",
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 517900.338,
+   "bbox_mm": [
+    0.0,
+    0.0,
+    0.0,
+    150.0,
+    100.0,
+    45.0
+   ],
+   "seconds": 1.35
+  }
+ ]
+}

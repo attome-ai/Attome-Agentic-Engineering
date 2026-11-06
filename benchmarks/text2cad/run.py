@@ -9,7 +9,7 @@ and is counted as valid, but flagged, because the engine's analyses need exactly
 Chamfer distance and IoU need the benchmark's reference shapes, which are not public ("contact us"); `metrics.py` is
 ready for them and writes nothing until they are present.
 
-Usage: python benchmarks/text2cad/run.py  ->  benchmarks/text2cad_l1.json and runs/text2cad/<id>/part.step
+Usage: python benchmarks/text2cad/run.py [--level L1|L3]  ->  benchmarks/text2cad_<level>.json and runs/text2cad/<id>/part.step
 """
 import json
 import subprocess
@@ -21,7 +21,8 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).parent))
 from structura import engine  # noqa: E402
-import answers_l1 as A  # noqa: E402
+import importlib  # noqa: E402
+import argparse  # noqa: E402
 
 RUNS = ROOT / "runs" / "text2cad"
 RUNNER = ROOT / "structura" / "agent" / "freeform_runner.py"
@@ -67,6 +68,10 @@ def check(step):
 
 
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--level", default="L1", choices=["L1", "L3"])
+    lvl = ap.parse_args().level
+    A = importlib.import_module(f"answers_{lvl.lower()}")
     ids = sorted(set(A.G) | set(A.C), key=lambda s: int(s.split("_")[1]))
     rows = []
     for pid in ids:
@@ -87,6 +92,7 @@ def main():
         rows.append(row)
         print(pid, path, "valid" if row["valid"] else "INVALID", row.get("solids", ""), row.get("error", ""), flush=True)
     from volumes_l1 import V, TOL
+    V = V if lvl == "L1" else {}
     vol_fail = []
     for r in rows:
         if r["id"] in V and r.get("volume_mm3"):
@@ -98,17 +104,20 @@ def main():
     inv = [r for r in rows if not r["valid"]]
     by = {p: {"answers": sum(1 for r in rows if r["path"] == p), "invalid": sum(1 for r in inv if r["path"] == p)}
           for p in ("grammar", "cadquery")}
-    out = {"benchmark": "Text2CAD-Bench L1, geometric prompts, public preview (60 of 200)",
+    out = {"benchmark": f"Text2CAD-Bench {lvl}, geometric prompts, public preview ({len(ids)} of {200 if lvl == 'L1' else 100})",
            "source": "https://huggingface.co/datasets/AICAD/Text2CAD-Bench (release.csv, CC BY 4.0)",
            "model": "claude-opus-5-5 in a Claude Code session, one pass, not through the API",
            "invalid_rate": f"{len(inv)} of {n} ({100 * len(inv) / n:.1f}%)", "by_path": by,
            "multi_solid": [r["id"] for r in rows if r.get("solids", 1) > 1],
            "volume_check": {"checked": sum(1 for r in rows if "volume_error" in r), "off": vol_fail,
                             "note": "closed-form volume from the prompt's dimensions (volumes_l1.py); checks the build, not the reading"},
-           "published_L1_geo_invalid_rate": {"GPT-5.2": "11.1%", "Claude-4.5-Sonnet": "20.3%", "DeepSeek-V3.2": "13.3%"},
+           "published_geo_invalid_rate": ({"GPT-5.2": "11.1%", "Claude-4.5-Sonnet": "20.3%", "DeepSeek-V3.2": "13.3%"} if lvl == "L1"
+                                          else "about 70-90% for most models; Claude-4.5-Sonnet about 70% (paper, L3)"),
+           "repairs": getattr(A, "REPAIRS", {}),
+           "first_attempt": getattr(A, "FIRST_ATTEMPT", None),
            "not_measured": "Chamfer distance and IoU: the reference shapes are not public; see metrics.py",
            "rows": rows}
-    (ROOT / "benchmarks" / "text2cad_l1.json").write_text(json.dumps(out, indent=1))
+    (ROOT / "benchmarks" / f"text2cad_{lvl.lower()}.json").write_text(json.dumps(out, indent=1))
     print(out["invalid_rate"], by, "volume check off:", [(i, next(r["volume_error"] for r in rows if r["id"] == i)) for i in vol_fail])
 
 
