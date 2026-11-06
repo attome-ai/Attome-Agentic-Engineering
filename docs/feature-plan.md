@@ -73,7 +73,7 @@ From a sentence, a photo or an existing part to a checkable spec. Competitor sco
 - **Why.** Every competitor that scores 60+ here (SimScale, Zoo, Adam, the papers) scores 0-20 on Pareto (D2), and none was found deriving loads from a use case or taking Arabic briefs.
 
 **Today (score 45):**
-- 50-brief benchmark scored: 95.0% of fields, 100% of units (`benchmarks/brief_bench_opus55_session.json`); run in a Claude Code session, not through the API, and with no image briefs. The harness's rules and gold disagree on unstated objectives (19 of 25 misses).
+- 50-brief benchmark scored: 95.0% of fields, 100% of units (`benchmarks/brief_bench_opus55_session.json`); run in a Claude Code session, the product's own path (D12), and with no image briefs. The harness's rules and gold disagree on unstated objectives (19 of 25 misses).
 - The agent turns a brief into a spec through MCP tools (create_study, derive_load, rank_questions). `read_brief_image` hands it a photo, sketch or drawing, with every value it reads treated as a guess until the user accepts the card; reading accuracy on pictures is not measured, because no image briefs exist yet.
 
 **How the leaders do it:**
@@ -756,7 +756,7 @@ A laptop, an open stack, any model. Each feature says what is built **before 3 F
 - **After 3 Feb: free access for education.** Free use for students and schools, starting with Bahrain.
 
 **Today (score 75):**
-- `scripts\install.cmd` and a Dockerfile. A container limited to 4 cores and 8 GB passes every engine test and runs a 120-evaluation study in 364 s with a 3.24 GB peak; that is not a real laptop, and the cost per study needs an API key to measure.
+- `scripts\install.cmd` and a Dockerfile. A container limited to 4 cores and 8 GB passes every engine test and runs a 120-evaluation study in 364 s with a 3.24 GB peak; that is not a real laptop. Cost per study is to be measured as tokens from the Claude Code session (D12).
 - No solver licences or training data; runs on one desktop (evaluation 1-4 s, study 4-8 min); demo rehearsed in 10.9 min (2026-11-05), ending at grade B on the plain family; the delivered grade A design is precomputed.
 
 **How the leaders do it:**

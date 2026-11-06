@@ -338,8 +338,8 @@ a bicycle frame...: the right answer is "no family fits"); 15 in Arabic, 3 mixed
 conversion. Ten fields per brief (family, material, load in N, safety factor, deflection, power, temperature limit,
 fan speed, objective, process). The scorer reports all fields, **stated fields** (only those the brief gives: an empty
 answer scores 58% on all fields but 0% here, so this is the honest number) and unit correctness, with every miss.
-Self-check: the gold answers score 100%; no answers score 0% on stated fields. The model run needs an API key:
-`python -m benchmarks.brief_bench.run extract --model claude-opus-5-5 --out runs/brief_bench/opus`, then `score`.
+Self-check: the gold answers score 100%; no answers score 0% on stated fields. The model run is done in a Claude Code session (D12); the API path
+`python -m benchmarks.brief_bench.run extract --model claude-opus-5-5 --out runs/brief_bench/opus` is kept but unused.
 Image briefs (a sketch or photo) are not in this set yet.
 
 ## Notch flexure against beam theory (B3, `benchmarks/flexure_check.py`)

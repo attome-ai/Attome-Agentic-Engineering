@@ -155,4 +155,23 @@ The roadmap lets a step move to a later phase with a written reason. These are i
 | G4 rotating 3D front | Three objectives already appear as linked 2D projections, which are easier to read. |
 | G6 repairs with the design before and after | Repairs show their typed error. Showing both designs needs the agent to record each attempt, and no demo path depends on it. |
 
-**Not moved, and not doable without the owner or an outside resource:** API-key routing measurements (E4) and cost per study (J1), Hephaestus-CCX (kit not public), Text2CAD-Bench Chamfer distance and IoU (the invalid rate is measured on the 60 public L1 prompts; the reference shapes are given only on request, so the owner has to ask the authors), image briefs for the benchmark (A1: they should be drawn by someone who does not know the answers), and the physical test (H3).
+**Not moved, and not doable without the owner or an outside resource:** image briefs for the benchmark (A1: they should be drawn by someone who does not know the answers), and the physical test (H3). The API, Text2CAD and Hephaestus items that were listed here are settled by D12.
+
+## D12. The agent runs in a Claude Code session; two outside benchmarks are dropped (2026-11-06, owner)
+
+**Decision.**
+1. **No direct API.** The agent is Claude Code driving the engine through the MCP server. Every model measurement so
+   far was made that way, so "run in a Claude Code session, not through the API" is the product's own path, not a
+   caveat. Model routing (E4) means choosing the model for each step inside Claude Code: the main session, or a
+   subagent on a named model. Cost per study (J1) is reported as tokens per step and per study from the session
+   transcript. A dollar figure is given only as list-price equivalent, labelled so, because a subscription pays a flat
+   fee.
+2. **Text2CAD-Bench: invalid rate only.** Chamfer distance and IoU need the benchmark's reference shapes, which the
+   authors give only on request; the owner will not request them. P3-t3 is closed with the invalid rate on the 60
+   public L1 prompts, and the proposal must not compare geometric accuracy with the published models.
+3. **Hephaestus-CCX: not run.** P5-t1 was conditional on the kit becoming public; the owner expects it will not be, so
+   the task is closed without a run. The comparison with that paper stays qualitative (what it reports against what we
+   measure on our own briefs), and the proposal says so.
+
+**Consequence.** E4 and J1 move from "needs an API key" to work that can be done in a session; the benchmark claims
+in the proposal shrink to what was measured.
