@@ -342,6 +342,43 @@ Self-check: the gold answers score 100%; no answers score 0% on stated fields. T
 `python -m benchmarks.brief_bench.run extract --model claude-opus-5-5 --out runs/brief_bench/opus`, then `score`.
 Image briefs (a sketch or photo) are not in this set yet.
 
+## Notch flexure against beam theory (B3, `benchmarks/flexure_check.py`)
+
+New family `families/flexure.json`: a 60 mm bar with two circular notches leaving a thin web. Aluminium 6061-T6,
+clamped at one end, 10 N on the other; FEA end deflection = 2 x strain energy / force; mesh min(1 mm, web / 2), quadratic.
+Beam theory integrates bending plus shear along the true notch profile; plane stress (E) and plane strain (E/(1-nu^2))
+bound it. Measured 2026-11-06:
+
+| Web t (mm) | Notch R (mm) | Width (mm) | t/R | FEA (mm) | Beam, plane stress (mm) | FEA against it |
+|---|---|---|---|---|---|---|
+| 1.2 | 10 | 10 | 0.12 | 0.3595 | 0.3673 | -2.1% |
+| 2 | 10 | 10 | 0.20 | 0.1047 | 0.1024 | +2.3% |
+| 2 | 5 | 20 | 0.40 | 0.03935 | 0.03805 | +3.4% |
+| 2 | 5 | 10 | 0.40 | 0.08073 | 0.07609 | +6.1% |
+| 3 | 5 | 10 | 0.60 | 0.03331 | 0.02982 | +11.7% |
+| 4 | 3 | 10 | 1.33 | 0.02256 | 0.02035 | +10.9% |
+
+Thin hinges agree within 2-3%; the gap grows with t/R, as expected, because beam theory assumes a slowly varying section.
+Halving the mesh on the t = 2, R = 5 case moves the FEA by 0.8%. Not a validation case in F2: it checks the family
+builds and behaves like a hinge, not the solver.
+
+## Exports opened by outside programs (H2, `benchmarks/h2_interop.py`)
+
+Delivered bracket (thickness 11.78 mm), every format from `structura export`, 2026-11-06:
+
+| File | Reader | Result |
+|---|---|---|
+| part.stl | Blender 5.2.1 | 960 vertices, closed, volume +0.0016% against the B-rep, 120 x 50 x 100 mm |
+| part.glb | Blender 5.2.1 | the same mesh in metres, upright (glTF Y-up) |
+| part.3mf | lib3mf 2.4.1 | manifold and oriented, 960 vertices, volume +0.0016% |
+| drawing.dxf | ezdxf 1.4.2 | 722 lines and 10 texts, audit 0 errors |
+| part.step | CadQuery | valid, one solid, same volume (same OCCT kernel, so a weak check) |
+| drawing.pdf | none installed | header, trailer and one page only |
+
+Two bugs found and fixed: the GLB was written Z-up, so glTF viewers showed the part lying on its side, and the 3MF
+repeated each edge vertex once per face, so its mesh was not manifold (the 3MF spec requires it). Both now have engine
+tests. Not yet opened in a slicer or a CAD package.
+
 ## Text2CAD-Bench, public L1 preview (P3-t3, `benchmarks/text2cad/run.py`)
 
 Text2CAD-Bench (arXiv 2605.18430) has published 151 of its 600 prompts (`benchmarks/text2cad/release_preview.csv`, CC BY 4.0,

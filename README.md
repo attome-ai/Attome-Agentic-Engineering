@@ -82,7 +82,7 @@ thickness=8`, `structura trust ...`, `structura manufacture ...`, `structura ins
 |---|---|
 | `engine/` | C++20 engine: grammar, gate, mesh, solve, trust, manufacturing, inspection, CLI, tests |
 | `structura/` | Python: optimizers, MCP agent server, reports, workbench |
-| `families/` | part families as design graphs (bracket, heat sink) |
+| `families/` | part families as design graphs (bracket, delivered bracket, heat sink, notch flexure) |
 | `data/` | materials, manufacturing rates, vendored three.js |
 | `docs/` | feature plan, roadmap, decisions, benchmarks, validation, licences, proposal, judge Q&A |
 | `benchmarks/` | scripts and stored results behind every number |

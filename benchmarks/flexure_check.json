@@ -1,0 +1,93 @@
+{
+ "material": "AL6061T6",
+ "E_MPa": 68900,
+ "nu": 0.33,
+ "force_N": 10.0,
+ "mesh_mm": "min(1.0, web / 2)",
+ "rows": [
+  {
+   "web_mm": 1.2,
+   "notch_radius_mm": 10,
+   "width_mm": 10,
+   "t_over_R": 0.12,
+   "nodes": 307942,
+   "fea_mm": 0.359495,
+   "beam_plane_strain_mm": 0.327305,
+   "beam_plane_stress_mm": 0.367304,
+   "fea_vs_plane_stress": -0.0213,
+   "fea_vs_plane_strain": 0.0983,
+   "equilibrium_error": 0.00013789370939690026,
+   "seconds": 166.1532714
+  },
+  {
+   "web_mm": 2,
+   "notch_radius_mm": 5,
+   "width_mm": 10,
+   "t_over_R": 0.4,
+   "nodes": 47651,
+   "fea_mm": 0.080727,
+   "beam_plane_strain_mm": 0.067807,
+   "beam_plane_stress_mm": 0.076094,
+   "fea_vs_plane_stress": 0.0609,
+   "fea_vs_plane_strain": 0.1905,
+   "equilibrium_error": 1.0212403093680538e-11,
+   "seconds": 8.3672715
+  },
+  {
+   "web_mm": 2,
+   "notch_radius_mm": 10,
+   "width_mm": 10,
+   "t_over_R": 0.2,
+   "nodes": 73185,
+   "fea_mm": 0.104738,
+   "beam_plane_strain_mm": 0.091212,
+   "beam_plane_stress_mm": 0.102359,
+   "fea_vs_plane_stress": 0.0232,
+   "fea_vs_plane_strain": 0.1483,
+   "equilibrium_error": 1.9290584122739777e-11,
+   "seconds": 16.6447665
+  },
+  {
+   "web_mm": 3,
+   "notch_radius_mm": 5,
+   "width_mm": 10,
+   "t_over_R": 0.6,
+   "nodes": 52046,
+   "fea_mm": 0.033306,
+   "beam_plane_strain_mm": 0.026573,
+   "beam_plane_stress_mm": 0.029821,
+   "fea_vs_plane_stress": 0.1169,
+   "fea_vs_plane_strain": 0.2534,
+   "equilibrium_error": 4.012425247500411e-12,
+   "seconds": 10.7259012
+  },
+  {
+   "web_mm": 4,
+   "notch_radius_mm": 3,
+   "width_mm": 10,
+   "t_over_R": 1.333,
+   "nodes": 43033,
+   "fea_mm": 0.022561,
+   "beam_plane_strain_mm": 0.018131,
+   "beam_plane_stress_mm": 0.020346,
+   "fea_vs_plane_stress": 0.1088,
+   "fea_vs_plane_strain": 0.2443,
+   "equilibrium_error": 4.78283736199282e-12,
+   "seconds": 7.1620209
+  },
+  {
+   "web_mm": 2,
+   "notch_radius_mm": 5,
+   "width_mm": 20,
+   "t_over_R": 0.4,
+   "nodes": 90616,
+   "fea_mm": 0.039351,
+   "beam_plane_strain_mm": 0.033904,
+   "beam_plane_stress_mm": 0.038047,
+   "fea_vs_plane_stress": 0.0343,
+   "fea_vs_plane_strain": 0.1607,
+   "equilibrium_error": 6.969108110404644e-12,
+   "seconds": 27.3530528
+  }
+ ]
+}

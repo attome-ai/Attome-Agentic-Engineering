@@ -175,6 +175,27 @@ std::string fmt(double v, int digits = 3) {
 
 void write_3mf(const TopoDS_Shape& shape, const std::string& path, const std::array<double, 3>& print_direction, double tolerance) {
   TriMesh m = triangulate(shape, tolerance);
+  {
+    // 3MF requires a manifold mesh: faces are triangulated separately, so weld the copies of each edge vertex
+    // (found by lib3mf, the 3MF Consortium's reader). Positions are matched on a 1e-5 mm grid.
+    std::map<std::array<long long, 3>, uint32_t> at;
+    decltype(m.pos) pos;
+    std::vector<uint32_t> remap(m.pos.size());
+    for (size_t i = 0; i < m.pos.size(); ++i) {
+      std::array<long long, 3> k;
+      for (int j = 0; j < 3; ++j) k[j] = std::llround(static_cast<double>(m.pos[i][j]) * 1e5);
+      auto [it, fresh] = at.try_emplace(k, static_cast<uint32_t>(pos.size()));
+      if (fresh) pos.push_back(m.pos[i]);
+      remap[i] = it->second;
+    }
+    decltype(m.tri) tri;
+    for (auto t : m.tri) {
+      for (auto& v : t) v = remap[v];
+      if (t[0] != t[1] && t[1] != t[2] && t[0] != t[2]) tri.push_back(t);
+    }
+    m.pos = std::move(pos);
+    m.tri = std::move(tri);
+  }
   auto R = rotation_to_z(print_direction);
   // rest the rotated part on the build plate
   double zmin = 1e300;
@@ -208,9 +229,12 @@ void write_glb(const TopoDS_Shape& shape, const std::string& path, double tolera
   bin.reserve(m.pos.size() * 12 + m.tri.size() * 12);
   for (auto& t : m.tri) bin.append(reinterpret_cast<const char*>(t.data()), 12);
   const size_t index_bytes = bin.size();
-  for (auto p : m.pos) {
+  for (auto q : m.pos) {
+    // glTF is Y-up in metres; the engine is Z-up in millimetres. (x, y, z) -> (x, z, -y) is a rotation, so the
+    // triangles keep their winding and the part stands upright in any glTF viewer.
+    std::array<float, 3> p{q[0], q[2], -q[1]};
     for (int i = 0; i < 3; ++i) {
-      p[i] *= 0.001f;  // glTF is in metres; the engine is in millimetres
+      p[i] *= 0.001f;
       lo[i] = std::min(lo[i], p[i]);
       hi[i] = std::max(hi[i], p[i]);
     }

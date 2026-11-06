@@ -1,0 +1,96 @@
+{
+ "design": {
+  "family": "bracket_delivered",
+  "set": [
+   "thickness=11.78"
+  ],
+  "brep_volume_mm3": 134491.163,
+  "bbox_mm": [
+   0.0,
+   0.0,
+   0.0,
+   120.0,
+   50.0,
+   100.0
+  ]
+ },
+ "step": {
+  "reader": "CadQuery (OCCT, same kernel as the engine)",
+  "valid": true,
+  "solids": 1,
+  "volume_mm3": 134491.163,
+  "volume_error": 1e-09
+ },
+ "stl_blender": {
+  "objects": 1,
+  "vertices": 960,
+  "faces": 1924,
+  "open_or_nonmanifold_edges": 0,
+  "volume": 134493.2576643146,
+  "bbox_min": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "bbox_max": [
+   120.0,
+   50.0,
+   100.0
+  ],
+  "volume_error": 1.6e-05
+ },
+ "glb_blender": {
+  "objects": 1,
+  "vertices": 960,
+  "faces": 1924,
+  "open_or_nonmanifold_edges": 0,
+  "volume": 0.0001344932378904849,
+  "bbox_min": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "bbox_max": [
+   0.12000000476837158,
+   0.05000000074505806,
+   0.10000000149011612
+  ],
+  "volume_error": 1.5e-05
+ },
+ "3mf": {
+  "reader": "lib3mf 2.4.1",
+  "vertices": 960,
+  "triangles": 1924,
+  "manifold": true,
+  "volume_mm3": 134493.3,
+  "bbox_min_mm": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "bbox_max_mm": [
+   120.0,
+   50.0,
+   100.0
+  ],
+  "unit": 1,
+  "volume_error": 1.6e-05
+ },
+ "dxf": {
+  "reader": "ezdxf 1.4.2",
+  "dxf_version": "AC1009",
+  "entities": {
+   "LINE": 722,
+   "TEXT": 10
+  },
+  "audit_errors": 0,
+  "audit_fixes": 0
+ },
+ "pdf": {
+  "header": "%PDF-1.4",
+  "ends_with_eof": true,
+  "pages": 1,
+  "bytes": 28427
+ },
+ "blender": "5.2.1 LTS"
+}

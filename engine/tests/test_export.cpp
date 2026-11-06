@@ -1,8 +1,10 @@
 // H2-T1: a design bundle opens in ParaView and a slicer; the STEP re-imports as one valid solid.
 #include <doctest/doctest.h>
 
+#include <cstdio>
 #include <cstring>
 #include <filesystem>
+#include <map>
 #include <fstream>
 #include <sstream>
 
@@ -125,12 +127,31 @@ TEST_CASE("H2-T2: every delivery format is written and structurally valid") {
   CHECK(g["accessors"][1]["count"].get<size_t>() > 3);
   // positions in metres: the bracket is 120 mm long
   CHECK(g["accessors"][1]["max"][0].get<double>() == doctest::Approx(0.12).epsilon(0.02));
+  // glTF is Y-up: the bracket's 100 mm height is along +y, its width along -z (found by opening the file in Blender)
+  CHECK(g["accessors"][1]["max"][1].get<double>() == doctest::Approx(0.10).epsilon(0.02));
+  CHECK(g["accessors"][1]["max"][2].get<double>() == doctest::Approx(0.0).epsilon(1e-6));
+  CHECK(g["accessors"][1]["min"][2].get<double>() < -0.02);
   // 3MF: a zip with the required parts
   std::string tmf = read("part.3mf");
   CHECK(tmf.substr(0, 2) == "PK");
   CHECK(tmf.find("3D/3dmodel.model") != std::string::npos);
   CHECK(tmf.find("[Content_Types].xml") != std::string::npos);
   CHECK(tmf.find("unit=\"millimeter\"") != std::string::npos);
+  // 3MF meshes must be manifold and oriented: every directed edge once, its reverse once (found by lib3mf)
+  {
+    std::map<std::pair<int, int>, int> directed;
+    size_t at = 0, ntri = 0;
+    while ((at = tmf.find("<triangle v1=\"", at)) != std::string::npos) {
+      int v[3];
+      REQUIRE(std::sscanf(tmf.c_str() + at, "<triangle v1=\"%d\" v2=\"%d\" v3=\"%d\"", &v[0], &v[1], &v[2]) == 3);
+      for (int i = 0; i < 3; ++i) ++directed[{v[i], v[(i + 1) % 3]}];
+      ++at, ++ntri;
+    }
+    CHECK(ntri > 100);
+    int bad = 0;
+    for (auto& [e, n] : directed) bad += (n != 1 || !directed.count({e.second, e.first}));
+    CHECK(bad == 0);
+  }
   // drawing: real geometry in all layers, overall size matches the solid
   CHECK(m["drawing"]["visible_segments"].get<int>() > 20);
   CHECK(m["drawing"]["overall_mm"][0].get<double>() == doctest::Approx(120).epsilon(0.01));

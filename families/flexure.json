@@ -1,0 +1,91 @@
+{
+  "name": "flexure",
+  "version": "1",
+  "doc": "Right-circular notch flexure hinge: a 60 mm bar whose height is the web plus two notch radii, with two circular notches cut from the top and bottom faces at mid-length, leaving a thin web that bends like a hinge. One end is clamped, the other carries the load. Stiffness comes almost entirely from the web; the closed-form check is in benchmarks/flexure_check.py.",
+  "parameters": {
+    "web_thickness": {
+      "unit": "mm",
+      "low": 1.2,
+      "high": 4,
+      "default": 2,
+      "doc": "thinnest section of the hinge (z)"
+    },
+    "notch_radius": {
+      "unit": "mm",
+      "low": 3,
+      "high": 10,
+      "default": 5,
+      "doc": "radius of each circular notch"
+    },
+    "width": {
+      "unit": "mm",
+      "low": 5,
+      "high": 20,
+      "default": 10,
+      "doc": "out-of-plane width of the bar (y)"
+    }
+  },
+  "features": [
+    {
+      "id": "bar",
+      "type": "plate",
+      "doc": "the bar; height = web + 2 x notch radius, so the notch centres lie on its top and bottom faces",
+      "params": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "length": 60,
+        "width": "width",
+        "thickness": "web_thickness + 2 * notch_radius"
+      }
+    },
+    {
+      "id": "notch_top",
+      "type": "hole",
+      "doc": "upper notch, centred on the top face at mid-length",
+      "params": {
+        "x": 30,
+        "y": 0,
+        "z": "web_thickness + 2 * notch_radius",
+        "diameter": "2 * notch_radius",
+        "depth": "width",
+        "axis": "y"
+      }
+    },
+    {
+      "id": "notch_bottom",
+      "type": "hole",
+      "doc": "lower notch, centred on the bottom face",
+      "params": {
+        "x": 30,
+        "y": 0,
+        "z": 0,
+        "diameter": "2 * notch_radius",
+        "depth": "width",
+        "axis": "y"
+      }
+    }
+  ],
+  "faces": {
+    "clamp_face": {
+      "kind": "plane",
+      "normal": "-x",
+      "at": 0,
+      "doc": "clamped end"
+    },
+    "load_face": {
+      "kind": "plane",
+      "normal": "x",
+      "at": 60,
+      "doc": "free end; the load acts here"
+    }
+  },
+  "design_space": [
+    0,
+    0,
+    0,
+    60,
+    20,
+    24
+  ]
+}

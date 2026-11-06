@@ -205,7 +205,9 @@ How shapes are made. The LLM never writes raw CAD code on the main path: it comp
 - **Native feature trees (after the competition).** Recreate the graph as a native feature tree in Onshape or Fusion through their MCP servers.
 
 **Today (score 75):**
-- Design graph with 14 typed feature types, bounded parameters, safe expressions, named faces and content hashes; two families (bracket, heat sink); every feature compiles at its bound corners.
+- Design graph with 14 typed feature types, bounded parameters, safe expressions, named faces and content hashes; every feature compiles at its bound corners.
+- Three families (bracket, heat sink, right-circular notch flexure), plus the delivered bracket with fillets. The flexure builds and passes the gate at all 8 corners of its bounds; its end deflection is within 2-3% of beam theory for thin hinges (t/R 0.12-0.2), and the gap grows to 11% for stubby notches, where beam theory is not meant to hold (`benchmarks/flexure_check.json`).
+- Dimensioned three-view drawing with the free parameters listed; the design source is the graph JSON and its parameters. The plan's CadQuery script is replaced by the C++ compiler (D1).
 
 **How the leaders do it:**
 - Creo and Zoo lead: Creo keeps topology results in the parametric history; Zoo outputs KCL code.
@@ -246,7 +248,8 @@ Real solvers, never surrogates alone. Each feature says what is built **before 3
 **Today (score 78):**
 - Bolted supports tie each bore's mean translation to a held reference node; adaptive refinement matches Peterson's Kt within 0.24%. On the bracket, bolted bores change deflection by 0.07% and peak stress not at all.
 - CalculiX static stress, frequency and buckling, all validated (LE10 +0.14%, LE1 -0.40%, cantilever -0.80%, buckling +0.06%, frequency -0.26%); frequency and buckling requirements work in specs.
-- No nonlinear material or contact.
+- Principal stresses per node (largest principal in the result fields), checked on the cantilever against beam theory (30.0012 against 30 MPa).
+- No nonlinear material or contact: planned after 3 February.
 
 **How the leaders do it:**
 - Ansys and Siemens lead with reference-grade solvers.
@@ -674,7 +677,8 @@ From the screen to a made and tested part. Manufacturing rules are inputs to the
 - **After 3 Feb: native CAD.** Write the design back to Onshape or Fusion as a native feature tree or configuration through their MCP servers (A4, B3).
 
 **Today (score 80):**
-- 3MF with the print direction applied, GLB, three-view drawing as DXF and PDF, design source (`structura export`). Checked structurally, not yet opened in a slicer or CAD package.
+- 3MF with the print direction applied, GLB, three-view drawing as DXF and PDF, design source (`structura export`).
+- Opened by programs we did not write (`benchmarks/h2_interop.json`): STL and GLB in Blender 5.2, closed meshes, volume within 0.002% of the solid; 3MF in lib3mf 2.4.1, manifold; DXF in ezdxf with no audit errors. This found two bugs, both fixed and tested: the GLB was Z-up (glTF is Y-up, so viewers showed the part on its side) and the 3MF mesh was not manifold. Not yet opened in a slicer or a CAD package; the PDF is checked for structure only.
 - STEP, STL and VTU (ParaView) export per design; STEP import.
 
 **How the leaders do it:**
