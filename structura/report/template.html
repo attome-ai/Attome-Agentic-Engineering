@@ -967,7 +967,8 @@ if (location.hash === "#cut") {$("#clipaxis").value = "1"; sliceCap()}  // link 
 if (location.hash === "#ar") $("#lang").click();
 if (location.hash === "#buckle") setTimeout(() => $("#bucklebtn").click(), 300);
 if (location.hash === "#mode") setTimeout(() => $("#modebtn").click(), 300);  // link straight to the vibration mode
-if (location.hash === "#split" && rec && D.baseline) $("#whichseg").querySelector('[data-w="split"]').click();  // link straight to the comparison
+if ((location.hash === "#split" || location.hash === "#split-safety") && rec && D.baseline) $("#whichseg").querySelector('[data-w="split"]').click();  // link straight to the comparison
+if (location.hash === "#split-safety" || location.hash === "#safety") { const b = document.querySelector('button[data-f="safety"]'); if (b) b.click() }  // video frames: the safety colouring
 </script>
 </body>
 </html>

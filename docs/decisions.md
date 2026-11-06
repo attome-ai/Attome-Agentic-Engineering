@@ -175,3 +175,19 @@ The roadmap lets a step move to a later phase with a written reason. These are i
 
 **Consequence.** E4 and J1 move from "needs an API key" to work that can be done in a session; the benchmark claims
 in the proposal shrink to what was measured.
+
+## D13. The demo is a rendered video, not a live run (2026-11-06, owner)
+
+**Decision.** On 3 February the demo is a pre-rendered video played on the demo machine (this PC). Nothing is designed
+from scratch in front of the judges.
+
+**Why.** A live search takes about 11 minutes and, on the fast plain family, ends at grade B; the grade A design needs
+the filleted geometry, whose evaluations take about 94 s each. A video shows the real stored results without the wait
+or the risk.
+
+**What changed.** `scripts/make_video.py` renders the video from stored reports (headless Chrome screenshots), title
+cards and a draft voice (Windows speech; the owner can record their own, one file per scene). Every number in it comes from
+a stored run. `scripts/demo.py live` stays as a tool, not part of the demo. The roadmap's live-demo checks become: the
+video plays on the demo machine with the network off (a local file), a copy is on a USB stick, and the talk over it is
+rehearsed.
+

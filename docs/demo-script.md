@@ -25,13 +25,22 @@ commands are tested. Rehearse with `python scripts/demo.py live` (timings in `be
 | 2:25-2:45 | Making the recommended design panel; then the printed parts under load [when the physical test is done] | "It tells me how to make it: printing fits, about 11 hours and 22 dollars at my stated rates. And here are both parts under load." |
 | 2:45-3:00 | README results table | "Open tools, no solver licences, every number traceable to a stored run. Attome Agentic Engineering." |
 
-## Live demo (3 February)
+## The demo on 3 February: the rendered video (D13)
 
-`scripts/demo.py live` runs the 20 kg brief on the plain bracket family in about 11 minutes (654 s on 2026-11-05) and ends at **grade B**: that family has sharp edges along the rib flanks, and the trust record says so. The 184.4 g grade A design is the delivered geometry with 0.5 mm fillets, where each evaluation takes about 94 s instead of 4 s, so it is precomputed. Say this if the live run is shown: "the live search finds the shape; the delivered part adds fillets and is verified offline."
+Build it with `python scripts/make_video.py` -> `runs/video/attome_demo.mp4` (2 min 34 s, 1920 x 1080; frames from the
+stored reports, a draft synthetic voice). To use your own voice, record one WAV per scene into `runs/video/voice/` with
+the scene names in `SCENES` (for example `03_compare.wav`) and run it again. Scenes: title; brief to spec; hand design
+against recommended in the safety colouring; the 1,600-design search; the trust record; the replay; how to make it;
+the 30 W heat sink; the 100 kg refusal; the results card. The physical test is not in it yet: add a scene when the
+printed parts have been loaded.
+
+Play it from the local file (no network needed). Keep a copy on a USB stick. `scripts/demo.py live` is no longer part of
+the demo; it runs the 20 kg brief in about 11 minutes and ends at grade B on the plain family (the grade A design is the
+filleted geometry, verified offline).
 
 ### If something fails
 
-- Optimization too slow or a solve fails: `scripts/demo.py live` prints the fallback; open the precomputed report.
+- The video does not play: open `runs/p2_demo_delivered/report.html` and walk through the same panels by hand.
 - No internet (the agent runs in the cloud): show the workbench and the reports (all offline), and play the video for
   the agent part.
 - A judge asks "what if it can't be done?": run the 100 kg brief; the feasibility check answers in about 10 s and
