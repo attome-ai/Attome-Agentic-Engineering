@@ -331,7 +331,7 @@ six views (front, back, left, right, top, isometric) with the overall size, abou
 an image over MCP so it can check the shape against the brief before solving. Example:
 `docs/screenshots/render_views_bracket.png`.
 
-## Brief benchmark (P3-t1, `benchmarks/brief_bench/`): dataset and scorer ready, model run pending
+## Brief benchmark (P3-t1, `benchmarks/brief_bench/`): text briefs scored (see below); image briefs missing
 
 50 hand-written briefs with gold spec fields: 31 brackets, 12 heat sinks and 7 out of scope (a gear, a propeller,
 a bicycle frame...: the right answer is "no family fits"); 15 in Arabic, 3 mixed, and imperial units (lb, F) to test
@@ -341,6 +341,29 @@ answer scores 58% on all fields but 0% here, so this is the honest number) and u
 Self-check: the gold answers score 100%; no answers score 0% on stated fields. The model run needs an API key:
 `python -m benchmarks.brief_bench.run extract --model claude-opus-5-5 --out runs/brief_bench/opus`, then `score`.
 Image briefs (a sketch or photo) are not in this set yet.
+
+## Text2CAD-Bench, public L1 preview (P3-t3, `benchmarks/text2cad/run.py`)
+
+Text2CAD-Bench (arXiv 2605.18430) has published 151 of its 600 prompts (`benchmarks/text2cad/release_preview.csv`, CC BY 4.0,
+from huggingface.co/datasets/AICAD/Text2CAD-Bench); its reference shapes are given only on request. Measured 2026-11-06 on
+the 60 public L1 geometric prompts. Each answer was written once by Opus 5.5 in a Claude Code session from the prompt alone
+(`answers_l1.py`), the design grammar first and the gated CadQuery fallback only for shapes the grammar cannot express.
+
+| | Answers | Invalid (paper's definition) |
+|---|---|---|
+| Design grammar (C++ engine) | 39 | 0 |
+| CadQuery fallback (spheres, cones, lofts, angled planes, round-edge fillets and chamfers) | 21 | 0 |
+| **All** | **60** | **0 (0%)**; published L1 geometric: GPT-5.2 11.1%, DeepSeek-V3.2 13.3%, Claude-4.5-Sonnet 20.3% |
+
+Two results are two solids, as their prompts describe (L1_19, two separate tubes; L1_23, two cylinders touching along a
+line); they count as valid CAD but the engine's analyses would refuse them. For 39 prompts the built volume matches a
+closed-form volume from the prompt's stated dimensions to within 0.01% (0.2% for one with a chamfer; `volumes_l1.py`).
+This shows each answer builds what it was meant to, but it cannot catch a misreading, because one reading sets both.
+
+**Not measured:** Chamfer distance and IoU need the reference shapes; `metrics.py` is ready (its self-test: IoU 1 and
+1/3 on known cubes; a shape against itself gives CD 14 at 30,000 points, the sampling floor that is in the paper's
+numbers too). **Not comparable yet:** 60 prompts is under a third of L1, the published runs allowed three retries, and
+L2 to L4 were not run. L1 is mostly primitives, where invalid rates are lowest for every model.
 
 ## Reproducibility (P3-x2, `structura reproduce --dir TRUST_DIR`)
 

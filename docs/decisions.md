@@ -153,4 +153,4 @@ The roadmap lets a step move to a later phase with a written reason. These are i
 | G4 rotating 3D front | Three objectives already appear as linked 2D projections, which are easier to read. |
 | G6 repairs with the design before and after | Repairs show their typed error. Showing both designs needs the agent to record each attempt, and no demo path depends on it. |
 
-**Not moved, and not doable without the owner or an outside resource:** API-key routing measurements (E4) and cost per study (J1), Hephaestus-CCX (kit not public), Text2CAD-Bench (not run), image briefs for the benchmark (A1: they should be drawn by someone who does not know the answers), and the physical test (H3).
+**Not moved, and not doable without the owner or an outside resource:** API-key routing measurements (E4) and cost per study (J1), Hephaestus-CCX (kit not public), Text2CAD-Bench Chamfer distance and IoU (the invalid rate is measured on the 60 public L1 prompts; the reference shapes are given only on request, so the owner has to ask the authors), image briefs for the benchmark (A1: they should be drawn by someone who does not know the answers), and the physical test (H3).

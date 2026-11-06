@@ -170,7 +170,8 @@ How shapes are made. The LLM never writes raw CAD code on the main path: it comp
 
 **Today (score 60):**
 - The agent composes design graphs (typed grammar), ranks several candidates (compose_candidates) and reviews six rendered views (render_views).
-- Free-form CadQuery as a gated last resort (freeform_cad). Text2CAD-Bench not run.
+- Free-form CadQuery as a gated last resort (freeform_cad).
+- Text2CAD-Bench, public L1 preview (60 of 200 geometric prompts): 0 of 60 invalid (published L1: GPT-5.2 11.1%, Claude-4.5-Sonnet 20.3%), 39 through the grammar and 21 through the CadQuery fallback; 39 built volumes match closed-form volumes from the prompts' dimensions (`benchmarks/text2cad_l1.json`). Chamfer distance and IoU not measured: the reference shapes are given only on request. One pass by Opus 5.5 in a Claude Code session, not through the API; L2, L3 and L4 not run. This is not a comparable lead, because 60 prompts is less than a third of L1 and the published runs allow retries.
 
 **How the leaders do it:**
 - Zoo leads text-to-CAD on its own B-rep kernel with KCL code and snapshot self-checks; fails on complex parts.
