@@ -138,7 +138,9 @@ should review this decision, because it changes headline numbers.
 
 **Added 2026-11-05, for the owner's review: the error bar on a settled peak.** When the safety factor is judged on the settled peak, its error now comes from the last two levels of local refinement (two-level GCI: safety factor 3, first order, ratio 2), not from the three uniform meshes. The uniform error described a different number: on the 184.4 g design the peak moves 0.03% between refinement levels while the uniform meshes gave 24%, because they do not resolve a 0.5 mm fillet. The written grade rule and its limits are unchanged, and the record keeps the old figure as `uniform_mesh_error`. This makes grade A reachable on the delivered geometry, so read the headline with that in mind. A stricter alternative is a finer uniform mesh, which is much slower and was not run.
 
-## D11. Planned steps moved past the demo, with reasons (2026-11-05, recommendation for the owner's review)
+**Owner approved, 2026-11-06:** the error bar on a settled peak comes from the last two refinement levels; the uniform-mesh error stays in each record as `uniform_mesh_error`. Headline: 184.4 g, grade A. Also approved then: the delivered geometry with 0.5 mm fillets (the decision asked for under "Still open").
+
+## D11. Planned steps moved past the demo, with reasons (2026-11-05; owner approved all eight, 2026-11-06)
 
 The roadmap lets a step move to a later phase with a written reason. These are in the feature plan's "before 3 Feb" list and are recommended to move, because each one risks the working demo or would claim more than is measured:
 
