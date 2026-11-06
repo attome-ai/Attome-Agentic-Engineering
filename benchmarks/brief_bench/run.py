@@ -65,12 +65,12 @@ def same(field: str, gold, pred) -> bool:
     return str(pred).strip().lower() == str(gold).strip().lower()
 
 
-def score(pred_dir: Path) -> dict:
+def score(pred_dir: Path, briefs=None) -> dict:
     per = {f: [0, 0] for f in FIELDS}
     units = [0, 0]
     stated = [0, 0]  # fields the brief states (gold not null): saying nothing scores 0 here
     misses = []
-    for bid, brief, gold in BRIEFS:
+    for bid, brief, gold in briefs or BRIEFS:
         p = pred_dir / f"{bid}.json"
         pred = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
         for f in FIELDS:
@@ -102,11 +102,16 @@ def main():
     e.add_argument("--out", required=True)
     s = sub.add_parser("score")
     s.add_argument("pred_dir")
+    s.add_argument("--images", action="store_true", help="score the generated image briefs (make_images.py) instead of the text briefs")
     a = ap.parse_args()
     if a.cmd == "extract":
         extract(a.model, Path(a.out))
     else:
-        r = score(Path(a.pred_dir))
+        briefs = None
+        if a.images:
+            gold = json.loads((Path(__file__).parent / "image_gold.json").read_text())["gold"]
+            briefs = [(bid, f"images/{bid}.png", g) for bid, g in sorted(gold.items())]
+        r = score(Path(a.pred_dir), briefs)
         name = Path(a.pred_dir).name
         (ROOT / "benchmarks" / f"brief_bench_{name}.json").write_text(json.dumps(r, ensure_ascii=False, indent=2), encoding="utf-8")
         print(r["fields_correct"], "| stated fields", r["stated_fields_correct"], "| units", r["units_correct"])

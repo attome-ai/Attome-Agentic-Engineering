@@ -1,0 +1,125 @@
+{
+ "note": "answers written from the images alone, before image_gold.json was read (Claude Code session, Opus 5.5)",
+ "predictions": {
+  "ib01": {
+   "family": "bracket",
+   "material": "PETG",
+   "load_N": 78.48,
+   "sf": 2.0,
+   "disp_mm": null,
+   "power_W": null,
+   "t_max_C": null,
+   "fan_m_s": null,
+   "objective": "min_mass",
+   "process": "fdm"
+  },
+  "ib02": {
+   "family": "bracket",
+   "material": "S235",
+   "load_N": 150.0,
+   "sf": 3.0,
+   "disp_mm": null,
+   "power_W": null,
+   "t_max_C": null,
+   "fan_m_s": null,
+   "objective": "min_cost",
+   "process": "cnc"
+  },
+  "ib03": {
+   "family": "heatsink",
+   "material": null,
+   "load_N": null,
+   "sf": null,
+   "disp_mm": null,
+   "power_W": 15.0,
+   "t_max_C": 75.0,
+   "fan_m_s": 1.5,
+   "objective": "min_temperature",
+   "process": null
+  },
+  "ib04": {
+   "family": "heatsink",
+   "material": "AL6061T6",
+   "load_N": null,
+   "sf": null,
+   "disp_mm": null,
+   "power_W": 10.0,
+   "t_max_C": 75.0,
+   "fan_m_s": null,
+   "objective": "min_mass",
+   "process": "cnc"
+  },
+  "ib05": {
+   "family": "bracket",
+   "material": null,
+   "load_N": 150.0,
+   "sf": 1.5,
+   "disp_mm": 2.0,
+   "power_W": null,
+   "t_max_C": null,
+   "fan_m_s": null,
+   "objective": "min_mass",
+   "process": "cnc"
+  },
+  "ib06": {
+   "family": "heatsink",
+   "material": "AL6061T6",
+   "load_N": null,
+   "sf": null,
+   "disp_mm": null,
+   "power_W": 10.0,
+   "t_max_C": 70.0,
+   "fan_m_s": null,
+   "objective": "min_temperature",
+   "process": null
+  },
+  "ib07": {
+   "family": "heatsink",
+   "material": null,
+   "load_N": null,
+   "sf": null,
+   "disp_mm": null,
+   "power_W": 5.0,
+   "t_max_C": 60.0,
+   "fan_m_s": null,
+   "objective": "min_mass",
+   "process": null
+  },
+  "ib08": {
+   "family": "bracket",
+   "material": "PLA",
+   "load_N": 300.0,
+   "sf": null,
+   "disp_mm": 1.0,
+   "power_W": null,
+   "t_max_C": null,
+   "fan_m_s": null,
+   "objective": "min_cost",
+   "process": null
+  },
+  "ib09": {
+   "family": "bracket",
+   "material": "PETG",
+   "load_N": 177.92000000000002,
+   "sf": 3.0,
+   "disp_mm": 1.0,
+   "power_W": null,
+   "t_max_C": null,
+   "fan_m_s": null,
+   "objective": "min_mass",
+   "process": "fdm"
+  },
+  "ib10": {
+   "family": "bracket",
+   "material": "PETG",
+   "load_N": 196.20000000000002,
+   "sf": null,
+   "disp_mm": null,
+   "power_W": null,
+   "t_max_C": null,
+   "fan_m_s": null,
+   "objective": "min_mass",
+   "process": null
+  }
+ }
+}

@@ -1,0 +1,19 @@
+{
+  "predictions": "runs\\brief_bench\\opus55_session_images",
+  "fields_correct": "100 of 100 (100.0%)",
+  "stated_fields_correct": "54 of 54 (100.0%)",
+  "units_correct": "22 of 22 (100.0%)",
+  "per_field": {
+    "family": "10 of 10",
+    "material": "10 of 10",
+    "load_N": "10 of 10",
+    "sf": "10 of 10",
+    "disp_mm": "10 of 10",
+    "power_W": "10 of 10",
+    "t_max_C": "10 of 10",
+    "fan_m_s": "10 of 10",
+    "objective": "10 of 10",
+    "process": "10 of 10"
+  },
+  "misses": []
+}

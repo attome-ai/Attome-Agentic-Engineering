@@ -73,7 +73,7 @@ From a sentence, a photo or an existing part to a checkable spec. Competitor sco
 - **Why.** Every competitor that scores 60+ here (SimScale, Zoo, Adam, the papers) scores 0-20 on Pareto (D2), and none was found deriving loads from a use case or taking Arabic briefs.
 
 **Today (score 45):**
-- 50-brief benchmark scored: 95.0% of fields, 100% of units (`benchmarks/brief_bench_opus55_session.json`); run in a Claude Code session, the product's own path (D12), and with no image briefs. The harness's rules and gold disagree on unstated objectives (19 of 25 misses).
+- 50-brief benchmark scored: 95.0% of fields, 100% of units (`benchmarks/brief_bench_opus55_session.json`); run in a Claude Code session, the product's own path (D12). Image briefs: 10 generated sketches, 100% of fields and units, read before their gold was opened; clean typed notes, so real hand sketches remain untested. The harness's rules and gold disagree on unstated objectives (19 of 25 misses).
 - The agent turns a brief into a spec through MCP tools (create_study, derive_load, rank_questions). `read_brief_image` hands it a photo, sketch or drawing, with every value it reads treated as a guess until the user accepts the card; reading accuracy on pictures is not measured, because no image briefs exist yet.
 
 **How the leaders do it:**

@@ -331,7 +331,21 @@ six views (front, back, left, right, top, isometric) with the overall size, abou
 an image over MCP so it can check the shape against the brief before solving. Example:
 `docs/screenshots/render_views_bracket.png`.
 
-## Brief benchmark (P3-t1, `benchmarks/brief_bench/`): text briefs scored (see below); image briefs missing
+## Image briefs (P3-t1, `benchmarks/brief_bench/make_images.py`)
+
+There is no second person on the project, so the image briefs are generated: 10 hand-sketch-style drawings (6 brackets,
+4 heat sinks) whose requirements are drawn at random (seed 20261106) and written on the sketch as a person might: kg, lb or
+N; C or F; "printed" or "CNC"; "lightest", "cheap please" or "as cool as possible"; some fields left out, plus geometry
+dimensions that are not spec fields. The gold went to `image_gold.json`, which was not read until the answers were
+written from the images alone (`image_predictions_opus55.json`). One layout bug (a note drawn over the load label) was
+fixed before scoring; the seed, and so the gold, did not change.
+
+Result (2026-11-06, Opus 5.5 in a Claude Code session): **100 of 100 fields, 54 of 54 stated fields, 22 of 22 numbers
+with the right units** (lb to N, F to C). This mostly shows the pipeline and the unit rules work on an image: the notes
+are in a clean font on a tidy drawing, and the model that reads them also wrote the generator, so it knows the style
+and the rules (not the values). Real hand sketches and photos are harder and were not tested.
+
+## Brief benchmark (P3-t1, `benchmarks/brief_bench/`): text briefs scored (see below)
 
 50 hand-written briefs with gold spec fields: 31 brackets, 12 heat sinks and 7 out of scope (a gear, a propeller,
 a bicycle frame...: the right answer is "no family fits"); 15 in Arabic, 3 mixed, and imperial units (lb, F) to test
